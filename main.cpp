@@ -94,7 +94,6 @@ int main(void) {
 		}
 		current_size = nfds;
 		//find readable fds
-
 		std::cout << "Current size " << current_size  << std::endl;
 		for (i = 0; i < current_size; i++)
 		{
@@ -105,8 +104,6 @@ int main(void) {
 				std::cout << "Error revents " << fds[i].revents << std::endl;
 				exit(1);
 			}
-			std::cout << "socketfd " << socketfd << std::endl;
-			std::cout << "fds[i].revents " << fds[i].revents << std::endl;
 			if (fds[i].fd == socketfd)
 			{
 				do
@@ -134,33 +131,39 @@ int main(void) {
 				std::cout << "Descriptor " << fds[i].fd << " is readeable" << std::endl;
 
 	    	    msg = "";
-	    	   // std::string serv_msg = ":127.0.0.1 001 manuel :Welcome";
-	    	   // send(connectfd, serv_msg.c_str(), serv_msg.size(), 0);
+	    	    std::string serv_msg = ":127.0.0.1 001 albgarci :Welcome\0";
+	    	  	send(fds[i].fd, serv_msg.c_str(), serv_msg.size(), 0);
 	    	    while (true) {
 	    	    	readlen = recv(fds[i].fd, buff, sizeof(buff), 0);
 	    	       // readlen = recv(connectfd, buff, sizeof(buff), 0);
-	    	        msg = msg + buff + '\0';
-	    	        memset(buff, 0, sizeof(buff));
-	    	        if (readlen == -1) {
-	    	            std::cerr << "Error reading from the client\n";
+	    	        msg = msg + buff;
+
+	    	        if (readlen == -1) 
+					{
+						if (errno != EWOULDBLOCK)
+						{
+							perror(" recv() failed");
+	    	           		//std::cerr << "Error reading from the client\n";
+						}
 						break;
 	    	           // return -1;
 	    	        }
 	    	        else if (readlen == 0) {
 	    	            std::cout << "[SERVER]: client socket closed\n";
-	    	            std::cout << msg << '\n';
+	    	            std::cout << msg << std::endl;
 	    	            close(connectfd);
 	    	            break;
 	    	        }
 					std::cout << readlen << " bytes received" << std::endl;	
-	    	       	std::cout << msg << ' ' << readlen << '\n';
-					rc = send(fds[i].fd, buff, len, 0);
+	    	       	std::cout << msg << ' ' << readlen << std::endl;
+				//	rc = send(fds[i].fd, buff, len, 0);
+	    	        memset(buff, 0, sizeof(buff));
 					if (rc < 0)
 					{
 						perror(" send failed");
 						break;
 					}
-	    	       // std::cout << "Bucle\n"; 
+	    	       // std::cout << "Bucle\n";
 				}
 			}
         }
