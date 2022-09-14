@@ -1,0 +1,10 @@
+https://se.inf.ethz.ch/student_projects/fabian_gremper/Report.pdf
+
+JOIN #channel
+PRIVMSG #channel :hello
+
+When user joins a channel:
+Notify all users on the channel about the joining
+user by sending the following message to the
+respective sockets:
+ :foo JOIN #bar
