@@ -124,6 +124,8 @@ int main(void) {
 					fds[nfds].fd = connectfd;
 					fds[nfds].events = POLLIN;
 					nfds++;
+	    	    	std::string serv_msg = ":127.0.0.1 001 albgarci :Welcome!!\n";
+	    	  		send(connectfd, serv_msg.c_str(), serv_msg.size() + 1, 0);
 				} while (connectfd != -1);
 			}
 			else
@@ -131,8 +133,7 @@ int main(void) {
 				std::cout << "Descriptor " << fds[i].fd << " is readeable" << std::endl;
 
 	    	    msg = "";
-	    	    std::string serv_msg = ":127.0.0.1 001 albgarci :Welcome\0";
-	    	  	send(fds[i].fd, serv_msg.c_str(), serv_msg.size(), 0);
+
 	    	    while (true) {
 	    	    	readlen = recv(fds[i].fd, buff, sizeof(buff), 0);
 	    	       // readlen = recv(connectfd, buff, sizeof(buff), 0);
