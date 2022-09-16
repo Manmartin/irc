@@ -14,6 +14,7 @@ class Client{
 
 		std::string getNickname(void) const;
 		bool 		isOperator(void) const;
+		bool operator<(Client const &c) const;
 
 	private:
 		Client(void);

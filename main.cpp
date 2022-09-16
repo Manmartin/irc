@@ -11,6 +11,26 @@
 #include <errno.h>
 //#include <sys/ioctl.h>
 #include "Client.hpp"
+#include "Server.hpp"
+
+void	featuresTests(void)
+{
+	Client c("nick1", false);
+	std::cout << c.getNickname() << std::endl;
+	std::cout << c.isOperator() << std::endl;
+
+	Server server = Server(10, 10);
+	server.addClient(c);
+
+	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
+
+	Client d("nick", false);
+	
+	server.addClient(d);
+	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
+//	server.addClient(d);
+
+}
 
 int main(void) {
     int socketfd;
@@ -21,9 +41,10 @@ int main(void) {
 	int	nfds = 1;
 	int current_size;
 
-	Client c = Client("nick", false);
-	std::cout << c.getNickname() << std::endl;
-	std::cout << c.isOperator() << std::endl;
+	//
+	//testing new objects
+	//
+	featuresTests();
 
 	current_size = 0;
 	socketfd = -1;

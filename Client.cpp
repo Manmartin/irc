@@ -22,6 +22,13 @@ Client& Client::operator=(Client const &c)
 	return (*this);	
 }
 
+bool Client::operator<(Client const &c) const
+{
+	if (this->_nickname < c.getNickname())
+		return (true);
+	return (false);
+}
+
 Client::Client(Client const &c) : _nickname(c.getNickname()), _isOperator(c.isOperator()) {}
 
 std::string Client::getNickname(void) const
