@@ -4,7 +4,7 @@ CXX = clang++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 INC = -I .
 
-SRCS = main.cpp
+SRCS = main.cpp Client.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 %.o: %.cpp

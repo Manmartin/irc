@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <errno.h>
 //#include <sys/ioctl.h>
+#include "Client.hpp"
 
 int main(void) {
     int socketfd;
@@ -19,6 +20,10 @@ int main(void) {
 	struct pollfd fds[200];
 	int	nfds = 1;
 	int current_size;
+
+	Client c = Client("nick", false);
+	std::cout << c.getNickname() << std::endl;
+	std::cout << c.isOperator() << std::endl;
 
 	current_size = 0;
 	socketfd = -1;
