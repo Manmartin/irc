@@ -1,7 +1,10 @@
 #include "Client.hpp"
 
 Client::Client(std::string const &nickname, bool const &isOperator) : 
-	_nickname(nickname), _isOperator(isOperator) {}
+	_nickname(nickname), _isOperator(isOperator)
+{
+
+}
 
 Client::Client(void)
 {

@@ -16,6 +16,14 @@ class Client{
 		bool 		isOperator(void) const;
 		bool operator<(Client const &c) const;
 
+		class EmptyName : public std::exception
+		{
+			public:
+				virtual const char* what() const throw(){
+					return ("Empty name exception");
+				}
+		};
+
 	private:
 		Client(void);
 		std::string	_nickname;

@@ -19,17 +19,20 @@ void	featuresTests(void)
 	std::cout << c.getNickname() << std::endl;
 	std::cout << c.isOperator() << std::endl;
 
-	Server server = Server(10, 10);
+	Server server = Server(4, 4);
 	server.addClient(c);
 
 	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
 
-	Client d("nick", false);
-	
+	Client d("nick2", false);
+
 	server.addClient(d);
 	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
-//	server.addClient(d);
+	server.addClient(d);
 
+	server.removeClient(d);
+//	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
+//	server.addClient(d);
 }
 
 int main(void) {

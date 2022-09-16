@@ -36,9 +36,8 @@ int	Server::getActiveChannels(void) const
 
 bool	Server::usedNick(std::string nickname) const
 {
-	std::set<Client>::iterator it;
+	std::list<Client>::const_iterator it;
 
-	std::cout << "looking for " << nickname << std::endl;
 	for (it = this->clients.begin(); it != this->clients.end(); it++)
 	{
 		if (it->getNickname() == nickname)
@@ -49,14 +48,32 @@ bool	Server::usedNick(std::string nickname) const
 
 void	Server::addClient(Client const &c)
 {
-	std::cout << "eeooo" << std::endl;	
-	if (!usedNick(c.getNickname()) && this->_activeClients <= _maxClients - 1 )
+	if (usedNick(c.getNickname()))
+		std::cerr << "nickname already in use" << std::endl;//TBI: throw error
+	else if (this->_activeClients <= _maxClients - 1)
 	{
 		this->_activeClients++;
-		this->addClient(c);	
+		this->clients.push_back(c);
+		std::cout << "client added" << std::endl;
 	}
 	else
 		//TBI: throw error
 		std::cerr << "No more clients allowed" << std::endl;
-	
 }
+
+void	Server::removeClient(Client const &c)
+{
+	std::list<Client>::iterator it;
+
+	for (it = this->clients.begin(); it != this->clients.end(); it++)
+	{
+		if (it->getNickname() == c.getNickname())
+		{
+			clients.erase(it);
+			this->_activeClients--;	
+			std::cout << "Removed " << c.getNickname() << std::endl;
+			break ;
+		}
+	}
+}
+
