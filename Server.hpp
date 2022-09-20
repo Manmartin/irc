@@ -28,7 +28,7 @@ class Server {
 
 	//	struct pollfd	*fds;
 		std::list<Client> clients;
-		std::list<Channel> channels;
+		std::list<Channel*> channels;
 	//	Channels		*channels;
 		int				_maxClients;
 		int				_activeClients;
