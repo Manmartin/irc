@@ -27,7 +27,8 @@ class Client{
 	private:
 		Client(void);
 		std::string	_nickname;
-		bool _isOperator;
+		bool		_isOperator;
+//		int			_id;	
 };
 
 #endif

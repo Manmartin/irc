@@ -30,7 +30,10 @@ void	featuresTests(void)
 	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
 	server.addClient(d);
 
+	server.joinUserToChannel("channelname", d);
+	server.joinUserToChannel("channelname", c);
 	server.removeClient(d);
+
 //	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
 //	server.addClient(d);
 }

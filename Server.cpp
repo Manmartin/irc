@@ -77,3 +77,29 @@ void	Server::removeClient(Client const &c)
 	}
 }
 
+void	Server::joinUserToChannel(std::string channelName, Client &c)
+{
+	std::list<Channel>::iterator it;
+
+	it = this->channels.begin();
+	while (it != this->channels.end())
+	{
+		if (channelName == it->getName())
+		{
+			std::cout << "Channel exists" << std::endl;
+			it->join(c);
+			return ;
+		}
+	//	else
+	//	{
+//			std::cout << "Create new channel and make Client the operator" << std::endl;
+	//		it->join(c);	
+	//	}
+		it++;
+	}
+	std::cout << "Create new channel and make Client the operator" << std::endl;
+//	this->channels.push_back(&(new Channel(channelName));
+
+}
+
+

@@ -3,6 +3,7 @@
 
 # include <sys/poll.h>
 # include "Client.hpp"
+# include "Channel.hpp"
 # include <list>
 # include <string>
 
@@ -20,12 +21,14 @@ class Server {
 		void	addClient(Client const &c);
 		void	removeClient(Client const &c);
 		bool	usedNick(std::string nickname) const;
+		void	joinUserToChannel(std::string channelName, Client &c);
 
 	private:
 		Server(void);
 
 	//	struct pollfd	*fds;
 		std::list<Client> clients;
+		std::list<Channel> channels;
 	//	Channels		*channels;
 		int				_maxClients;
 		int				_activeClients;
