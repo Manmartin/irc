@@ -108,22 +108,22 @@ void	Server::handleMessage(std::string message, int fd)
 	{
 		instruction = message.substr(0, position);
 		std::cout << fd << ": " << instruction << std::endl;
-		parseMessage(message, fd);
+		parseMessage(instruction, fd);
 		message.erase(0, position + 2);
 	}
 //	parseMessages(message, fd);
 }
 
-
-void	Server::parseMessage(std::string message, int fd)
+void	Server::parseMessage(std::string instruction, int fd)
 {
-	std::string instruction;
-	int	position;
+	std::string key;
+	std::string value;
+	int position;
 
-	position = 0;
-	instruction = message.substr(position, message.find('\n'));
-	std::cout << fd << ": " << instruction << std::endl;
-
+	position = instruction.find(' ');
+	key = instruction.substr(0, position);
+	value = instruction.substr(position + 1, 100);
+	std::cout << fd << ": key: " << key << ", value: " << value << std::endl;	
 }
 
 Client&	Server::lookClientByFd(int fd)
