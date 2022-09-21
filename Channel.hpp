@@ -13,14 +13,13 @@ class Channel {
 		Channel(Channel const &c);
 
 		std::string	getName(void) const;
-		void	join(Client &client);
+		void	join(Client *client);
 
 	private:
 		Channel(void);
-
 		std::list<Client*> users;
-
 		std::string	_name;
+		char	_message[2048];
 };
 
 

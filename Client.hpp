@@ -10,11 +10,14 @@ class Client{
 		~Client(void);
 		Client(Client const &c);
 		Client& operator=(Client const &c);
-		Client(std::string const &nickname, bool const &isOperator);
+		Client(int fd);
+//		Client(std::string const &nickname, int fd);
 
-		std::string getNickname(void) const;
-		bool 		isOperator(void) const;
-		bool operator<(Client const &c) const;
+		void		setNick(std::string nickname);
+		std::string	getNickname(void) const;
+		int			getFd(void) const;
+
+		bool operator<(Client const &c) const; //don't delete this overload pls
 
 		class EmptyName : public std::exception
 		{
@@ -27,8 +30,7 @@ class Client{
 	private:
 		Client(void);
 		std::string	_nickname;
-		bool		_isOperator;
-//		int			_id;	
+		int			_fd;	
 };
 
 #endif

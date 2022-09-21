@@ -12,19 +12,20 @@
 //#include <sys/ioctl.h>
 #include "Client.hpp"
 #include "Server.hpp"
+#include "Reply.hpp"
+#include <ctime>
 
 void	featuresTests(void)
 {
-	Client c("nick1", false);
-	std::cout << c.getNickname() << std::endl;
-	std::cout << c.isOperator() << std::endl;
+/*	Client *c = new Client("nick1", false);
+	std::cout << c->getNickname() << std::endl;
 
 	Server server = Server(4, 4);
 	server.addClient(c);
 
 	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
 
-	Client d("nick2", false);
+	Client *d = new Client("nick2", false);
 
 	server.addClient(d);
 	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
@@ -34,6 +35,9 @@ void	featuresTests(void)
 	server.joinUserToChannel("channelname", c);
 	server.removeClient(d);
 
+	delete d;
+	delete c;
+	*/
 //	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
 //	server.addClient(d);
 }
@@ -46,11 +50,14 @@ int main(void) {
 	struct pollfd fds[200];
 	int	nfds = 1;
 	int current_size;
+	Reply reply("127.0.0.1");
+	Server server(5, 5);
 
+	srand (time(NULL));
 	//
 	//testing new objects
 	//
-	featuresTests();
+	//featuresTests();
 
 	current_size = 0;
 	socketfd = -1;
@@ -160,16 +167,15 @@ int main(void) {
 					fds[nfds].fd = connectfd;
 					fds[nfds].events = POLLIN;
 					nfds++;
-	    	    	std::string serv_msg = ":127.0.0.1 001 albgarci :Welcome!!\n";
-	    	  		send(connectfd, serv_msg.c_str(), serv_msg.size() + 1, 0);
+
+					Client *client = new Client(connectfd);
+	    	  	//	send(connectfd, reply.welcome(*client).c_str(), reply.welcome(*client).size() + 1, 0);
+					server.addClient(client);
 				} while (connectfd != -1);
 			}
 			else
 			{
-				std::cout << "Descriptor " << fds[i].fd << " is readeable" << std::endl;
-
 	    	    msg = "";
-
 	    	    while (true) {
 	    	    	readlen = recv(fds[i].fd, buff, sizeof(buff), 0);
 	    	       // readlen = recv(connectfd, buff, sizeof(buff), 0);
@@ -192,7 +198,10 @@ int main(void) {
 	    	            break;
 	    	        }
 					std::cout << readlen << " bytes received" << std::endl;	
-	    	       	std::cout << msg << ' ' << readlen << std::endl;
+	    	       	std::cout << msg << std::endl;
+					server.handleMessage(msg, fds[i].fd);
+
+				//	rc = send(fds[i].fd, reply.ping().c_str(), reply.ping().size(), 0);
 				//	rc = send(fds[i].fd, buff, len, 0);
 	    	        memset(buff, 0, sizeof(buff));
 					if (rc < 0)

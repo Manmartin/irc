@@ -6,7 +6,8 @@
 # include "Channel.hpp"
 # include <list>
 # include <string>
-
+# include <iostream>
+# include <string.h>
 
 class Server {
 
@@ -18,18 +19,20 @@ class Server {
 		int		getActiveClients(void) const;
 		int		getMaxChannels(void) const;
 		int		getActiveChannels(void) const;
-		void	addClient(Client const &c);
-		void	removeClient(Client const &c);
+		void	addClient(Client* c);
+		void	removeClient(Client *c);
 		bool	usedNick(std::string nickname) const;
-		void	joinUserToChannel(std::string channelName, Client &c);
+		void	joinUserToChannel(std::string channelName, Client *c);
+		void	handleMessage(std::string message, int fd);
+		void	parseMessage(std::string message, int fd);
 
+		Client&	lookClientByFd(int fd);
 	private:
 		Server(void);
 
 	//	struct pollfd	*fds;
-		std::list<Client> clients;
+		std::list<Client*> clients;
 		std::list<Channel*> channels;
-	//	Channels		*channels;
 		int				_maxClients;
 		int				_activeClients;
 		int				_maxChannels;
