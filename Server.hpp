@@ -4,6 +4,7 @@
 # include <sys/poll.h>
 # include "Client.hpp"
 # include "Channel.hpp"
+# include "Reply.hpp"
 # include <list>
 # include <string>
 # include <iostream>
@@ -24,7 +25,8 @@ class Server {
 		bool	usedNick(std::string nickname) const;
 		void	joinUserToChannel(std::string channelName, Client *c);
 		void	handleMessage(std::string message, int fd);
-		void	parseMessage(std::string message, int fd);
+		void	parseMessage(std::string message, Client &c);
+		void	execInstruction(std::string key, std::string value, Client &c);
 
 		Client&	lookClientByFd(int fd);
 	private:

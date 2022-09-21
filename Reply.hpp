@@ -3,6 +3,7 @@
 
 # include <string>
 # include "Client.hpp"
+# include <sys/socket.h>
 
 class Reply{
 
@@ -16,6 +17,7 @@ class Reply{
 		std::string welcome(Client const &c);
 		//std::string ping(Client const &c);
 		std::string ping(void);
+		std::string pong(std::string value);
 	private:
 		std::string	_server;
 

@@ -18,7 +18,7 @@ Client::Client(void)
 
 Client::~Client(void)
 {
-	std::cout << "Destroyed client" << std::endl;
+//	std::cout << "Destroyed client" << std::endl;
 }
 
 Client& Client::operator=(Client const &c)

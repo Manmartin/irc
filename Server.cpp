@@ -107,14 +107,15 @@ void	Server::handleMessage(std::string message, int fd)
 	while ((position = message.find("\r\n")) != std::string::npos)
 	{
 		instruction = message.substr(0, position);
-		std::cout << fd << ": " << instruction << std::endl;
-		parseMessage(instruction, fd);
+//		std::cout << fd << ": " << instruction << std::endl;
+		parseMessage(instruction, c);
+		//execInstruction(instruction, c);
 		message.erase(0, position + 2);
 	}
 //	parseMessages(message, fd);
 }
 
-void	Server::parseMessage(std::string instruction, int fd)
+void	Server::parseMessage(std::string instruction, Client &c)
 {
 	std::string key;
 	std::string value;
@@ -123,7 +124,32 @@ void	Server::parseMessage(std::string instruction, int fd)
 	position = instruction.find(' ');
 	key = instruction.substr(0, position);
 	value = instruction.substr(position + 1, 100);
-	std::cout << fd << ": key: " << key << ", value: " << value << std::endl;	
+	execInstruction(key, value, c);
+
+}
+
+void	Server::execInstruction(std::string key, std::string value, Client &c)
+{
+	Reply reply("127.0.0.1");
+
+	std::cout << ": key: " << key << ", value: " << value << std::endl;	
+	if (key.compare("PING") == 0)
+	{
+		send(c.getFd(), reply.pong(value).c_str(), sizeof(reply.pong(value)), 0);
+		std::cout << "PONG" << std::endl;
+	}
+	else if (key.compare("NICK") == 0)
+	{
+		c.setNick(value);
+		send(c.getFd(), reply.welcome(c).c_str(), reply.welcome(c).size(), 0);
+	}
+	else if (key.compare("QUIT") == 0)
+	{
+		std::cout << "QUIT" << std::endl;
+	}
+	else
+		std::cout << "Other :" << key << ": " << value << std::endl;
+	
 }
 
 Client&	Server::lookClientByFd(int fd)

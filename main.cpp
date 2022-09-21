@@ -197,8 +197,8 @@ int main(void) {
 	    	            close(connectfd);
 	    	            break;
 	    	        }
-					std::cout << readlen << " bytes received" << std::endl;	
-	    	       	std::cout << msg << std::endl;
+//					std::cout << readlen << " bytes received" << std::endl;	
+//	    	       	std::cout << msg << std::endl;
 					server.handleMessage(msg, fds[i].fd);
 
 				//	rc = send(fds[i].fd, reply.ping().c_str(), reply.ping().size(), 0);

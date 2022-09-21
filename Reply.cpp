@@ -35,3 +35,14 @@ std::string Reply::ping(void)
 	message = ":" + this->_server + " PING nickname\n";
 	return (message);
 }
+
+
+std::string Reply::pong(std::string value)
+{
+	std::string message;
+
+	message = "PONG " + value;
+	return (message);
+
+}
+
