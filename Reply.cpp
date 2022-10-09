@@ -29,6 +29,16 @@ std::string Reply::welcome(Client const &c)
 	return (message);
 }
 
+std::string	Reply::nickChanged(Client &c, std::string oldNick)
+{
+	std::string message;
+
+	message = ":" + oldNick + "!" + oldNick + "@" + this->_server + " NICK " + c.getNickname() + "\r\n";
+	//message = "NICK " + c.getNickname();
+	oldNick += "";
+	return (message);
+}
+
 std::string Reply::ping(void)
 {
 	std::string	message;

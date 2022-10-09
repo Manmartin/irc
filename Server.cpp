@@ -96,7 +96,9 @@ void	Server::joinUserToChannel(std::string channelName, Client *c)
 
 void	Server::handleMessage(std::string message, int fd)
 {
-	std::cout << "\033[1;34mMessage from " << fd << ":\n" << message << "\033[0m"<< std::endl;
+	std::cout << "\033[1;34mMessage from " << fd << "(" << 
+		lookClientByFd(fd).getNickname() << ")"
+		<< ":\n" << message << "\033[0m"<< std::endl;
 	std::string instruction;
 	size_t	position;
 
@@ -137,7 +139,12 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		{
 			c.setNick(value);
 			sendReply(c, reply.welcome(c));
-			std::cout << "Assigned nick: " << c.getNickname() << std::endl;
+		}
+		else
+		{
+			std::string oldNick = c.getNickname();
+			c.setNick(value);
+			sendReply(c, reply.nickChanged(c, oldNick));
 		}
 	}
 	else if (key.compare("QUIT") == 0)
