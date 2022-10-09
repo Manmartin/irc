@@ -46,7 +46,7 @@ int main(void) {
     int socketfd;
 	int rc;
 	int	on;
-    char buff[64];
+    char buff[252];
 	struct pollfd fds[200];
 	int	nfds = 1;
 	int current_size;
@@ -175,8 +175,13 @@ int main(void) {
 			}
 			else
 			{
-	    	    msg = "";
+	    	    std::string msg = "";
+	    	    memset(buff, 0, sizeof(buff));
+
+
+				// int j = 0;
 	    	    while (true) {
+
 	    	    	readlen = recv(fds[i].fd, buff, sizeof(buff), 0);
 	    	       // readlen = recv(connectfd, buff, sizeof(buff), 0);
 	    	        msg = msg + buff;
@@ -199,7 +204,8 @@ int main(void) {
 	    	        }
 //					std::cout << readlen << " bytes received" << std::endl;	
 //	    	       	std::cout << msg << std::endl;
-					server.handleMessage(msg, fds[i].fd);
+					// std::cout << msg.length() << "    "<< j << std::endl;
+					// server.handleMessage(msg, fds[i].fd);
 
 				//	rc = send(fds[i].fd, reply.ping().c_str(), reply.ping().size(), 0);
 				//	rc = send(fds[i].fd, buff, len, 0);
@@ -211,6 +217,8 @@ int main(void) {
 					}
 	    	       // std::cout << "Bucle\n";
 				}
+					server.handleMessage(msg, fds[i].fd);
+
 			}
         }
     }

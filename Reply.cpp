@@ -24,7 +24,7 @@ std::string Reply::welcome(Client const &c)
 {
 	std::string	message;
 
-	message = ":" + this->_server + " 001 " + c.getNickname() + " :Welcome!!\n";
+	message = ":" + this->_server + " 001 " + c.getNickname() + " :Welcome!!\r\n";
 	return (message);
 }
 
@@ -32,7 +32,7 @@ std::string Reply::ping(void)
 {
 	std::string	message;
 
-	message = ":" + this->_server + " PING nickname\n";
+	message = ":" + this->_server + " PING nickname\r\n";
 	return (message);
 }
 

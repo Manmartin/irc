@@ -98,7 +98,7 @@ void	Server::joinUserToChannel(std::string channelName, Client *c)
 
 void	Server::handleMessage(std::string message, int fd)
 {
-	std::cout << "Message received from " << fd << ": " << message << std::endl;
+	std::cout << "\033[1;34mMessage from " << fd << ":\n" << message << "\033[0m"<< std::endl;
 	std::string instruction;
 	size_t	position;
 	Client c = lookClientByFd(fd);
@@ -132,15 +132,16 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 {
 	Reply reply("127.0.0.1");
 
-	std::cout << ": key: " << key << ", value: " << value << std::endl;	
+	//std::cout << ": key: " << key << ", value: " << value << std::endl;	
 	if (key.compare("PING") == 0)
 	{
 		send(c.getFd(), reply.pong(value).c_str(), sizeof(reply.pong(value)), 0);
-		std::cout << "PONG" << std::endl;
+	//	std::cout << "PONG" << std::endl;
 	}
 	else if (key.compare("NICK") == 0)
 	{
 		c.setNick(value);
+		std::cout << "\033[1;31mServer reply->" << reply.welcome(c) << "\033[0m" << std::endl;
 		send(c.getFd(), reply.welcome(c).c_str(), reply.welcome(c).size(), 0);
 	}
 	else if (key.compare("QUIT") == 0)
@@ -148,7 +149,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		std::cout << "QUIT" << std::endl;
 	}
 	else
-		std::cout << "Other :" << key << ": " << value << std::endl;
+		;
+		//std::cout << "Other->" << key << ": " << value << std::endl;
 	
 }
 
@@ -161,7 +163,7 @@ Client&	Server::lookClientByFd(int fd)
 	{
 		if ((*it)->getFd() == fd)
 		{
-			std::cout << "found id " << fd << std::endl;
+			//std::cout << "found id " << fd << std::endl;
 			return (**it);
 		}
 		it++;
