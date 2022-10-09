@@ -2,15 +2,8 @@
 
 Client::Client(int fd) : _fd(fd)
 {
-
+	_nickname = "";
 }
-
-/*Client::Client(std::string const &nickname, int fd) : 
-	_nickname(nickname), _fd(fd)
-{
-
-}
-*/
 
 Client::Client(void)
 {
@@ -29,13 +22,6 @@ Client& Client::operator=(Client const &c)
 		this->_fd = c._fd;
 	}
 	return (*this);	
-}
-
-bool Client::operator<(Client const &c) const
-{
-	if (this->_nickname < c.getNickname())
-		return (true);
-	return (false);
 }
 
 Client::Client(Client const &c) : _nickname(c.getNickname()), _fd(c._fd) {}

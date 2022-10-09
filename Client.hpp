@@ -17,8 +17,6 @@ class Client{
 		std::string	getNickname(void) const;
 		int			getFd(void) const;
 
-		bool operator<(Client const &c) const; //don't delete this overload pls
-
 		class EmptyName : public std::exception
 		{
 			public:

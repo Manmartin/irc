@@ -20,6 +20,7 @@ Reply& Reply::operator=(Reply const &r)
 	return (*this);
 }
 
+//001
 std::string Reply::welcome(Client const &c)
 {
 	std::string	message;
@@ -46,3 +47,11 @@ std::string Reply::pong(std::string value)
 
 }
 
+//433
+std::string Reply::nickAlreadyInUse(std::string nick)
+{
+	std::string message;
+
+	message = ":" + this->_server + " 433 * " + nick + " :Nickname already in use\r\n";
+	return (message);
+}

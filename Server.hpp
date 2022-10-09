@@ -20,13 +20,17 @@ class Server {
 		int		getActiveClients(void) const;
 		int		getMaxChannels(void) const;
 		int		getActiveChannels(void) const;
+
 		void	addClient(Client* c);
 		void	removeClient(Client *c);
-		bool	usedNick(std::string nickname) const;
+
+		bool	usedNick(std::string nickname);
 		void	joinUserToChannel(std::string channelName, Client *c);
+
 		void	handleMessage(std::string message, int fd);
 		void	parseMessage(std::string message, Client &c);
 		void	execInstruction(std::string key, std::string value, Client &c);
+		void	sendReply(Client &c, std::string);
 
 		Client&	lookClientByFd(int fd);
 	private:

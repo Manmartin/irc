@@ -34,13 +34,13 @@ int	Server::getActiveChannels(void) const
 	return _activeChannels;
 }
 
-bool	Server::usedNick(std::string nickname) const
+bool	Server::usedNick(std::string nickname)
 {
-	std::list<Client*>::const_iterator it;
+	std::list<Client*>::iterator it;
 
 	for (it = this->clients.begin(); it != this->clients.end(); it++)
 	{
-		if ((*it)->getNickname() == nickname)
+		if ((*it)->getNickname().compare(nickname) == 0)
 			return (true);
 	}
 	return (false);
@@ -48,8 +48,6 @@ bool	Server::usedNick(std::string nickname) const
 
 void	Server::addClient(Client* c)
 {
-//	if (usedNick((*c).getNickname()))
-//		std::cerr << "nickname already in use" << std::endl;//TBI: throw error
 	if (this->_activeClients <= _maxClients - 1)
 	{
 		this->_activeClients++;
@@ -101,18 +99,14 @@ void	Server::handleMessage(std::string message, int fd)
 	std::cout << "\033[1;34mMessage from " << fd << ":\n" << message << "\033[0m"<< std::endl;
 	std::string instruction;
 	size_t	position;
-	Client c = lookClientByFd(fd);
 
 	position = 0;
 	while ((position = message.find("\r\n")) != std::string::npos)
 	{
 		instruction = message.substr(0, position);
-//		std::cout << fd << ": " << instruction << std::endl;
-		parseMessage(instruction, c);
-		//execInstruction(instruction, c);
+		parseMessage(instruction, lookClientByFd(fd));
 		message.erase(0, position + 2);
 	}
-//	parseMessages(message, fd);
 }
 
 void	Server::parseMessage(std::string instruction, Client &c)
@@ -134,15 +128,17 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 
 	//std::cout << ": key: " << key << ", value: " << value << std::endl;	
 	if (key.compare("PING") == 0)
-	{
-		send(c.getFd(), reply.pong(value).c_str(), sizeof(reply.pong(value)), 0);
-	//	std::cout << "PONG" << std::endl;
-	}
+		sendReply(c, reply.pong(value));	
 	else if (key.compare("NICK") == 0)
 	{
-		c.setNick(value);
-		std::cout << "\033[1;31mServer reply->" << reply.welcome(c) << "\033[0m" << std::endl;
-		send(c.getFd(), reply.welcome(c).c_str(), reply.welcome(c).size(), 0);
+		if (this->usedNick(value) == true)
+			sendReply(c, reply.nickAlreadyInUse(value));
+		else if (c.getNickname().compare("") == 0)
+		{
+			c.setNick(value);
+			sendReply(c, reply.welcome(c));
+			std::cout << "Assigned nick: " << c.getNickname() << std::endl;
+		}
 	}
 	else if (key.compare("QUIT") == 0)
 	{
@@ -152,6 +148,12 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		;
 		//std::cout << "Other->" << key << ": " << value << std::endl;
 	
+}
+
+void	Server::sendReply(Client &c, std::string msg)
+{
+	std::cout << "\033[1;31mServer reply->" << msg << "\033[0m" << std::endl;
+	send(c.getFd(), msg.c_str(), msg.size(), 0);
 }
 
 Client&	Server::lookClientByFd(int fd)

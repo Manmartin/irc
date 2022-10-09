@@ -18,6 +18,8 @@ class Reply{
 		//std::string ping(Client const &c);
 		std::string ping(void);
 		std::string pong(std::string value);
+		std::string nickAlreadyInUse(std::string nick);
+
 	private:
 		std::string	_server;
 
