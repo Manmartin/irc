@@ -4,7 +4,8 @@ Server::~Server(void)
 	std::cout << "Destroyed server" << std::endl;
 }
 
-Server::Server(int maxClients, int maxChannels) : _maxClients(maxClients), _maxChannels(maxChannels) {
+Server::Server(int maxClients, int maxChannels) : _maxClients(maxClients), _maxChannels(maxChannels) 
+{
 	this->_activeClients = 0;
 	this->_activeChannels = 0;
 	this->_serverAddress = "localhost";
@@ -33,6 +34,11 @@ int	Server::getMaxChannels(void) const
 int	Server::getActiveChannels(void) const
 {
 	return _activeChannels;
+}
+
+std::string	Server::getServerAddress(void) const
+{
+	return _serverAddress;
 }
 
 bool	Server::usedNick(std::string nickname)
@@ -150,7 +156,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	else if (key.compare("USER") == 0)
 	{
 		c.setUser(value.substr(0, value.find(" ")));
-		sendReply(c, reply.welcome(c));
+		reply.welcome(*this, c);
+//		sendReply(c, reply.welcome(c));
 		sendReply(c, "221 " + c.getNickname() + " +wi");
 	}
 	else if (key.compare("QUIT") == 0)

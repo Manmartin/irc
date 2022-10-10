@@ -16,10 +16,11 @@ class Server {
 		~Server();
 		Server(int maxClients, int maxChannels);
 
-		int		getMaxClients(void) const;
-		int		getActiveClients(void) const;
-		int		getMaxChannels(void) const;
-		int		getActiveChannels(void) const;
+		int			getMaxClients(void) const;
+		int			getActiveClients(void) const;
+		int			getMaxChannels(void) const;
+		int			getActiveChannels(void) const;
+		std::string	getServerAddress(void) const;
 
 		void	addClient(Client* c);
 		void	removeClient(Client *c);

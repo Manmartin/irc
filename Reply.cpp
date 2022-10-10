@@ -21,13 +21,21 @@ Reply& Reply::operator=(Reply const &r)
 }
 
 //001
-std::string Reply::welcome(Client const &c)
+void	Reply::welcome(Server &s, Client &c) 
+//std::string Reply::welcome(Client const &c)
 {
 	std::string	message;
 
 	message = "001 " + c.getNickname() + " :Welcome!!";
 	//message = ":" + this->_server + " 001 " + c.getNickname() + " :Welcome!!\r\n";
-	return (message);
+//	return (message);
+	
+	s.sendReply(c, "001 " + c.getNickname() + " :Welcome!!");
+	s.sendReply(c, "002 " + c.getNickname() + " :Your host is " + s.getServerAddress());
+	s.sendReply(c, "003 " + c.getNickname() + " :This server was created today");
+	s.sendReply(c, "004 " + c.getNickname() + " :irc42 beta aiwro Oovimnptkl");
+	s.sendReply(c, "375 : Message of the day");
+	s.sendReply(c, "376 : Have a nice day");
 }
 
 std::string	Reply::nickChanged(std::string newNick)
@@ -39,11 +47,11 @@ std::string	Reply::nickChanged(std::string newNick)
 	return (message);
 }
 
-std::string Reply::ping(void)
+std::string Reply::ping(std::string nick)
 {
 	std::string	message;
 
-	message = ":" + this->_server + " PING nickname\r\n";
+	message = "PING :" + nick + "\r\n";
 	return (message);
 }
 
@@ -62,6 +70,6 @@ std::string Reply::nickAlreadyInUse(std::string nick)
 {
 	std::string message;
 
-	message = ":" + this->_server + " 433 * " + nick + " :Nickname already in use\r\n";
+	message = "433 * " + nick + " :Nickname already in use\r\n";
 	return (message);
 }

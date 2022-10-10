@@ -3,8 +3,10 @@
 
 # include <string>
 # include "Client.hpp"
+# include "Server.hpp"
 # include <sys/socket.h>
 
+class Server;
 class Reply{
 
 	public:
@@ -14,9 +16,11 @@ class Reply{
 		Reply(Reply const &r);
 		Reply& operator=(Reply const &r);
 
-		std::string welcome(Client const &c);
+		//void	welcome(Client const &c);
+		void	welcome(Server &s, Client &c);
+		//void	welcome(void (Server::*sendReply)(Client &c, std::string) const, Client const &c);
 		std::string	nickChanged(std::string newNick);
-		std::string ping(void);
+		std::string ping(std::string nick);
 		std::string pong(std::string value);
 		std::string nickAlreadyInUse(std::string nick);
 
