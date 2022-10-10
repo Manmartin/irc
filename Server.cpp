@@ -82,23 +82,54 @@ void	Server::removeClient(Client *c)
 	}
 }
 
-void	Server::joinUserToChannel(std::string channelName, Client *c)
+Channel*	Server::findChannel(std::string channelName)
 {
 	std::list<Channel*>::iterator it;
 
 	it = this->channels.begin();
 	while (it != this->channels.end())
 	{
+		std::cout << "looking for channel" << std::endl;
 		if (channelName == (*it)->getName())
 		{
 			std::cout << "Channel exists" << std::endl;
-			(*it)->join(c);
-			return ;
+		//	(*it)->join(c);
+			std::cout << "found " << &(*it) << " with name " << (*it)->getName() << std::endl;
+			return (*it);
 		}
 		it++;
 	}
-	std::cout << "Create new channel and make Client the operator" << std::endl;
-	this->channels.push_back(new Channel(channelName));
+	return (NULL);
+}
+
+void	Server::joinUserToChannel(std::string channelName, Client *c)
+{
+	Channel* 	channel = findChannel(channelName);
+//	Client*		user = channel->findUser(c->getNickname());
+	if (channel)
+	{
+		channel->join(c);
+		printUsers(channel);
+		std::cout << "Number of users in channel: " << channel->getUsers().size()  << std::endl;
+	}
+	else
+	{
+		this->channels.push_back(new Channel(channelName));
+		channel = findChannel(channelName);
+		channel->join(c);
+		printUsers(channel);
+	}
+}
+
+void	Server::printUsers(Channel *channel)
+{
+	std::list<Client*>::iterator it;
+	std::list<Client*> users;
+
+	users = channel->getUsers();
+	std::cout << "--Users--" << std::endl;
+	for (it = users.begin(); it != users.end(); it++)
+		std::cout << (*it)->getNickname() << std::endl;
 }
 
 void	Server::handleMessage(std::string message, int fd)
@@ -135,7 +166,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 {
 	Reply reply("localhost");
 
-	//std::cout << ": key: " << key << ", value: " << value << std::endl;	
+	//std::cout << ": key: " << key << ", value: " << value << std::endl;
 	if (key.compare("PING") == 0)
 		sendReply(c, reply.pong(value));
 	else if (key.compare("NICK") == 0)
@@ -159,6 +190,10 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		reply.welcome(*this, c);
 //		sendReply(c, reply.welcome(c));
 		sendReply(c, "221 " + c.getNickname() + " +wi");
+	}
+	else if (key.compare("JOIN") == 0)
+	{
+		this->joinUserToChannel(value, &c);
 	}
 	else if (key.compare("QUIT") == 0)
 	{

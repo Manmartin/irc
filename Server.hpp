@@ -26,6 +26,7 @@ class Server {
 		void	removeClient(Client *c);
 
 		bool	usedNick(std::string nickname);
+		Channel*	findChannel(std::string channelName);
 		void	joinUserToChannel(std::string channelName, Client *c);
 
 		void	handleMessage(std::string message, int fd);
@@ -34,6 +35,8 @@ class Server {
 		void	sendReply(Client &c, std::string);
 
 		Client&	lookClientByFd(int fd);
+		void	printUsers(Channel *channel);
+
 	private:
 		Server(void);
 

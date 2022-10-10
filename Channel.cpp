@@ -30,10 +30,29 @@ Channel::Channel(Channel const &c)
 
 void	Channel::join(Client *client)
 {
-	users.push_back(client);	
+	this->users.push_back(client);
 }
 
 std::string	Channel::getName(void) const
 {
 	return (this->_name);
 }
+
+
+std::list<Client*> Channel::getUsers(void)
+{
+	return (this->users);
+}
+
+Client* Channel::findUser(std::string nick)
+{
+	std::list<Client*>::iterator it;
+
+	for (it = this->users.begin(); it != this->users.end(); it++)
+	{
+		if ((*it)->getNickname().compare(nick) == 0)
+			return (*it);
+	}
+	return (NULL);
+}
+
