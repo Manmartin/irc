@@ -31,6 +31,11 @@ std::string Client::getNickname(void) const
 	return (this->_nickname);
 }
 
+std::string Client::getUser(void) const
+{
+	return (this->_user);
+}
+
 int	Client::getFd(void) const
 {
 	return (this->_fd);
@@ -39,4 +44,9 @@ int	Client::getFd(void) const
 void	Client::setNick(std::string nickname)
 {
 	this->_nickname = nickname;	
+}
+
+void	Client::setUser(std::string user)
+{
+	this->_user = user;	
 }

@@ -50,7 +50,7 @@ int main(void) {
 	struct pollfd fds[200];
 	int	nfds = 1;
 	int current_size;
-	Reply reply("127.0.0.1");
+	Reply reply("localhost");
 	Server server(5, 5);
 
 	srand (time(NULL));

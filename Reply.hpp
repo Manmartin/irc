@@ -15,7 +15,7 @@ class Reply{
 		Reply& operator=(Reply const &r);
 
 		std::string welcome(Client const &c);
-		std::string	nickChanged(Client &c, std::string oldNick);
+		std::string	nickChanged(std::string newNick);
 		std::string ping(void);
 		std::string pong(std::string value);
 		std::string nickAlreadyInUse(std::string nick);

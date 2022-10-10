@@ -7,6 +7,7 @@ Server::~Server(void)
 Server::Server(int maxClients, int maxChannels) : _maxClients(maxClients), _maxChannels(maxChannels) {
 	this->_activeClients = 0;
 	this->_activeChannels = 0;
+	this->_serverAddress = "localhost";
 }
 
 Server::Server(void)
@@ -126,11 +127,11 @@ void	Server::parseMessage(std::string instruction, Client &c)
 
 void	Server::execInstruction(std::string key, std::string value, Client &c)
 {
-	Reply reply("127.0.0.1");
+	Reply reply("localhost");
 
 	//std::cout << ": key: " << key << ", value: " << value << std::endl;	
 	if (key.compare("PING") == 0)
-		sendReply(c, reply.pong(value));	
+		sendReply(c, reply.pong(value));
 	else if (key.compare("NICK") == 0)
 	{
 		if (this->usedNick(value) == true)
@@ -138,14 +139,19 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		else if (c.getNickname().compare("") == 0)
 		{
 			c.setNick(value);
-			sendReply(c, reply.welcome(c));
+			//sendReply(c, reply.welcome(c));
 		}
 		else
 		{
-			std::string oldNick = c.getNickname();
+			sendReply(c, reply.nickChanged(value));
 			c.setNick(value);
-			sendReply(c, reply.nickChanged(c, oldNick));
 		}
+	}
+	else if (key.compare("USER") == 0)
+	{
+		c.setUser(value.substr(0, value.find(" ")));
+		sendReply(c, reply.welcome(c));
+		sendReply(c, "221 " + c.getNickname() + " +wi");
 	}
 	else if (key.compare("QUIT") == 0)
 	{
@@ -159,8 +165,11 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 
 void	Server::sendReply(Client &c, std::string msg)
 {
-	std::cout << "\033[1;31mServer reply->" << msg << "\033[0m" << std::endl;
-	send(c.getFd(), msg.c_str(), msg.size(), 0);
+	std::string	payload;
+
+	payload = ":" + c.getNickname() + "!" + c.getUser() + "@" + this->_serverAddress + " " + msg + "\r\n";
+	send(c.getFd(), payload.c_str(), payload.size(), 0);
+	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
 
 Client&	Server::lookClientByFd(int fd)

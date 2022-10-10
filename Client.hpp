@@ -14,8 +14,11 @@ class Client{
 //		Client(std::string const &nickname, int fd);
 
 		void		setNick(std::string nickname);
+		void		setUser(std::string user);
 		std::string	getNickname(void) const;
+		std::string getUser(void) const;
 		int			getFd(void) const;
+
 
 		class EmptyName : public std::exception
 		{
@@ -28,6 +31,7 @@ class Client{
 	private:
 		Client(void);
 		std::string	_nickname;
+		std::string	_user;
 		int			_fd;	
 };
 

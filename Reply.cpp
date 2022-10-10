@@ -25,17 +25,17 @@ std::string Reply::welcome(Client const &c)
 {
 	std::string	message;
 
-	message = ":" + this->_server + " 001 " + c.getNickname() + " :Welcome!!\r\n";
+	message = "001 " + c.getNickname() + " :Welcome!!";
+	//message = ":" + this->_server + " 001 " + c.getNickname() + " :Welcome!!\r\n";
 	return (message);
 }
 
-std::string	Reply::nickChanged(Client &c, std::string oldNick)
+std::string	Reply::nickChanged(std::string newNick)
 {
 	std::string message;
 
-	message = ":" + oldNick + "!" + oldNick + "@" + this->_server + " NICK " + c.getNickname() + "\r\n";
+	message = "NICK :" + newNick;
 	//message = "NICK " + c.getNickname();
-	oldNick += "";
 	return (message);
 }
 
@@ -52,7 +52,7 @@ std::string Reply::pong(std::string value)
 {
 	std::string message;
 
-	message = "PONG " + value;
+	message = "PONG :" + value;
 	return (message);
 
 }

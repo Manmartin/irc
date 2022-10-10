@@ -43,6 +43,7 @@ class Server {
 		int				_activeClients;
 		int				_maxChannels;
 		int				_activeChannels;
+		std::string		_serverAddress;
 };
 
 #endif
