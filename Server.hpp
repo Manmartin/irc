@@ -33,7 +33,7 @@ class Server {
 		void	parseMessage(std::string message, Client &c);
 		void	execInstruction(std::string key, std::string value, Client &c);
 		void	sendReply(Client &c, std::string);
-
+//JOIN.cpp
 		void	messageToChannel(std::string channel, Client &sender);
 		void	privMsg(std::string value, Client &c);
 
