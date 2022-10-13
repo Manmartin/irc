@@ -36,6 +36,7 @@ void	Reply::welcome(Server &s, Client &c)
 	s.sendReply(c, "004 " + c.getNickname() + " :irc42 beta aiwro Oovimnptkl");
 	s.sendReply(c, "375 : Message of the day");
 	s.sendReply(c, "376 : Have a nice day");
+	s.sendReply(c, "221 " + c.getNickname() + " +wi");
 }
 
 std::string	Reply::nickChanged(std::string newNick)

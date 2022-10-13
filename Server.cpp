@@ -166,17 +166,18 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 {
 	Reply reply("localhost");
 
-	//std::cout << ": key: " << key << ", value: " << value << std::endl;
 	if (key.compare("PING") == 0)
 		sendReply(c, reply.pong(value));
 	else if (key.compare("NICK") == 0)
 	{
 		if (this->usedNick(value) == true)
 			sendReply(c, reply.nickAlreadyInUse(value));
-		else if (c.getNickname().compare("") == 0)
+		else if (c.getNickname().compare("") == 0 && c.getUser().compare("") == 0)
+			c.setNick(value);
+		else if (c.getUser().length() > 0)
 		{
 			c.setNick(value);
-			//sendReply(c, reply.welcome(c));
+			reply.welcome(*this, c);
 		}
 		else
 		{
@@ -188,21 +189,13 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	{
 		c.setUser(value.substr(0, value.find(" ")));
 		reply.welcome(*this, c);
-//		sendReply(c, reply.welcome(c));
-		sendReply(c, "221 " + c.getNickname() + " +wi");
 	}
 	else if (key.compare("JOIN") == 0)
-	{
 		this->joinUserToChannel(value, &c);
-	}
 	else if (key.compare("QUIT") == 0)
-	{
 		std::cout << "QUIT" << std::endl;
-	}
 	else
 		;
-		//std::cout << "Other->" << key << ": " << value << std::endl;
-	
 }
 
 void	Server::sendReply(Client &c, std::string msg)
