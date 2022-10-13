@@ -56,3 +56,13 @@ Client* Channel::findUser(std::string nick)
 	return (NULL);
 }
 
+std::string	Channel::getUsersAsString(void)
+{
+	std::list<Client*>::iterator 	it;
+	std::string						users = "";
+
+	for (it = this->users.begin(); it != this->users.end(); it++)
+		users += (*it)->getNickname() + " ";
+	return (users);
+}
+

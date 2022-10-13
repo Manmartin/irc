@@ -34,6 +34,9 @@ class Server {
 		void	execInstruction(std::string key, std::string value, Client &c);
 		void	sendReply(Client &c, std::string);
 
+		void	messageToChannel(std::string channel, Client &sender);
+		void	privMsg(std::string value, Client &c);
+
 		Client&	lookClientByFd(int fd);
 		void	printUsers(Channel *channel);
 

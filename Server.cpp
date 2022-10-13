@@ -105,21 +105,28 @@ Channel*	Server::findChannel(std::string channelName)
 void	Server::joinUserToChannel(std::string channelName, Client *c)
 {
 	Channel* 	channel = findChannel(channelName);
-//	Client*		user = channel->findUser(c->getNickname());
-	if (channel)
-	{
-		channel->join(c);
-		printUsers(channel);
-		std::cout << "Number of users in channel: " << channel->getUsers().size()  << std::endl;
-	}
-	else
+	
+	if (!channel)
 	{
 		this->channels.push_back(new Channel(channelName));
 		channel = findChannel(channelName);
-		channel->join(c);
-		printUsers(channel);
 	}
+	channel->join(c);
+	printUsers(channel);
+	std::cout << "Number of users in channel: " << channel->getUsers().size()  << std::endl;
+	std::string msg;
+
+	sendReply(*c, "332 albgarci #pepe :No topic is set");
+	sendReply(*c, "353 albgarci = #pepe :" + channel->getUsersAsString());
+	sendReply(*c, "366 albgarci #pepe :End of names");
+	//	msg = ":albgarci PRIVMSG #pepe :Hola\r\n";
+	//	send(4, msg.c_str(), msg.size(), 0);
+//	std::cout << "\033[1;31mServer reply->" << msg << "\033[0m" << std::endl;
+	//	send(5, msg.c_str(), msg.size(), 0);
 }
+
+//void	Server::
+
 
 void	Server::printUsers(Channel *channel)
 {
@@ -194,9 +201,28 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		this->joinUserToChannel(value, &c);
 	else if (key.compare("QUIT") == 0)
 		std::cout << "QUIT" << std::endl;
+	else if (key.compare("PRIVMSG") == 0)
+	{
+		
+	}
 	else
 		;
 }
+/*
+void	Server::privMsg(std::string value, Client &c)
+{
+	
+
+}
+
+
+void	Server::messageToChannel(std::string channel, Client &sender)
+{
+	Channel *c = findChannel(channel);
+	
+
+}
+*/
 
 void	Server::sendReply(Client &c, std::string msg)
 {

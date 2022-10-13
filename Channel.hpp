@@ -16,6 +16,7 @@ class Channel {
 		void	join(Client *client);
 		std::list<Client*> getUsers(void);
 		Client* findUser(std::string nick);
+		std::string	getUsersAsString(void);
 
 	private:
 		Channel(void);
