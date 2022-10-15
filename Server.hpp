@@ -27,7 +27,7 @@ class Server {
 
 		bool	usedNick(std::string nickname);
 		Channel*	findChannel(std::string channelName);
-		void	joinUserToChannel(std::string channelName, Client *c);
+		void	joinUserToChannels(std::string channelName, Client *c);
 
 		void	handleMessage(std::string message, int fd);
 		void	parseMessage(std::string message, Client &c);

@@ -71,3 +71,10 @@ Client*	Channel::getOperator(void)
 {
 	return (_channelOperator);
 }
+
+bool	Channel::isChannelOperator(Client* c)
+{
+	if (c != _channelOperator)	
+		return (false);
+	return (true);
+}

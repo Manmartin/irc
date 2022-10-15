@@ -102,25 +102,39 @@ Channel*	Server::findChannel(std::string channelName)
 	return (NULL);
 }
 
-void	Server::joinUserToChannel(std::string channelName, Client *c)
+void	Server::joinUserToChannels(std::string channels, Client *c)
 {
-	Channel* 	channel = findChannel(channelName);
-	
-	if (!channel)
+	std::list<std::string>::iterator	it;	
+	size_t								pos_start;
+	size_t								pos_end;
+	Channel*							channel;
+	std::string							channelName;
+
+	pos_start = 0;
+	pos_end = 0;
+	while (pos_end != std::string::npos)
 	{
-		this->channels.push_back(new Channel(channelName, c));
+		pos_end = channels.find(",", pos_start);
+		if (pos_end == std::string::npos)
+			channelName = channels.substr(pos_start, channels.size() - pos_start);
+		else
+			channelName = channels.substr(pos_start, pos_end - pos_start);
 		channel = findChannel(channelName);
+		if (!channel)
+		{
+			this->channels.push_back(new Channel(channelName, c));
+			channel = findChannel(channelName);
+		}
+		else
+			channel->join(c);
+		sendReply(*c, "332 albgarci " + channelName + " :No topic is set");
+		sendReply(*c, "353 albgarci = " + channelName + " :" + channel->getUsersAsString());
+		sendReply(*c, "366 albgarci " + channelName + " :End of names");
+		std::cout << pos_start << " " << pos_end << std::endl;
+		pos_start = pos_end + 1;
+		std::cout << "channels: " + channels << std::endl;
 	}
-	else
-		channel->join(c);
-	printUsers(channel);
-//	std::cout << "Number of users in channel: " << channel->getUsers().size()  << std::endl;
-
-	sendReply(*c, "332 albgarci " + channelName + " :No topic is set");
-	sendReply(*c, "353 albgarci = " + channelName + " :" + channel->getUsersAsString());
-	sendReply(*c, "366 albgarci " + channelName + " :End of names");
 }
-
 
 void	Server::printUsers(Channel *channel)
 {
@@ -192,7 +206,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		reply.welcome(*this, c);
 	}
 	else if (key.compare("JOIN") == 0)
-		this->joinUserToChannel(value, &c);
+		this->joinUserToChannels(value, &c);
 	else if (key.compare("QUIT") == 0)
 		std::cout << "QUIT" << std::endl;
 	else if (key.compare("PRIVMSG") == 0)

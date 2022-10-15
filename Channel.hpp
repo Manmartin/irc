@@ -18,6 +18,7 @@ class Channel {
 		Client* findUser(std::string nick);
 		std::string	getUsersAsString(void);
 		Client*	getOperator(void);
+		bool	isChannelOperator(Client* c);
 
 	private:
 		Channel(void);
