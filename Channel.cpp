@@ -4,7 +4,7 @@ Channel::Channel(void)
 {
 }
 
-Channel::Channel(std::string name) : _name(name)
+Channel::Channel(std::string name, Client* channelOperator) : _name(name), _channelOperator(channelOperator)
 {
 	memset(_message, 0, 2048);
 }
@@ -61,8 +61,13 @@ std::string	Channel::getUsersAsString(void)
 	std::list<Client*>::iterator 	it;
 	std::string						users = "";
 
+	users += "@" + this->_channelOperator->getNickname() + " ";
 	for (it = this->users.begin(); it != this->users.end(); it++)
 		users += (*it)->getNickname() + " ";
 	return (users);
 }
 
+Client*	Channel::getOperator(void)
+{
+	return (_channelOperator);
+}

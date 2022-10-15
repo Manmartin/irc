@@ -1,7 +1,7 @@
 NAME = ircserv
 
 CXX = clang++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 
 INC = -I .
 
 SRCS = main.cpp Client.cpp Server.cpp Channel.cpp Reply.cpp
@@ -15,6 +15,8 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INC) $(OBJS) -o $@
 
+debug: $(OBJS)
+	$(CXX) $(CXXFLAGS) -g3 -fsanitize=address $(INC) $(OBJS) -o $@
 
 clean:
 	rm -rf $(OBJS)

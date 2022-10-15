@@ -108,21 +108,17 @@ void	Server::joinUserToChannel(std::string channelName, Client *c)
 	
 	if (!channel)
 	{
-		this->channels.push_back(new Channel(channelName));
+		this->channels.push_back(new Channel(channelName, c));
 		channel = findChannel(channelName);
 	}
-	channel->join(c);
+	else
+		channel->join(c);
 	printUsers(channel);
-	std::cout << "Number of users in channel: " << channel->getUsers().size()  << std::endl;
-//	std::string msg;
+//	std::cout << "Number of users in channel: " << channel->getUsers().size()  << std::endl;
 
-	sendReply(*c, "332 albgarci #pepe :No topic is set");
-	sendReply(*c, "353 albgarci = #pepe :" + channel->getUsersAsString());
-	sendReply(*c, "366 albgarci #pepe :End of names");
-	//	msg = ":albgarci PRIVMSG #pepe :Hola\r\n";
-	//	send(4, msg.c_str(), msg.size(), 0);
-//	std::cout << "\033[1;31mServer reply->" << msg << "\033[0m" << std::endl;
-	//	send(5, msg.c_str(), msg.size(), 0);
+	sendReply(*c, "332 albgarci " + channelName + " :No topic is set");
+	sendReply(*c, "353 albgarci = " + channelName + " :" + channel->getUsersAsString());
+	sendReply(*c, "366 albgarci " + channelName + " :End of names");
 }
 
 
@@ -209,40 +205,32 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 
 void	Server::privMsg(std::string value, Client &c)
 {
-	std::string	msg;
+	std::string						msg;
 	std::list<Client*> 				users;
 	std::list<Client*>::iterator	it;
-	std::string						channel;
+	std::string						channelName;
 	std::string						message;
 	size_t							position;
+	Channel*						channel;
 
 	position = 0;
 	position = value.find(" ");
-	channel = value.substr(0, position);
+	channelName = value.substr(0, position);
+	channel = findChannel(channelName);
 //	message = value.substr(position + 1, value.size() - position - 1);
-
-	std::cout << channel << std::endl;
-	std::cout << value << std::endl;
-	users = findChannel(channel)->getUsers();
-	message = "";
-
+//	std::cout << channel << std::endl;
+//	std::cout << value << std::endl;
+	users = channel->getUsers();
+	message = ":" + c.getNickname() + " PRIVMSG " + value + "\r\n";
 	for (it = users.begin(); it != users.end(); it++)
 	{
-		message = ":" + c.getNickname() + " PRIVMSG " + value + "\r\n";
 		if (c.getFd() != (*it)->getFd())
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
 		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 	}
+	if (c.getFd() != channel->getOperator()->getFd())
+		send(channel->getOperator()->getFd(), message.c_str(), message.size(), 0); 
 }
-
-/*
-void	Server::messageToChannel(std::string channel, Client &sender)
-{
-	Channel *c = findChannel(channel);
-	
-
-}
-*/
 
 void	Server::sendReply(Client &c, std::string msg)
 {

@@ -29,7 +29,7 @@ void	Reply::welcome(Server &s, Client &c)
 	message = "001 " + c.getNickname() + " :Welcome!!";
 	//message = ":" + this->_server + " 001 " + c.getNickname() + " :Welcome!!\r\n";
 //	return (message);
-	
+
 	s.sendReply(c, "001 " + c.getNickname() + " :Welcome!!");
 	s.sendReply(c, "002 " + c.getNickname() + " :Your host is " + s.getServerAddress());
 	s.sendReply(c, "003 " + c.getNickname() + " :This server was created today");
