@@ -207,6 +207,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	}
 	else if (key.compare("JOIN") == 0)
 		this->joinUserToChannels(value, &c);
+	else if (key.compare("KICK") == 0)
+		this->kick(value, c);
 	else if (key.compare("QUIT") == 0)
 		std::cout << "QUIT" << std::endl;
 	else if (key.compare("PRIVMSG") == 0)
@@ -231,9 +233,6 @@ void	Server::privMsg(std::string value, Client &c)
 	position = value.find(" ");
 	channelName = value.substr(0, position);
 	channel = findChannel(channelName);
-//	message = value.substr(position + 1, value.size() - position - 1);
-//	std::cout << channel << std::endl;
-//	std::cout << value << std::endl;
 	users = channel->getUsers();
 	message = ":" + c.getNickname() + " PRIVMSG " + value + "\r\n";
 	for (it = users.begin(); it != users.end(); it++)
@@ -272,3 +271,50 @@ Client&	Server::lookClientByFd(int fd)
 	return (**it);
 }
 
+void	Server::kick(std::string kickInstruction, Client &c)
+{
+	size_t							pos;
+	size_t							pos2;
+	std::string						channelName;
+	std::string						userName;
+	std::string						kickMessage;
+	std::string						msg;
+	Channel*						channel;
+	std::list<Client*>				users;
+	std::list<Client*>::iterator	it;
+
+	pos = 0;
+	pos2 = 0;
+	kickMessage = "";
+
+	pos = kickInstruction.find(" ");
+	channelName = kickInstruction.substr(0, pos);
+	channel = findChannel(channelName);	
+	if (!channel)
+	{
+		std::cout << "channel not found" << std::endl;
+		sendReply(c, "403 " + channelName + " :Channel not exists\r\n");
+		return ;
+	}
+	if (!(channel->isChannelOperator(&c)))
+	{
+		sendReply(c, "482 " + channelName + " :Only operators can kick a user\r\n");
+		return ;
+	}
+	pos2 = kickInstruction.find(" ", pos + 1);
+	userName = kickInstruction.substr(pos + 1, pos2 - pos - 1);
+	kickMessage += kickInstruction.substr(pos2 + 1, kickInstruction.size() - pos2);
+	users = channel->getUsers();
+	msg = ":" + c.getNickname() + " KICK " + kickInstruction + "\r\n";
+	for (it = users.begin(); it != users.end(); it++)
+	{
+		if (c.getFd() != (*it)->getFd())
+			send((*it)->getFd(), msg.c_str(), msg.size(), 0); 
+		std::cout << "\033[1;31mServer reply->" << msg << "\033[0m" << std::endl;
+	}
+	send(channel->getOperator()->getFd(), msg.c_str(), msg.size(), 0); 
+	if (!channel->isUserInChannel(userName))
+		sendReply(c, "441 " + userName + " " + channelName + " :User not in channel");
+	else
+		channel->kick(userName);
+}

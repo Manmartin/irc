@@ -37,6 +37,8 @@ class Server {
 		void	messageToChannel(std::string channel, Client &sender);
 		void	privMsg(std::string value, Client &c);
 
+		void	kick(std::string kickInstruction, Client &c);
+
 		Client&	lookClientByFd(int fd);
 		void	printUsers(Channel *channel);
 

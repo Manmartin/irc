@@ -13,12 +13,16 @@ class Channel {
 		Channel(Channel const &c);
 
 		std::string	getName(void) const;
-		void	join(Client *client);
 		std::list<Client*> getUsers(void);
 		Client* findUser(std::string nick);
-		std::string	getUsersAsString(void);
 		Client*	getOperator(void);
+
+		void	join(Client *client);
+		void	kick(std::string nickName);
+		std::string	getUsersAsString(void);
+
 		bool	isChannelOperator(Client* c);
+		bool	isUserInChannel(std::string nickName);
 
 	private:
 		Channel(void);
