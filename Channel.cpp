@@ -4,9 +4,10 @@ Channel::Channel(void)
 {
 }
 
-Channel::Channel(std::string name, Client* channelOperator) : _name(name), _channelOperator(channelOperator), _topic("")
+Channel::Channel(std::string name, Client* channelOperator) : _name(name), _topic("")
 {
 	memset(_message, 0, 2048);
+	_operators.push_back(channelOperator);
 }
 
 Channel::~Channel(void)
@@ -61,25 +62,38 @@ Client* Channel::findUser(std::string nick)
 	return (NULL);
 }
 
+Client* Channel::findOperator(std::string nick)
+{
+	std::list<Client*>::iterator it;
+
+	for (it = this->_operators.begin(); it != this->_operators.end(); it++)
+	{
+		if ((*it)->getNickname().compare(nick) == 0)
+			return (*it);
+	}
+	return (NULL);
+}
+
 std::string	Channel::getUsersAsString(void)
 {
 	std::list<Client*>::iterator 	it;
 	std::string						users = "";
 
-	users += "@" + this->_channelOperator->getNickname() + " ";
+	for (it = this->_operators.begin(); it != this->_operators.end(); it++)
+		users += "@" + (*it)->getNickname() + " ";
 	for (it = this->users.begin(); it != this->users.end(); it++)
 		users += (*it)->getNickname() + " ";
 	return (users);
 }
 
-Client*	Channel::getOperator(void)
+/*Client*	Channel::getOperator(std::string nick)
 {
 	return (_channelOperator);
-}
+}*/
 
 bool	Channel::isChannelOperator(Client* c)
 {
-	if (c != _channelOperator)	
+	if (!findOperator(c->getNickname()))
 		return (false);
 	return (true);
 }
@@ -120,8 +134,13 @@ void	Channel::broadcast(std::string message)
 		send((*it)->getFd(), message.c_str(), message.size(), 0); 
 		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 	}
-	send(_channelOperator->getFd(), message.c_str(), message.size(), 0); 
-	std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+	for (it = _operators.begin(); it != _operators.end(); it++)
+	{
+		send((*it)->getFd(), message.c_str(), message.size(), 0); 
+		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+	}
+//	send(_channelOperator->getFd(), message.c_str(), message.size(), 0); 
+//	std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 }
 
 void	Channel::broadcast_except_myself(std::string message, Client &c)
@@ -136,11 +155,20 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 		}
 	}
-	if (c.getFd() != _channelOperator->getFd())
+	for (it = _operators.begin(); it != _operators.end(); it++)
+	{
+		if (c.getFd() != (*it)->getFd())
+		{
+			send((*it)->getFd(), message.c_str(), message.size(), 0); 
+			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+		}
+	}
+	/*if (c.getFd() != _channelOperator->getFd())
 	{
 		send(_channelOperator->getFd(), message.c_str(), message.size(), 0); 
 		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 	}
+	*/
 }
 
 void	Channel::defineTopic(std::string topicInstruction, Client &c)
