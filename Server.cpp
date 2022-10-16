@@ -127,9 +127,9 @@ void	Server::joinUserToChannels(std::string channels, Client *c)
 		}
 		else
 			channel->join(c);
-		sendReply(*c, "332 albgarci " + channelName + " :No topic is set");
-		sendReply(*c, "353 albgarci = " + channelName + " :" + channel->getUsersAsString());
-		sendReply(*c, "366 albgarci " + channelName + " :End of names");
+		sendReply(*c, "332 " + c->getNickname() + " " + channelName + " :" + channel->getTopic());
+		sendReply(*c, "353 " + c->getNickname() + " = " + channelName + " :" + channel->getUsersAsString());
+		sendReply(*c, "366 " + c->getNickname() + " " + channelName + " :End of names");
 		channel->broadcast(":" + c->getLogin() + " JOIN " + channelName + "\r\n");
 		std::cout << pos_start << " " << pos_end << std::endl;
 		pos_start = pos_end + 1;

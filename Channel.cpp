@@ -145,6 +145,9 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 
 void	Channel::defineTopic(std::string topicInstruction, Client &c)
 {
-	this->_topic = topicInstruction;
+	size_t	pos;
+
+	pos = topicInstruction.find(":");
+	this->_topic = topicInstruction.substr(pos + 1, topicInstruction.size() - pos - 1);
 	broadcast(":" + c.getLogin() + " TOPIC " + topicInstruction + "\r\n");
 }
