@@ -4,7 +4,7 @@ Channel::Channel(void)
 {
 }
 
-Channel::Channel(std::string name, Client* channelOperator) : _name(name), _channelOperator(channelOperator)
+Channel::Channel(std::string name, Client* channelOperator) : _name(name), _channelOperator(channelOperator), _topic("")
 {
 	memset(_message, 0, 2048);
 }
@@ -39,6 +39,10 @@ std::string	Channel::getName(void) const
 	return (this->_name);
 }
 
+std::string Channel::getTopic(void) const
+{
+	return (_topic);
+}
 
 std::list<Client*> Channel::getUsers(void)
 {
@@ -102,10 +106,8 @@ void	Channel::kick(std::string nickName)
 			break ;
 		}
 	}
-
 	//this->users.remove(this->findUser(nickName));
-	std::cout << "clients in this channel: " << getUsersAsString() << std::endl;
-
+//	std::cout << "clients in this channel: " << getUsersAsString() << std::endl;
 }
 
 
@@ -141,3 +143,8 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 	}
 }
 
+void	Channel::defineTopic(std::string topicInstruction, Client &c)
+{
+	this->_topic = topicInstruction;
+	broadcast(":" + c.getLogin() + " TOPIC " + topicInstruction + "\r\n");
+}

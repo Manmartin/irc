@@ -180,9 +180,12 @@ void	Server::parseMessage(std::string instruction, Client &c)
 void	Server::execInstruction(std::string key, std::string value, Client &c)
 {
 	Reply reply("localhost");
+	Channel	*channel;
 
 	if (key.compare("PING") == 0)
 		sendReply(c, reply.pong(value));
+	else if (key.compare("PRIVMSG") == 0)
+		privMsg(value, c);	
 	else if (key.compare("NICK") == 0)
 	{
 		if (this->usedNick(value) == true)
@@ -211,9 +214,10 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		this->kick(value, c);
 	else if (key.compare("QUIT") == 0)
 		std::cout << "QUIT" << std::endl;
-	else if (key.compare("PRIVMSG") == 0)
+	else if (key.compare("TOPIC") == 0)
 	{
-		privMsg(value, c);	
+		channel = findChannel(value.substr(0, value.find(" ")));
+		channel->defineTopic(value, c);
 	}
 	else
 		;

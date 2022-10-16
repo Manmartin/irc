@@ -14,6 +14,7 @@ class Channel {
 		Channel(Channel const &c);
 
 		std::string	getName(void) const;
+		std::string	getTopic(void) const;
 		std::list<Client*> getUsers(void);
 		Client* findUser(std::string nick);
 		Client*	getOperator(void);
@@ -22,6 +23,8 @@ class Channel {
 		void	broadcast_except_myself(std::string message, Client &c);
 		void	join(Client *client);
 		void	kick(std::string nickName);
+		void	defineTopic(std::string topicInstruction, Client &c);
+
 		std::string	getUsersAsString(void);
 
 		bool	isChannelOperator(Client* c);
@@ -29,10 +32,11 @@ class Channel {
 
 	private:
 		Channel(void);
-		std::list<Client*> users;
-		std::string	_name;
-		Client* _channelOperator;
-		char	_message[2048];
+		std::list<Client*>	users;
+		std::string			_name;
+		Client* 			_channelOperator;
+		char				_message[2048];
+		std::string			_topic;
 };
 
 #endif
