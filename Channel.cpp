@@ -108,3 +108,36 @@ void	Channel::kick(std::string nickName)
 
 }
 
+
+void	Channel::broadcast(std::string message)
+{
+	std::list<Client*>::iterator	it;
+		
+	for (it = users.begin(); it != users.end(); it++)
+	{
+		send((*it)->getFd(), message.c_str(), message.size(), 0); 
+		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+	}
+	send(_channelOperator->getFd(), message.c_str(), message.size(), 0); 
+	std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+}
+
+void	Channel::broadcast_except_myself(std::string message, Client &c)
+{
+	std::list<Client*>::iterator	it;
+		
+	for (it = users.begin(); it != users.end(); it++)
+	{
+		if (c.getFd() != (*it)->getFd())
+		{
+			send((*it)->getFd(), message.c_str(), message.size(), 0); 
+			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+		}
+	}
+	if (c.getFd() != _channelOperator->getFd())
+	{
+		send(_channelOperator->getFd(), message.c_str(), message.size(), 0); 
+		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+	}
+}
+

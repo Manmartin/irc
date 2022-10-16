@@ -130,9 +130,9 @@ void	Server::joinUserToChannels(std::string channels, Client *c)
 		sendReply(*c, "332 albgarci " + channelName + " :No topic is set");
 		sendReply(*c, "353 albgarci = " + channelName + " :" + channel->getUsersAsString());
 		sendReply(*c, "366 albgarci " + channelName + " :End of names");
+		channel->broadcast(":" + c->getLogin() + " JOIN " + channelName + "\r\n");
 		std::cout << pos_start << " " << pos_end << std::endl;
 		pos_start = pos_end + 1;
-		std::cout << "channels: " + channels << std::endl;
 	}
 }
 
@@ -222,8 +222,6 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 void	Server::privMsg(std::string value, Client &c)
 {
 	std::string						msg;
-	std::list<Client*> 				users;
-	std::list<Client*>::iterator	it;
 	std::string						channelName;
 	std::string						message;
 	size_t							position;
@@ -233,23 +231,15 @@ void	Server::privMsg(std::string value, Client &c)
 	position = value.find(" ");
 	channelName = value.substr(0, position);
 	channel = findChannel(channelName);
-	users = channel->getUsers();
-	message = ":" + c.getNickname() + " PRIVMSG " + value + "\r\n";
-	for (it = users.begin(); it != users.end(); it++)
-	{
-		if (c.getFd() != (*it)->getFd())
-			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
-	}
-	if (c.getFd() != channel->getOperator()->getFd())
-		send(channel->getOperator()->getFd(), message.c_str(), message.size(), 0); 
+	message = ":" + c.getLogin() + " PRIVMSG " + value + "\r\n";
+	channel->broadcast_except_myself(message, c);
 }
 
 void	Server::sendReply(Client &c, std::string msg)
 {
 	std::string	payload;
 
-	payload = ":" + c.getNickname() + "!" + c.getUser() + "@" + this->_serverAddress + " " + msg + "\r\n";
+	payload = ":" + c.getLogin() + " " + msg + "\r\n";
 	send(c.getFd(), payload.c_str(), payload.size(), 0);
 	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
@@ -262,10 +252,7 @@ Client&	Server::lookClientByFd(int fd)
 	while (it != this->clients.end())
 	{
 		if ((*it)->getFd() == fd)
-		{
-			//std::cout << "found id " << fd << std::endl;
 			return (**it);
-		}
 		it++;
 	}
 	return (**it);
@@ -280,19 +267,15 @@ void	Server::kick(std::string kickInstruction, Client &c)
 	std::string						kickMessage;
 	std::string						msg;
 	Channel*						channel;
-	std::list<Client*>				users;
-	std::list<Client*>::iterator	it;
 
 	pos = 0;
 	pos2 = 0;
 	kickMessage = "";
-
 	pos = kickInstruction.find(" ");
 	channelName = kickInstruction.substr(0, pos);
 	channel = findChannel(channelName);	
 	if (!channel)
 	{
-		std::cout << "channel not found" << std::endl;
 		sendReply(c, "403 " + channelName + " :Channel not exists\r\n");
 		return ;
 	}
@@ -304,17 +287,12 @@ void	Server::kick(std::string kickInstruction, Client &c)
 	pos2 = kickInstruction.find(" ", pos + 1);
 	userName = kickInstruction.substr(pos + 1, pos2 - pos - 1);
 	kickMessage += kickInstruction.substr(pos2 + 1, kickInstruction.size() - pos2);
-	users = channel->getUsers();
 	msg = ":" + c.getNickname() + " KICK " + kickInstruction + "\r\n";
-	for (it = users.begin(); it != users.end(); it++)
-	{
-		if (c.getFd() != (*it)->getFd())
-			send((*it)->getFd(), msg.c_str(), msg.size(), 0); 
-		std::cout << "\033[1;31mServer reply->" << msg << "\033[0m" << std::endl;
-	}
-	send(channel->getOperator()->getFd(), msg.c_str(), msg.size(), 0); 
 	if (!channel->isUserInChannel(userName))
 		sendReply(c, "441 " + userName + " " + channelName + " :User not in channel");
 	else
+	{
+		channel->broadcast(msg);
 		channel->kick(userName);
+	}
 }

@@ -168,7 +168,7 @@ int main(void) {
 					fds[nfds].events = POLLIN;
 					nfds++;
 
-					Client *client = new Client(connectfd);
+					Client *client = new Client(connectfd, "localhost");
 	    	  	//	send(connectfd, reply.welcome(*client).c_str(), reply.welcome(*client).size() + 1, 0);
 					server.addClient(client);
 				} while (connectfd != -1);

@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int fd) : _fd(fd)
+Client::Client(int fd, std::string server) : _fd(fd), _server(server)
 {
 	_nickname = "";
 }
@@ -24,7 +24,7 @@ Client& Client::operator=(Client const &c)
 	return (*this);	
 }
 
-Client::Client(Client const &c) : _nickname(c.getNickname()), _fd(c._fd) {}
+Client::Client(Client const &c) : _nickname(c.getNickname()), _fd(c._fd), _server(c._server) {}
 
 std::string Client::getNickname(void) const
 {
@@ -49,4 +49,9 @@ void	Client::setNick(std::string nickname)
 void	Client::setUser(std::string user)
 {
 	this->_user = user;	
+}
+
+std::string	Client::getLogin(void) const
+{
+	return (_nickname + "!" + _user + "@" + _server);
 }

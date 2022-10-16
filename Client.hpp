@@ -10,7 +10,7 @@ class Client{
 		~Client(void);
 		Client(Client const &c);
 		Client& operator=(Client const &c);
-		Client(int fd);
+		Client(int fd, std::string server);
 //		Client(std::string const &nickname, int fd);
 
 		void		setNick(std::string nickname);
@@ -18,6 +18,7 @@ class Client{
 		std::string	getNickname(void) const;
 		std::string getUser(void) const;
 		int			getFd(void) const;
+		std::string	getLogin(void) const;
 
 
 		class EmptyName : public std::exception
@@ -33,6 +34,7 @@ class Client{
 		std::string	_nickname;
 		std::string	_user;
 		int			_fd;	
+		std::string	_server;
 };
 
 #endif

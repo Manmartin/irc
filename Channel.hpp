@@ -3,6 +3,7 @@
 
 # include <list>
 # include <Client.hpp>
+# include <sys/socket.h>
 
 class Channel {
 
@@ -17,6 +18,8 @@ class Channel {
 		Client* findUser(std::string nick);
 		Client*	getOperator(void);
 
+		void	broadcast(std::string message);
+		void	broadcast_except_myself(std::string message, Client &c);
 		void	join(Client *client);
 		void	kick(std::string nickName);
 		std::string	getUsersAsString(void);
