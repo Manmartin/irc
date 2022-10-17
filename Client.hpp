@@ -21,14 +21,6 @@ class Client{
 		std::string	getLogin(void) const;
 
 
-		class EmptyName : public std::exception
-		{
-			public:
-				virtual const char* what() const throw(){
-					return ("Empty name exception");
-				}
-		};
-
 	private:
 		Client(void);
 		std::string	_nickname;

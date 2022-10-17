@@ -4,10 +4,27 @@ Channel::Channel(void)
 {
 }
 
-Channel::Channel(std::string name, Client* channelOperator) : _name(name), _topic("")
+Channel::Channel(std::string name, Client* channelOperator) : _name(name), _topic(""), _externalMsgAllowed(false), _changeTopicAllowed(false), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false), _userLimit(-1)
 {
 	memset(_message, 0, 2048);
 	_operators.push_back(channelOperator);
+
+	//Workaraound to avoid compiler warning while they aren't used
+	if (_externalMsgAllowed)
+		;
+	if (_changeTopicAllowed)
+		;
+	if (_invitationRequired)
+		;
+	if (_secret)
+		;
+	if (_moderated)
+		;
+	if (_hasKey)
+		;
+	if (_userLimit)
+		;
+
 }
 
 Channel::~Channel(void)
@@ -74,6 +91,18 @@ Client* Channel::findOperator(std::string nick)
 	return (NULL);
 }
 
+Client*	Channel::findUserInList(std::string nick, std::list<Client*> l)
+{
+	std::list<Client*>::iterator it;
+
+	for (it = l.begin(); it != l.end(); it++)
+	{
+		if ((*it)->getNickname().compare(nick) == 0)
+			return (*it);
+	}
+	return (NULL);
+}
+
 std::string	Channel::getUsersAsString(void)
 {
 	std::list<Client*>::iterator 	it;
@@ -83,25 +112,43 @@ std::string	Channel::getUsersAsString(void)
 		users += "@" + (*it)->getNickname() + " ";
 	for (it = this->users.begin(); it != this->users.end(); it++)
 		users += (*it)->getNickname() + " ";
+	for (it = this->_voiced.begin(); it != this->_voiced.end(); it++)
+		users += (*it)->getNickname() + "+";
 	return (users);
 }
 
-/*Client*	Channel::getOperator(std::string nick)
+bool	Channel::isNormalUser(std::string nickName)
 {
-	return (_channelOperator);
-}*/
+	if (!findUserInList(nickName, this->users))
+		return (false);
+	return (true);
+}
 
-bool	Channel::isChannelOperator(Client* c)
+bool	Channel::isChannelOperator(std::string nickName)
 {
-	if (!findOperator(c->getNickname()))
+	if (!findUserInList(nickName, this->_operators))
+		return (false);
+	return (true);
+}
+
+bool	Channel::isVoiced(std::string nickName)
+{
+	if (!findUserInList(nickName, this->_voiced))
 		return (false);
 	return (true);
 }
 
 bool	Channel::isUserInChannel(std::string nickName)
 {
-	if (!findUser(nickName))
-		return (false);
+
+	if (isNormalUser(nickName))
+		return (true);
+	if (isChannelOperator(nickName))
+		return (true);
+	if (isVoiced(nickName))
+		return (true);
+	//if (!findUserInList(c->getNickname(), this->users))
+	//	return (false);
 	return (true);
 }
 
@@ -109,14 +156,14 @@ void	Channel::kick(std::string nickName)
 {
 	std::list<Client*>::iterator it;
 
-	std::cout << "clients in this channel: " << getUsersAsString() << std::endl;
+//	std::cout << "clients in this channel: " << getUsersAsString() << std::endl;
 	for (it = this->users.begin(); it != this->users.end(); it++)
 	{
 		std::cout << (*it)->getNickname() << " " << nickName << std::endl;;
 		if ((*it)->getNickname().compare(nickName) == 0)
 		{
 			users.erase(it);
-			std::cout << "Removed " << nickName << std::endl;
+//			std::cout << "Removed " << nickName << std::endl;
 			break ;
 		}
 	}
@@ -179,3 +226,24 @@ void	Channel::defineTopic(std::string topicInstruction, Client &c)
 	this->_topic = topicInstruction.substr(pos + 1, topicInstruction.size() - pos - 1);
 	broadcast(":" + c.getLogin() + " TOPIC " + topicInstruction + "\r\n");
 }
+
+void	Channel::removeClientFromList(std::list<Client*> l, std::string nickName)
+{
+	std::list<Client*>::iterator	it;
+
+	for (it = l.begin(); it != l.end(); it++)
+	{
+		//std::cout << (*it)->getNickname() << " " << nickName << std::endl;;
+		if ((*it)->getNickname().compare(nickName) == 0)
+		{
+			l.erase(it);
+			break ;
+		}
+	}
+}
+
+void	Channel::addClientToList(std::list<Client*> l, Client* c)
+{
+	l.push_back(c);
+}
+

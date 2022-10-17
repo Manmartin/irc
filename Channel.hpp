@@ -22,13 +22,19 @@ class Channel {
 
 		void	broadcast(std::string message);
 		void	broadcast_except_myself(std::string message, Client &c);
+
 		void	join(Client *client);
 		void	kick(std::string nickName);
 		void	defineTopic(std::string topicInstruction, Client &c);
 
 		std::string	getUsersAsString(void);
+		Client*	findUserInList(std::string nick, std::list<Client*> l);
+		void	removeClientFromList(std::list<Client*> l, std::string nickName);
+		void	addClientToList(std::list<Client*> l, Client* c);
 
-		bool	isChannelOperator(Client* c);
+		bool	isNormalUser(std::string nickName);
+		bool	isChannelOperator(std::string nickName);
+		bool	isVoiced(std::string nickName);
 		bool	isUserInChannel(std::string nickName);
 
 	private:
@@ -36,9 +42,22 @@ class Channel {
 		std::list<Client*>	users;
 		std::string			_name;
 		std::list<Client*>	_operators;
-		//Client* 			_channelOperator;
+		std::list<Client*>	_voiced;
+		std::list<Client*>	_ban;
+		std::list<Client*>	_exception;
+
 		char				_message[2048];
 		std::string			_topic;
+		bool				_externalMsgAllowed;
+		bool				_changeTopicAllowed;
+		bool				_invitationRequired;
+		bool				_secret;
+		bool				_moderated;
+		bool				_hasKey;
+		int					_userLimit;
+		std::string			_keypass;
+
+
 };
 
 #endif

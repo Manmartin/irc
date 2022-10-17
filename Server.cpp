@@ -236,7 +236,11 @@ void	Server::privMsg(std::string value, Client &c)
 	channelName = value.substr(0, position);
 	channel = findChannel(channelName);
 	message = ":" + c.getLogin() + " PRIVMSG " + value + "\r\n";
-	channel->broadcast_except_myself(message, c);
+	if (channel->isUserInChannel(c.getNickname()))
+		channel->broadcast_except_myself(message, c);
+	else
+		//send reply: not allowed to write from outside channel
+		;
 }
 
 void	Server::sendReply(Client &c, std::string msg)
@@ -283,7 +287,7 @@ void	Server::kick(std::string kickInstruction, Client &c)
 		sendReply(c, "403 " + channelName + " :Channel not exists\r\n");
 		return ;
 	}
-	if (!(channel->isChannelOperator(&c)))
+	if (!(channel->isChannelOperator(c.getNickname())))
 	{
 		sendReply(c, "482 " + channelName + " :Only operators can kick a user\r\n");
 		return ;
