@@ -8,11 +8,9 @@ std::list<std::string>	split_cpp(std::string str, char c)
 	std::list<std::string>	l;
 	std::string				sub;
 	size_t					pos;
-	size_t					len;
 
 	i = 0;
 	pos = 0;
-	len = str.size();
 	sub = "";
 	while (pos != std::string::npos)
 	{		

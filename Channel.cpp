@@ -67,18 +67,23 @@ std::list<Client*> Channel::getUsers(void)
 	return (this->users);
 }
 
-Client* Channel::findUser(std::string nick)
+Client* Channel::getUser(std::string nick)
 {
 	std::list<Client*>::iterator it;
-
-	for (it = this->users.begin(); it != this->users.end(); it++)
-	{
-		if ((*it)->getNickname().compare(nick) == 0)
-			return (*it);
-	}
-	return (NULL);
+	Client*	found;
+	
+	found = NULL;
+	found = findUserInList(nick, this->users);
+	if (!found)
+		found = findUserInList(nick, this->_operators);
+	if (!found)
+		found = findUserInList(nick, this->_voiced);
+	if (!found)
+		found = findUserInList(nick, this->_voiced);
+	return (found);
 }
 
+/*
 Client* Channel::findOperator(std::string nick)
 {
 	std::list<Client*>::iterator it;
@@ -89,7 +94,7 @@ Client* Channel::findOperator(std::string nick)
 			return (*it);
 	}
 	return (NULL);
-}
+}*/
 
 Client*	Channel::findUserInList(std::string nick, std::list<Client*> l)
 {

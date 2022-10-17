@@ -16,8 +16,9 @@ class Channel {
 		std::string	getName(void) const;
 		std::string	getTopic(void) const;
 		std::list<Client*> getUsers(void);
-		Client* findUser(std::string nick);
-		Client* findOperator(std::string nick);
+		Client*	getUser(std::string nick);
+		//Client* findUser(std::string nick);
+	//	Client* findOperator(std::string nick);
 		//Client*	getOperator(std::string nick);
 
 		void	broadcast(std::string message);
