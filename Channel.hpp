@@ -15,7 +15,7 @@ class Channel {
 
 		std::string	getName(void) const;
 		std::string	getTopic(void) const;
-		std::list<Client*> getUsers(void);
+		std::list<Client*>& getUsers(void);
 		Client*	getUser(std::string nick);
 		//Client* findUser(std::string nick);
 	//	Client* findOperator(std::string nick);
@@ -32,9 +32,9 @@ class Channel {
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it);
 
 		std::string	getUsersAsString(void);
-		Client*	findUserInList(std::string nick, std::list<Client*> l);
-		void	removeClientFromList(std::list<Client*> l, std::string nickName);
-		void	addClientToList(std::list<Client*> l, Client* c);
+		Client*	findUserInList(std::string nick, std::list<Client*> &l);
+		void	removeClientFromList(std::list<Client*> &l, std::string nickName);
+		void	addClientToList(std::list<Client*> &l, Client* c);
 
 		bool	isNormalUser(std::string nickName);
 		bool	isChannelOperator(std::string nickName);

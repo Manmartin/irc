@@ -89,12 +89,12 @@ Channel*	Server::findChannel(std::string channelName)
 	it = this->channels.begin();
 	while (it != this->channels.end())
 	{
-		std::cout << "looking for channel" << std::endl;
+		//std::cout << "looking for channel" << std::endl;
 		if (channelName == (*it)->getName())
 		{
-			std::cout << "Channel exists" << std::endl;
+			//std::cout << "Channel exists" << std::endl;
 		//	(*it)->join(c);
-			std::cout << "found " << &(*it) << " with name " << (*it)->getName() << std::endl;
+			//std::cout << "found " << &(*it) << " with name " << (*it)->getName() << std::endl;
 			return (*it);
 		}
 		it++;

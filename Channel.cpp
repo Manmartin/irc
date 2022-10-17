@@ -64,7 +64,7 @@ std::string Channel::getTopic(void) const
 	return (_topic);
 }
 
-std::list<Client*> Channel::getUsers(void)
+std::list<Client*>& Channel::getUsers(void)
 {
 	return (this->users);
 }
@@ -98,14 +98,25 @@ Client* Channel::findOperator(std::string nick)
 	return (NULL);
 }*/
 
-Client*	Channel::findUserInList(std::string nick, std::list<Client*> l)
+Client*	Channel::findUserInList(std::string nick, std::list<Client*> &l)
 {
-	std::list<Client*>::iterator it;
+	std::list<Client*>::iterator	it;
+	std::string						nickFromClient;
+	size_t							size;
 
-	for (it = l.begin(); it != l.end(); it++)
+	it = l.begin();
+	size = l.size();
+	while (it != l.end())
+	//for (it = l.begin(); it != l.end(); it++)
 	{
-		if ((*it)->getNickname().compare(nick) == 0)
+		if (it == l.end())
+			return NULL;
+		std::cout << "eeee" << std::endl;
+		nickFromClient = (*it)->getNickname();
+		std::cout << nickFromClient << std::endl;
+		if (nickFromClient.compare(nick) == 0)
 			return (*it);
+		it++;
 	}
 	return (NULL);
 }
@@ -247,13 +258,13 @@ void	Channel::defineTopic(std::string topicInstruction, Client &c)
 	broadcast(":" + c.getLogin() + " TOPIC " + topicInstruction + "\r\n");
 }
 
-void	Channel::removeClientFromList(std::list<Client*> l, std::string nickName)
+void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)
 {
 	std::list<Client*>::iterator	it;
 
 	for (it = l.begin(); it != l.end(); it++)
 	{
-		//std::cout << (*it)->getNickname() << " " << nickName << std::endl;;
+		std::cout << (*it)->getNickname() << " " << nickName << std::endl;;
 		if ((*it)->getNickname().compare(nickName) == 0)
 		{
 			l.erase(it);
@@ -262,9 +273,12 @@ void	Channel::removeClientFromList(std::list<Client*> l, std::string nickName)
 	}
 }
 
-void	Channel::addClientToList(std::list<Client*> l, Client* c)
+void	Channel::addClientToList(std::list<Client*> &l, Client* c)
 {
-	l.push_back(c);
+	std::cout << "size: " << l.size() << std::endl;
+	std::cout << "adding " << c->getNickname() << std::endl;
+	l.push_front(c);
+	std::cout << "size: " << l.size() << std::endl;
 }
 
 void	Channel::mode(std::string modeInstruction)
@@ -354,13 +368,20 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 	else if (sign == '+' && c == 'v')
 	{
 		if (!isVoiced(*it))
-			addClientToList(this->_voiced, getUser(*it));
-		it++;	
+		{
+			std::cout << "adding client " << *it  << " to list" << std::endl;
+			Client* user = getUser(*it);
+			addClientToList(this->_voiced, user);
+		}
+		it++;
 	}
 	else if (sign == '-' && c == 'v')
 	{
 		if (isVoiced(*it))
+		{
+			std::cout << "removing client from list" << std::endl;
 			addClientToList(this->users, getUser(*it));
+		}
 		it++;	
 	}
 }
