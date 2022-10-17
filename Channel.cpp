@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "utils.hpp"
 
 Channel::Channel(void)
 {
@@ -10,7 +11,7 @@ Channel::Channel(std::string name, Client* channelOperator) : _name(name), _topi
 	_operators.push_back(channelOperator);
 
 	//Workaraound to avoid compiler warning while they aren't used
-	if (_externalMsgAllowed)
+/*	if (_externalMsgAllowed)
 		;
 	if (_changeTopicAllowed)
 		;
@@ -24,6 +25,7 @@ Channel::Channel(std::string name, Client* channelOperator) : _name(name), _topi
 		;
 	if (_userLimit)
 		;
+		*/
 
 }
 
@@ -191,6 +193,11 @@ void	Channel::broadcast(std::string message)
 		send((*it)->getFd(), message.c_str(), message.size(), 0); 
 		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 	}
+	for (it = _voiced.begin(); it != _voiced.end(); it++)
+	{
+		send((*it)->getFd(), message.c_str(), message.size(), 0); 
+		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+	}
 //	send(_channelOperator->getFd(), message.c_str(), message.size(), 0); 
 //	std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 }
@@ -208,6 +215,14 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 		}
 	}
 	for (it = _operators.begin(); it != _operators.end(); it++)
+	{
+		if (c.getFd() != (*it)->getFd())
+		{
+			send((*it)->getFd(), message.c_str(), message.size(), 0); 
+			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+		}
+	}
+	for (it = _voiced.begin(); it != _voiced.end(); it++)
 	{
 		if (c.getFd() != (*it)->getFd())
 		{
@@ -250,5 +265,109 @@ void	Channel::removeClientFromList(std::list<Client*> l, std::string nickName)
 void	Channel::addClientToList(std::list<Client*> l, Client* c)
 {
 	l.push_back(c);
+}
+
+void	Channel::mode(std::string modeInstruction)
+{
+	std::list<std::string>				params;
+	std::list<std::string>::iterator	it;
+	std::string							modes;
+	size_t								size;
+	size_t								i;
+	char								sign;
+
+	params = split_cpp(modeInstruction, ' ');
+	size = params.size();
+	sign = '+';
+	if (size == 1)
+		return (channelModes());
+	it = params.begin();
+	i = 0;
+	it++;
+	modes = (*it);
+	it++;
+	while (i < modes.size())
+	{
+		std::cout << modes[i] << std::endl;
+		if (modes[i] == '+')
+			sign = '+';
+		else if (modes[i] == '-')
+			sign = '-';
+		else
+			processMode(sign, modes[i], it);
+		i++;
+	}
+}
+
+void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &it)
+{
+	if (sign == '+' && c == 'k')
+	{
+		_keypass = *it;
+		_hasKey = true;
+		it++;
+	}
+	else if (sign == '-' && c == 'k')
+	{
+		_hasKey = false;
+		_keypass = "";
+	}
+	else if (sign == '+' && c == 'n')
+		_externalMsgAllowed = true;
+	else if (sign == '+' && c == 'n')
+		_externalMsgAllowed = false;
+	else if (sign == '+' && c == 'm')
+		_moderated = true;
+	else if (sign == '-' && c == 'm')
+		_moderated = false;
+	else if (sign == '+' && c == 't')
+		_changeTopicAllowed = true;
+	else if (sign == '-' && c == 't')
+		_changeTopicAllowed = false;
+	else if (sign == '+' && c == 'l')
+	{
+		_userLimit = stoi(*it);
+		it++;
+	}
+	else if (sign == '-' && c == 'l')
+		_userLimit = -1;
+	else if (sign == '+' && c == 's')
+		_secret = true;
+	else if (sign == '-' && c == 's')
+		_secret = false;
+	else if (sign == '+' && c == 'i')
+		_invitationRequired = true;
+	else if (sign == '-' && c == 'i')
+		_invitationRequired = false;
+	else if (sign == '+' && c == 'o')
+	{
+		if (!isChannelOperator(*it))
+			addClientToList(this->_operators, getUser(*it));
+		it++;
+	}
+	else if (sign == '-' && c == 'o')
+	{
+		if (isChannelOperator(*it))
+			addClientToList(this->users, getUser(*it));
+		it++;	
+	}
+	else if (sign == '+' && c == 'v')
+	{
+		if (!isVoiced(*it))
+			addClientToList(this->_voiced, getUser(*it));
+		it++;	
+	}
+	else if (sign == '-' && c == 'v')
+	{
+		if (isVoiced(*it))
+			addClientToList(this->users, getUser(*it));
+		it++;	
+	}
+}
+
+
+void	Channel::channelModes(void)
+{
+	std::cout << "modes are these" << std::endl;
 }
 

@@ -27,6 +27,9 @@ class Channel {
 		void	join(Client *client);
 		void	kick(std::string nickName);
 		void	defineTopic(std::string topicInstruction, Client &c);
+		void	mode(std::string modeInstruction);
+		void	channelModes(void);
+		void	processMode(char sign, char c, std::list<std::string>::iterator &it);
 
 		std::string	getUsersAsString(void);
 		Client*	findUserInList(std::string nick, std::list<Client*> l);

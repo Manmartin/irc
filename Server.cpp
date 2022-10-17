@@ -219,6 +219,12 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		channel = findChannel(value.substr(0, value.find(" ")));
 		channel->defineTopic(value, c);
 	}
+	else if (key.compare("MODE") == 0)
+	{
+		channel = findChannel(value.substr(0, value.find(" ")));
+		if (channel)
+			channel->mode(value);
+	}
 	else
 		;
 }
