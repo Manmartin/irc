@@ -10,8 +10,7 @@
 
 
 # define ERR_NOSUCHCHANNEL(client, channel) "403 " + client + " :Channel " + channel + " doesn't exist\r\n"
-# define ERR_NOSUCHCHANNEL2(client, channel) "403 " + client + " " + channel + " :Channel doesn't exist"
-
+# define ERR_CANNOTSENDTOCHAN(client, channel, explain) "404 " + client + " " + channel + " :Cannot send to channel" + explain + "\r\n"
 
 # define ERR_USERNOTINCHANNEL(client, nick, channel) "441 " + client + " " + nick + " " + channel + " :User " + client + " isn't on channel " + channel + ""
 # define ERR_NOTONCHANNEL(client, channel) "442 " + client + " " + channel + " :You're not on channel " + channel + ""

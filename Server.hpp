@@ -9,6 +9,7 @@
 # include <string>
 # include <iostream>
 # include <string.h>
+# include "utils.hpp"
 
 class Channel;
 class Server {

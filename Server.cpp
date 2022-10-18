@@ -217,10 +217,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	{
 		channel = findChannel(value.substr(0, value.find(" ")));
 		if (!channel)
-			sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" "))));
-			sendReply(c, ERR_NOSUCHCHANNEL2(c.getNickname(), value.substr(0, value.find(" "))));
-			//return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" ")))));
-			//return (sendReply(c, ERR_NOSUCHCHANNEL(value.substr(0, value.find(" ")))));
+			return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" ")))));
 		channel->topic(value, c);
 	}
 	else if (key.compare("MODE") == 0)
@@ -228,12 +225,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		std::cout << value << std::endl;
 		channel = findChannel(value.substr(0, value.find(" ")));
 		if (!channel && value[0] == '#')
-		{
-			sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" "))));
-			sendReply(c, ERR_NOSUCHCHANNEL2(c.getNickname(), value.substr(0, value.find(" "))));
-
-			//return (sendReply(c, ERR_NOSUCHCHANNEL(value.substr(0, value.find(" ")))));
-		}
+			return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" ")))));
 		else if (channel)
 			channel->mode(value, c);
 	}
@@ -242,6 +234,45 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 }
 
 void	Server::privMsg(std::string value, Client &c)
+{
+	std::list<std::string>			targetList;
+	std::list<std::string>::iterator	it;
+//	std::string						msg;
+	std::string						rawTargets;
+	std::string						message;
+	std::string						payload;
+	size_t							position;
+	Channel*						channel;
+
+	position = value.find(" ");
+	rawTargets = value.substr(0, position);
+	targetList = split_cpp(rawTargets, ',');
+	channel = NULL;
+	while (position < value.size() && value[position] == ' ')
+		position++;
+	message = value.substr(position + 1, value.size() - position - 1);
+	if (message.size() < 0)
+	{
+		std::cout << "empty message" << std::endl;
+		return ;
+	}
+	it = targetList.begin();
+	while (it != targetList.end())
+	{
+		channel = findChannel(*it);
+		if (channel)
+			channel->messageToChannel(message, c);
+		it++;
+	}
+/*	payload = ":" + c.getLogin() + " PRIVMSG " + value + "\r\n";
+	if (channel->isUserInChannel(c.getNickname()))
+		channel->broadcast_except_myself(payload, c);
+	else
+		//send reply: not allowed to write from outside channel
+		;
+		*/
+}
+/*
 {
 	std::string						msg;
 	std::string						channelName;
@@ -260,6 +291,7 @@ void	Server::privMsg(std::string value, Client &c)
 		//send reply: not allowed to write from outside channel
 		;
 }
+*/
 
 void	Server::sendReply(Client &c, std::string msg)
 {

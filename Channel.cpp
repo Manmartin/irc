@@ -257,12 +257,15 @@ void	Channel::mode(std::string modeInstruction, Client& c)
 	size_t								size;
 	size_t								i;
 	char								sign;
+	Reply								reply("localhost");
 
 	params = split_cpp(modeInstruction, ' ');
 	size = params.size();
 	sign = '+';
 	if (size == 1)
 		return (channelModes(c));
+	if (!isChannelOperator(c.getNickname()))
+		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
 	it = params.begin();
 	i = 0;
 	it++;
@@ -398,3 +401,20 @@ void	Channel::channelModes(Client& c)
 	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
 
+void	Channel::messageToChannel(std::string message, Client& c)
+{
+	std::string	payload;
+	Reply	reply("localhost");
+
+	payload = ":" + c.getLogin() + " PRIVMSG " + this->_name + " " + message + "\r\n";
+	if (_moderated && !isChannelOperator(c.getNickname()) && !isVoiced(c.getNickname()))
+		return (reply.sendReply(c, ERR_CANNOTSENDTOCHAN(c.getNickname(), this->_name, ", moderate mode is active")));
+		//std::cout << "only operators and voiced are allowed" << std::endl;
+	else if (isChannelOperator(c.getNickname()) || isVoiced(c.getNickname()))
+		this->broadcast_except_myself(payload, c);
+	else if (this->isUserInChannel(c.getNickname()) || _externalMsgAllowed)
+		this->broadcast_except_myself(payload, c);
+	else
+		//send reply: not allowed to write from outside channel
+		;
+}
