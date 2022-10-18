@@ -6,6 +6,17 @@
 # include "Server.hpp"
 # include <sys/socket.h>
 
+# define ERR_NOSUCHCHANNEL(channel) "403 " + channel + " :Channel " + channel + " doesn't exist\r\n"
+
+
+
+# define ERR_USERNOTINCHANNEL(client, nick, channel) "441 " + client + " " + nick + " " + channel + " :User " + client + " isn't on channel " + channel + "\r\n"
+# define ERR_NOTONCHANNEL(client, channel) "442 " + client + " " + channel + " :You're not on channel " + channel + "\r\n"
+
+
+# define ERR_CHANOPRIVSNEEDED(client, channel) "482 " + client + " " + channel + " :You're not channel operator on " + channel + "\r\n"
+
+
 class Server;
 class Reply{
 
@@ -23,6 +34,8 @@ class Reply{
 		std::string ping(std::string nick);
 		std::string pong(std::string value);
 		std::string nickAlreadyInUse(std::string nick);
+
+		void		sendReply(Client &c, std::string);
 
 	private:
 		std::string	_server;

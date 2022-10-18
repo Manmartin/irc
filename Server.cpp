@@ -211,7 +211,12 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	else if (key.compare("JOIN") == 0)
 		this->joinUserToChannels(value, &c);
 	else if (key.compare("KICK") == 0)
-		this->kick(value, c);
+	{
+		channel = findChannel(value.substr(0, value.find(" ")));
+		if (!channel)
+			return (sendReply(c, ERR_NOSUCHCHANNEL(value.substr(0, value.find(" ")))));
+		channel->kick(value, c);
+	}
 	else if (key.compare("QUIT") == 0)
 		std::cout << "QUIT" << std::endl;
 	else if (key.compare("TOPIC") == 0)
@@ -222,8 +227,9 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	else if (key.compare("MODE") == 0)
 	{
 		channel = findChannel(value.substr(0, value.find(" ")));
-		if (channel)
-			channel->mode(value, c);
+		if (!channel)
+			return (sendReply(c, ERR_NOSUCHCHANNEL(value.substr(0, value.find(" ")))));
+		channel->mode(value, c);
 	}
 	else
 		;
@@ -272,6 +278,7 @@ Client&	Server::lookClientByFd(int fd)
 	return (**it);
 }
 
+/*
 void	Server::kick(std::string kickInstruction, Client &c)
 {
 	size_t							pos;
@@ -289,24 +296,21 @@ void	Server::kick(std::string kickInstruction, Client &c)
 	channelName = kickInstruction.substr(0, pos);
 	channel = findChannel(channelName);	
 	if (!channel)
-	{
-		sendReply(c, "403 " + channelName + " :Channel not exists\r\n");
-		return ;
-	}
+		return (sendReply(c, ERR_NOSUCHCHANNEL(channelName)));
 	if (!(channel->isChannelOperator(c.getNickname())))
-	{
-		sendReply(c, "482 " + channelName + " :Only operators can kick a user\r\n");
-		return ;
-	}
+		return (sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), channelName)));
+	if (!channel->isUserInChannel(c.getNickname()))
+		return (sendReply(c, ERR_NOTONCHANNEL(c.getNickname(), channelName)));
 	pos2 = kickInstruction.find(" ", pos + 1);
 	userName = kickInstruction.substr(pos + 1, pos2 - pos - 1);
 	kickMessage += kickInstruction.substr(pos2 + 1, kickInstruction.size() - pos2);
 	msg = ":" + c.getNickname() + " KICK " + kickInstruction + "\r\n";
 	if (!channel->isUserInChannel(userName))
-		sendReply(c, "441 " + userName + " " + channelName + " :User not in channel");
+		sendReply(c, ERR_USERNOTINCHANNEL(c.getNickname(), userName, channelName));
 	else
 	{
 		channel->broadcast(msg);
 		channel->kick(userName);
 	}
 }
+*/

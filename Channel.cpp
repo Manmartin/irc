@@ -9,24 +9,6 @@ Channel::Channel(std::string name, Client* channelOperator) : _name(name), _topi
 {
 	memset(_message, 0, 2048);
 	_operators.push_back(channelOperator);
-
-	//Workaraound to avoid compiler warning while they aren't used
-/*	if (_externalMsgAllowed)
-		;
-	if (_changeTopicAllowed)
-		;
-	if (_invitationRequired)
-		;
-	if (_secret)
-		;
-	if (_moderated)
-		;
-	if (_hasKey)
-		;
-	if (_userLimit)
-		;
-		*/
-
 }
 
 Channel::~Channel(void)
@@ -75,18 +57,11 @@ Client* Channel::getUser(std::string nick)
 	Client*	found;
 	
 	found = NULL;
-	//std::cout << "looking for users" << std::endl;
 	found = findUserInList(nick, this->users);
 	if (!found)
-	{
-	//	std::cout << "looking for operators" << std::endl;
 		found = findUserInList(nick, this->_operators);
-	}
 	if (!found)
-	{
-	//	std::cout << "looking for voiced" << std::endl;
 		found = findUserInList(nick, this->_voiced);
-	}
 	return (found);
 }
 
@@ -156,25 +131,37 @@ bool	Channel::isUserInChannel(std::string nickName)
 	return (false);
 }
 
-void	Channel::kick(std::string nickName)
+void	Channel::kick(std::string kickInstruction, Client &c)
 {
-	std::list<Client*>::iterator it;
+	size_t							pos;
+	size_t							pos2;
+	std::string						nickName;
+	std::string						kickMessage;
+	std::string						msg;
+	Reply							reply("localhost");
 
-//	std::cout << "clients in this channel: " << getUsersAsString() << std::endl;
-	for (it = this->users.begin(); it != this->users.end(); it++)
-	{
-		std::cout << (*it)->getNickname() << " " << nickName << std::endl;;
-		if ((*it)->getNickname().compare(nickName) == 0)
-		{
-			users.erase(it);
-//			std::cout << "Removed " << nickName << std::endl;
-			break ;
-		}
-	}
-	//this->users.remove(this->findUser(nickName));
-//	std::cout << "clients in this channel: " << getUsersAsString() << std::endl;
+	pos = 0;
+	pos2 = 0;
+	kickMessage = "";
+	pos = kickInstruction.find(" ");
+	if (!isChannelOperator(c.getNickname()))
+		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
+	if (!isUserInChannel(c.getNickname()))
+		return (reply.sendReply(c, ERR_NOTONCHANNEL(c.getNickname(), this->_name)));
+	pos2 = kickInstruction.find(" ", pos + 1);
+	nickName = kickInstruction.substr(pos + 1, pos2 - pos - 1);
+	kickMessage += kickInstruction.substr(pos2 + 1, kickInstruction.size() - pos2);
+	msg = ":" + c.getNickname() + " KICK " + kickInstruction + "\r\n";
+	if (!this->isUserInChannel(nickName))
+		return (reply.sendReply(c, ERR_USERNOTINCHANNEL(c.getNickname(), nickName, this->_name)));
+	this->broadcast(msg);
+	if (isNormalUser(nickName))
+		removeClientFromList(this->users, nickName);
+	else if (isChannelOperator(nickName))
+		removeClientFromList(this->_operators, nickName);
+	else if (isVoiced(nickName))
+		removeClientFromList(this->_voiced, nickName);
 }
-
 
 void	Channel::broadcast(std::string message)
 {
@@ -195,8 +182,6 @@ void	Channel::broadcast(std::string message)
 		send((*it)->getFd(), message.c_str(), message.size(), 0); 
 		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 	}
-//	send(_channelOperator->getFd(), message.c_str(), message.size(), 0); 
-//	std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 }
 
 void	Channel::broadcast_except_myself(std::string message, Client &c)
@@ -227,12 +212,6 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 		}
 	}
-	/*if (c.getFd() != _channelOperator->getFd())
-	{
-		send(_channelOperator->getFd(), message.c_str(), message.size(), 0); 
-		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
-	}
-	*/
 }
 
 void	Channel::defineTopic(std::string topicInstruction, Client &c)

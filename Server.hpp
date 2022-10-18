@@ -10,6 +10,7 @@
 # include <iostream>
 # include <string.h>
 
+class Channel;
 class Server {
 
 	public:
@@ -33,11 +34,9 @@ class Server {
 		void	parseMessage(std::string message, Client &c);
 		void	execInstruction(std::string key, std::string value, Client &c);
 		void	sendReply(Client &c, std::string);
-//JOIN.cpp
+//JOIN
 		void	messageToChannel(std::string channel, Client &sender);
 		void	privMsg(std::string value, Client &c);
-
-		void	kick(std::string kickInstruction, Client &c);
 
 		Client&	lookClientByFd(int fd);
 		void	printUsers(Channel *channel);
@@ -54,5 +53,7 @@ class Server {
 		int				_activeChannels;
 		std::string		_serverAddress;
 };
+
+
 
 #endif

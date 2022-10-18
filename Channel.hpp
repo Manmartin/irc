@@ -2,8 +2,9 @@
 # define CHANNEL_HPP
 
 # include <list>
-# include <Client.hpp>
+# include "Client.hpp"
 # include <sys/socket.h>
+# include "Reply.hpp"
 
 class Channel {
 
@@ -17,15 +18,16 @@ class Channel {
 		std::string	getTopic(void) const;
 		std::list<Client*>& getUsers(void);
 		Client*	getUser(std::string nick);
-		//Client* findUser(std::string nick);
-	//	Client* findOperator(std::string nick);
-		//Client*	getOperator(std::string nick);
 
 		void	broadcast(std::string message);
 		void	broadcast_except_myself(std::string message, Client &c);
 
 		void	join(Client *client);
-		void	kick(std::string nickName);
+
+		//KICK
+		void	kick(std::string nickName, Client &c);
+
+
 		void	defineTopic(std::string topicInstruction, Client &c);
 		void	mode(std::string modeInstruction, Client& c);
 		void	channelModes(Client& c);

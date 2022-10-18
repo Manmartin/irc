@@ -74,3 +74,12 @@ std::string Reply::nickAlreadyInUse(std::string nick)
 	message = "433 * " + nick + " :Nickname already in use\r\n";
 	return (message);
 }
+
+void	Reply::sendReply(Client &c, std::string msg)
+{
+	std::string	payload;
+
+	payload = ":" + c.getLogin() + " " + msg + "\r\n";
+	send(c.getFd(), payload.c_str(), payload.size(), 0);
+	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
+}
