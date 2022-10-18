@@ -6,15 +6,18 @@
 # include "Server.hpp"
 # include <sys/socket.h>
 
-# define ERR_NOSUCHCHANNEL(channel) "403 " + channel + " :Channel " + channel + " doesn't exist\r\n"
+#define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""
+
+
+# define ERR_NOSUCHCHANNEL(channel) "403 " + channel + " :Channel " + channel + " doesn't exist"
 
 
 
-# define ERR_USERNOTINCHANNEL(client, nick, channel) "441 " + client + " " + nick + " " + channel + " :User " + client + " isn't on channel " + channel + "\r\n"
-# define ERR_NOTONCHANNEL(client, channel) "442 " + client + " " + channel + " :You're not on channel " + channel + "\r\n"
+# define ERR_USERNOTINCHANNEL(client, nick, channel) "441 " + client + " " + nick + " " + channel + " :User " + client + " isn't on channel " + channel + ""
+# define ERR_NOTONCHANNEL(client, channel) "442 " + client + " " + channel + " :You're not on channel " + channel + ""
 
 
-# define ERR_CHANOPRIVSNEEDED(client, channel) "482 " + client + " " + channel + " :You're not channel operator on " + channel + "\r\n"
+# define ERR_CHANOPRIVSNEEDED(client, channel) "482 " + client + " " + channel + " :You're not channel operator on " + channel + ""
 
 
 class Server;

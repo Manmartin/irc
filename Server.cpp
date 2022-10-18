@@ -89,14 +89,8 @@ Channel*	Server::findChannel(std::string channelName)
 	it = this->channels.begin();
 	while (it != this->channels.end())
 	{
-		//std::cout << "looking for channel" << std::endl;
 		if (channelName == (*it)->getName())
-		{
-			//std::cout << "Channel exists" << std::endl;
-		//	(*it)->join(c);
-			//std::cout << "found " << &(*it) << " with name " << (*it)->getName() << std::endl;
 			return (*it);
-		}
 		it++;
 	}
 	return (NULL);
@@ -127,7 +121,7 @@ void	Server::joinUserToChannels(std::string channels, Client *c)
 		}
 		else
 			channel->join(c);
-		sendReply(*c, "332 " + c->getNickname() + " " + channelName + " :" + channel->getTopic());
+		sendReply(*c, RPL_TOPIC(c->getNickname(), channelName, channel->getTopic()));
 		sendReply(*c, "353 " + c->getNickname() + " = " + channelName + " :" + channel->getUsersAsString());
 		sendReply(*c, "366 " + c->getNickname() + " " + channelName + " :End of names");
 		channel->broadcast(":" + c->getLogin() + " JOIN " + channelName + "\r\n");
@@ -222,7 +216,9 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	else if (key.compare("TOPIC") == 0)
 	{
 		channel = findChannel(value.substr(0, value.find(" ")));
-		channel->defineTopic(value, c);
+		if (!channel)
+			return (sendReply(c, ERR_NOSUCHCHANNEL(value.substr(0, value.find(" ")))));
+		channel->topic(value, c);
 	}
 	else if (key.compare("MODE") == 0)
 	{

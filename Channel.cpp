@@ -214,23 +214,18 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 	}
 }
 
-void	Channel::defineTopic(std::string topicInstruction, Client &c)
+void	Channel::topic(std::string topicInstruction, Client &c)
 {
 	size_t	pos;
+	Reply	reply("localhost");
 
+	if (!_changeTopicAllowed && !isChannelOperator(c.getNickname()))
+		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
 	if (!isUserInChannel(c.getNickname()))
-	{
-		std::cout << "user not in channel" << std::endl;
-		return ;
-	}
+		return (reply.sendReply(c, ERR_NOTONCHANNEL(c.getNickname(), this->_name)));
 	pos = topicInstruction.find(":");
-	if (this->_changeTopicAllowed || this->isChannelOperator(c.getNickname()))
-	{
-		this->_topic = topicInstruction.substr(pos + 1, topicInstruction.size() - pos - 1);
-		broadcast(":" + c.getLogin() + " TOPIC " + topicInstruction + "\r\n");
-	}
-	else
-		std::cout << "user not allowed" << std::endl;
+	this->_topic = topicInstruction.substr(pos + 1, topicInstruction.size() - pos - 1);
+	broadcast(":" + c.getLogin() + " TOPIC " + topicInstruction + "\r\n");
 }
 
 void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)

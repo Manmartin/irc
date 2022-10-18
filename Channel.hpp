@@ -28,7 +28,7 @@ class Channel {
 		void	kick(std::string nickName, Client &c);
 
 
-		void	defineTopic(std::string topicInstruction, Client &c);
+		void	topic(std::string topicInstruction, Client &c);
 		void	mode(std::string modeInstruction, Client& c);
 		void	channelModes(Client& c);
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it);
