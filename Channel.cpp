@@ -75,28 +75,20 @@ Client* Channel::getUser(std::string nick)
 	Client*	found;
 	
 	found = NULL;
+	//std::cout << "looking for users" << std::endl;
 	found = findUserInList(nick, this->users);
 	if (!found)
+	{
+	//	std::cout << "looking for operators" << std::endl;
 		found = findUserInList(nick, this->_operators);
+	}
 	if (!found)
+	{
+	//	std::cout << "looking for voiced" << std::endl;
 		found = findUserInList(nick, this->_voiced);
-	if (!found)
-		found = findUserInList(nick, this->_voiced);
+	}
 	return (found);
 }
-
-/*
-Client* Channel::findOperator(std::string nick)
-{
-	std::list<Client*>::iterator it;
-
-	for (it = this->_operators.begin(); it != this->_operators.end(); it++)
-	{
-		if ((*it)->getNickname().compare(nick) == 0)
-			return (*it);
-	}
-	return (NULL);
-}*/
 
 Client*	Channel::findUserInList(std::string nick, std::list<Client*> &l)
 {
@@ -106,17 +98,14 @@ Client*	Channel::findUserInList(std::string nick, std::list<Client*> &l)
 
 	it = l.begin();
 	size = l.size();
-	while (it != l.end())
-	//for (it = l.begin(); it != l.end(); it++)
+	for (it = l.begin(); it != l.end(); it++)
 	{
 		if (it == l.end())
 			return NULL;
-		std::cout << "eeee" << std::endl;
 		nickFromClient = (*it)->getNickname();
 		std::cout << nickFromClient << std::endl;
 		if (nickFromClient.compare(nick) == 0)
 			return (*it);
-		it++;
 	}
 	return (NULL);
 }
@@ -131,43 +120,40 @@ std::string	Channel::getUsersAsString(void)
 	for (it = this->users.begin(); it != this->users.end(); it++)
 		users += (*it)->getNickname() + " ";
 	for (it = this->_voiced.begin(); it != this->_voiced.end(); it++)
-		users += (*it)->getNickname() + "+";
+		users += "+" + (*it)->getNickname() + " ";
 	return (users);
 }
 
 bool	Channel::isNormalUser(std::string nickName)
 {
-	if (!findUserInList(nickName, this->users))
-		return (false);
-	return (true);
+	if (findUserInList(nickName, this->users))
+		return (true);
+	return (false);
 }
 
 bool	Channel::isChannelOperator(std::string nickName)
 {
-	if (!findUserInList(nickName, this->_operators))
-		return (false);
-	return (true);
+	if (findUserInList(nickName, this->_operators))
+		return (true);
+	return (false);
 }
 
 bool	Channel::isVoiced(std::string nickName)
 {
-	if (!findUserInList(nickName, this->_voiced))
-		return (false);
-	return (true);
+	if (findUserInList(nickName, this->_voiced))
+		return (true);
+	return (false);
 }
 
 bool	Channel::isUserInChannel(std::string nickName)
 {
-
 	if (isNormalUser(nickName))
 		return (true);
 	if (isChannelOperator(nickName))
 		return (true);
 	if (isVoiced(nickName))
 		return (true);
-	//if (!findUserInList(c->getNickname(), this->users))
-	//	return (false);
-	return (true);
+	return (false);
 }
 
 void	Channel::kick(std::string nickName)
@@ -216,7 +202,7 @@ void	Channel::broadcast(std::string message)
 void	Channel::broadcast_except_myself(std::string message, Client &c)
 {
 	std::list<Client*>::iterator	it;
-		
+
 	for (it = users.begin(); it != users.end(); it++)
 	{
 		if (c.getFd() != (*it)->getFd())
@@ -276,8 +262,10 @@ void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)
 void	Channel::addClientToList(std::list<Client*> &l, Client* c)
 {
 	std::cout << "size: " << l.size() << std::endl;
+	std::cout << "direction of client: " << &(*c) << std::endl;
 	std::cout << "adding " << c->getNickname() << std::endl;
-	l.push_front(c);
+	if (c)
+		l.push_front(c);
 	std::cout << "size: " << l.size() << std::endl;
 }
 
@@ -315,6 +303,8 @@ void	Channel::mode(std::string modeInstruction)
 
 void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &it)
 {
+	Client*	user;
+
 	if (sign == '+' && c == 'k')
 	{
 		_keypass = *it;
@@ -355,37 +345,51 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		_invitationRequired = false;
 	else if (sign == '+' && c == 'o')
 	{
-		if (!isChannelOperator(*it))
-			addClientToList(this->_operators, getUser(*it));
+		user = getUser(*it);
+		//std::cout << "direction of user: " << &(*user) << std::endl;
+		if (user && !isChannelOperator(*it))
+		{
+			addClientToList(this->_operators, user);
+			removeClientFromList(this->_voiced, *it);
+			removeClientFromList(this->users, *it);
+		}
 		it++;
 	}
 	else if (sign == '-' && c == 'o')
 	{
-		if (isChannelOperator(*it))
+		user = getUser(*it);
+		if (user && isChannelOperator(*it))
+		{
 			addClientToList(this->users, getUser(*it));
-		it++;	
+			removeClientFromList(this->_operators, *it);
+		}
+		it++;
 	}
 	else if (sign == '+' && c == 'v')
 	{
-		if (!isVoiced(*it))
+		user = getUser(*it);
+		if (user && !isVoiced(*it))
 		{
 			std::cout << "adding client " << *it  << " to list" << std::endl;
-			Client* user = getUser(*it);
 			addClientToList(this->_voiced, user);
+			removeClientFromList(this->_operators, *it);
+			removeClientFromList(this->users, *it);
 		}
 		it++;
 	}
 	else if (sign == '-' && c == 'v')
 	{
+		user = getUser(*it);
 		if (isVoiced(*it))
 		{
 			std::cout << "removing client from list" << std::endl;
 			addClientToList(this->users, getUser(*it));
+			removeClientFromList(this->_voiced, *it);
 		}
-		it++;	
+		it++;
 	}
+	std::cout << getUsersAsString() << std::endl;
 }
-
 
 void	Channel::channelModes(void)
 {

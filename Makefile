@@ -16,7 +16,7 @@ $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INC) $(OBJS) -o $@
 
 debug: $(OBJS)
-	$(CXX) $(CXXFLAGS) -g3 -fsanitize=address $(INC) $(OBJS) -o $@
+	$(CXX) $(CXXFLAGS) -g -fsanitize=address $(INC) $(OBJS) -o $(NAME) 
 
 clean:
 	rm -rf $(OBJS)
