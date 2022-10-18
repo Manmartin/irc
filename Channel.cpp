@@ -144,10 +144,10 @@ void	Channel::kick(std::string kickInstruction, Client &c)
 	pos2 = 0;
 	kickMessage = "";
 	pos = kickInstruction.find(" ");
-	if (!isChannelOperator(c.getNickname()))
-		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
-	if (!isUserInChannel(c.getNickname()))
-		return (reply.sendReply(c, ERR_NOTONCHANNEL(c.getNickname(), this->_name)));
+//	if (!isChannelOperator(c.getNickname()))
+//		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
+//	if (!isUserInChannel(c.getNickname()))
+//		return (reply.sendReply(c, ERR_NOTONCHANNEL(c.getNickname(), this->_name)));
 	pos2 = kickInstruction.find(" ", pos + 1);
 	nickName = kickInstruction.substr(pos + 1, pos2 - pos - 1);
 	kickMessage += kickInstruction.substr(pos2 + 1, kickInstruction.size() - pos2);

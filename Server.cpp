@@ -208,7 +208,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	{
 		channel = findChannel(value.substr(0, value.find(" ")));
 		if (!channel)
-			return (sendReply(c, ERR_NOSUCHCHANNEL(value.substr(0, value.find(" ")))));
+			return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" ")))));
 		channel->kick(value, c);
 	}
 	else if (key.compare("QUIT") == 0)
@@ -217,15 +217,25 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	{
 		channel = findChannel(value.substr(0, value.find(" ")));
 		if (!channel)
-			return (sendReply(c, ERR_NOSUCHCHANNEL(value.substr(0, value.find(" ")))));
+			sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" "))));
+			sendReply(c, ERR_NOSUCHCHANNEL2(c.getNickname(), value.substr(0, value.find(" "))));
+			//return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" ")))));
+			//return (sendReply(c, ERR_NOSUCHCHANNEL(value.substr(0, value.find(" ")))));
 		channel->topic(value, c);
 	}
 	else if (key.compare("MODE") == 0)
 	{
+		std::cout << value << std::endl;
 		channel = findChannel(value.substr(0, value.find(" ")));
-		if (!channel)
-			return (sendReply(c, ERR_NOSUCHCHANNEL(value.substr(0, value.find(" ")))));
-		channel->mode(value, c);
+		if (!channel && value[0] == '#')
+		{
+			sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" "))));
+			sendReply(c, ERR_NOSUCHCHANNEL2(c.getNickname(), value.substr(0, value.find(" "))));
+
+			//return (sendReply(c, ERR_NOSUCHCHANNEL(value.substr(0, value.find(" ")))));
+		}
+		else if (channel)
+			channel->mode(value, c);
 	}
 	else
 		;

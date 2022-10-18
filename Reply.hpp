@@ -9,8 +9,8 @@
 #define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""
 
 
-# define ERR_NOSUCHCHANNEL(channel) "403 " + channel + " :Channel " + channel + " doesn't exist"
-
+# define ERR_NOSUCHCHANNEL(client, channel) "403 " + client + " :Channel " + channel + " doesn't exist\r\n"
+# define ERR_NOSUCHCHANNEL2(client, channel) "403 " + client + " " + channel + " :Channel doesn't exist"
 
 
 # define ERR_USERNOTINCHANNEL(client, nick, channel) "441 " + client + " " + nick + " " + channel + " :User " + client + " isn't on channel " + channel + ""
