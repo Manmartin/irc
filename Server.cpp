@@ -223,7 +223,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	{
 		channel = findChannel(value.substr(0, value.find(" ")));
 		if (channel)
-			channel->mode(value);
+			channel->mode(value, c);
 	}
 	else
 		;

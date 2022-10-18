@@ -239,9 +239,19 @@ void	Channel::defineTopic(std::string topicInstruction, Client &c)
 {
 	size_t	pos;
 
+	if (!isUserInChannel(c.getNickname()))
+	{
+		std::cout << "user not in channel" << std::endl;
+		return ;
+	}
 	pos = topicInstruction.find(":");
-	this->_topic = topicInstruction.substr(pos + 1, topicInstruction.size() - pos - 1);
-	broadcast(":" + c.getLogin() + " TOPIC " + topicInstruction + "\r\n");
+	if (this->_changeTopicAllowed || this->isChannelOperator(c.getNickname()))
+	{
+		this->_topic = topicInstruction.substr(pos + 1, topicInstruction.size() - pos - 1);
+		broadcast(":" + c.getLogin() + " TOPIC " + topicInstruction + "\r\n");
+	}
+	else
+		std::cout << "user not allowed" << std::endl;
 }
 
 void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)
@@ -261,15 +271,11 @@ void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)
 
 void	Channel::addClientToList(std::list<Client*> &l, Client* c)
 {
-	std::cout << "size: " << l.size() << std::endl;
-	std::cout << "direction of client: " << &(*c) << std::endl;
-	std::cout << "adding " << c->getNickname() << std::endl;
 	if (c)
 		l.push_front(c);
-	std::cout << "size: " << l.size() << std::endl;
 }
 
-void	Channel::mode(std::string modeInstruction)
+void	Channel::mode(std::string modeInstruction, Client& c)
 {
 	std::list<std::string>				params;
 	std::list<std::string>::iterator	it;
@@ -282,7 +288,7 @@ void	Channel::mode(std::string modeInstruction)
 	size = params.size();
 	sign = '+';
 	if (size == 1)
-		return (channelModes());
+		return (channelModes(c));
 	it = params.begin();
 	i = 0;
 	it++;
@@ -318,7 +324,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 	}
 	else if (sign == '+' && c == 'n')
 		_externalMsgAllowed = true;
-	else if (sign == '+' && c == 'n')
+	else if (sign == '-' && c == 'n')
 		_externalMsgAllowed = false;
 	else if (sign == '+' && c == 'm')
 		_moderated = true;
@@ -360,7 +366,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		user = getUser(*it);
 		if (user && isChannelOperator(*it))
 		{
-			addClientToList(this->users, getUser(*it));
+			addClientToList(this->users, user);
 			removeClientFromList(this->_operators, *it);
 		}
 		it++;
@@ -383,7 +389,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		if (isVoiced(*it))
 		{
 			std::cout << "removing client from list" << std::endl;
-			addClientToList(this->users, getUser(*it));
+			addClientToList(this->users, user);
 			removeClientFromList(this->_voiced, *it);
 		}
 		it++;
@@ -391,8 +397,30 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 	std::cout << getUsersAsString() << std::endl;
 }
 
-void	Channel::channelModes(void)
+void	Channel::channelModes(Client& c)
 {
-	std::cout << "modes are these" << std::endl;
+	std::list<std::string>	completModes;
+	std::string				modes;
+	//knmtlsiov
+
+	modes += "+";
+	if (_hasKey)
+		modes+="k";
+	if (!_externalMsgAllowed)
+		modes+="n";
+	if (!_changeTopicAllowed)
+		modes+="t";
+	if (_invitationRequired)
+		modes+="i";
+	if (_secret)
+		modes+="s";
+	if (_moderated)
+		modes+="m";
+	std::cout << "modes: " << modes << std::endl;
+
+	std::string	payload;
+	payload = ":" + c.getLogin() + " MODE " + this->getName() + " " + modes + "\r\n";
+	send(c.getFd(), payload.c_str(), payload.size(), 0);
+	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
 
