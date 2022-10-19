@@ -5,7 +5,7 @@ Channel::Channel(void)
 {
 }
 
-Channel::Channel(std::string name, Client* channelOperator) : _name(name), _topic(""), _externalMsgAllowed(false), _changeTopicAllowed(false), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false), _userLimit(-1)
+Channel::Channel(std::string name, Client* channelOperator) : _name(name), _topic(""), _noExternalMsg(true), _topicLock(true), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false), _userLimit(-1)
 {
 	memset(_message, 0, 2048);
 	_operators.push_back(channelOperator);
@@ -219,7 +219,7 @@ void	Channel::topic(std::string topicInstruction, Client &c)
 	size_t	pos;
 	Reply	reply("localhost");
 
-	if (!_changeTopicAllowed && !isChannelOperator(c.getNickname()))
+	if (_topicLock && !isChannelOperator(c.getNickname()))
 		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
 	if (!isUserInChannel(c.getNickname()))
 		return (reply.sendReply(c, ERR_NOTONCHANNEL(c.getNickname(), this->_name)));
@@ -266,11 +266,22 @@ void	Channel::mode(std::string modeInstruction, Client& c)
 		return (channelModes(c));
 	if (!isChannelOperator(c.getNickname()))
 		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
+
 	it = params.begin();
 	i = 0;
 	it++;
 	modes = (*it);
+	if (anyDuplicatedChar(modes))
+	{
+		std::cout << "bad mode: duplicated" << std::endl;
+		return ;
+	}
 	it++;
+
+	std::vector<std::string>	modeAndArguments;
+
+	modeAndArguments.push_back("");
+	modeAndArguments.push_back("");
 	while (i < modes.size())
 	{
 		std::cout << modes[i] << std::endl;
@@ -279,53 +290,92 @@ void	Channel::mode(std::string modeInstruction, Client& c)
 		else if (modes[i] == '-')
 			sign = '-';
 		else
-			processMode(sign, modes[i], it);
+			processMode(sign, modes[i], it, modeAndArguments);
 		i++;
 	}
+	std::cout << "mode and arguments: +" << modeAndArguments[0] << "-" << modeAndArguments[1] << std::endl;
 }
 
-void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &it)
+void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments)
 {
-	Client*	user;
-
+	Client*					user;
 	if (sign == '+' && c == 'k')
 	{
 		_keypass = *it;
 		_hasKey = true;
+		modeAndArguments[0] += "k";
+		modeAndArguments.push_back(*it);
 		it++;
 	}
-	else if (sign == '-' && c == 'k')
+	else if (sign == '-' && c == 'k' && _hasKey)
 	{
 		_hasKey = false;
-		_keypass = "";
+		_keypass = "*";
+		modeAndArguments[1] += "k";
+		modeAndArguments.push_back("*");
 	}
-	else if (sign == '+' && c == 'n')
-		_externalMsgAllowed = true;
-	else if (sign == '-' && c == 'n')
-		_externalMsgAllowed = false;
-	else if (sign == '+' && c == 'm')
+	else if (sign == '+' && c == 'n' && !_noExternalMsg)
+	{
+		_noExternalMsg = true;
+		modeAndArguments[0] += "n";
+	}
+	else if (sign == '-' && c == 'n' && _noExternalMsg)
+	{
+		_noExternalMsg = false;
+		modeAndArguments[1] += "n";
+	}
+	else if (sign == '+' && c == 'm' && !_moderated)
+	{
 		_moderated = true;
+		modeAndArguments[0] += 'm';
+	}
 	else if (sign == '-' && c == 'm')
+	{
 		_moderated = false;
-	else if (sign == '+' && c == 't')
-		_changeTopicAllowed = true;
-	else if (sign == '-' && c == 't')
-		_changeTopicAllowed = false;
-	else if (sign == '+' && c == 'l')
+		modeAndArguments[1] += 'm';
+	}
+	else if (sign == '+' && c == 't' && !_topicLock)
+	{
+		_topicLock = true;
+		modeAndArguments[0] += "t";
+	}
+	else if (sign == '-' && c == 't' && _topicLock)
+	{
+		_topicLock = false;
+		modeAndArguments[1] += "t";
+	}
+	else if (sign == '+' && c == 'l' && stoi(*it) > 0)
 	{
 		_userLimit = stoi(*it);
+		modeAndArguments.push_back(*it);
+		modeAndArguments[0] += "l";
 		it++;
 	}
-	else if (sign == '-' && c == 'l')
+	else if (sign == '-' && c == 'l' && _userLimit != -1)
+	{
 		_userLimit = -1;
-	else if (sign == '+' && c == 's')
+		modeAndArguments[1] += "l";
+	}
+	else if (sign == '+' && c == 's' && !_secret)
+	{
 		_secret = true;
-	else if (sign == '-' && c == 's')
+		modeAndArguments[0] += "s";
+	}
+	else if (sign == '-' && c == 's' && _secret)
+	{
 		_secret = false;
-	else if (sign == '+' && c == 'i')
+		modeAndArguments[1] += "s";
+	}
+	else if (sign == '+' && c == 'i' && !_invitationRequired)
+	{
 		_invitationRequired = true;
-	else if (sign == '-' && c == 'i')
+		modeAndArguments[0] += "i";
+	}
+	else if (sign == '-' && c == 'i' && _invitationRequired)
+	{
 		_invitationRequired = false;
+		modeAndArguments[1] += "i";
+	}
 	else if (sign == '+' && c == 'o')
 	{
 		user = getUser(*it);
@@ -335,6 +385,8 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 			addClientToList(this->_operators, user);
 			removeClientFromList(this->_voiced, *it);
 			removeClientFromList(this->users, *it);
+			modeAndArguments[0] += "o";
+			modeAndArguments.push_back(*it);
 		}
 		it++;
 	}
@@ -345,6 +397,8 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		{
 			addClientToList(this->users, user);
 			removeClientFromList(this->_operators, *it);
+			modeAndArguments[1] += "o";
+			modeAndArguments.push_back(*it);
 		}
 		it++;
 	}
@@ -357,6 +411,8 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 			addClientToList(this->_voiced, user);
 			removeClientFromList(this->_operators, *it);
 			removeClientFromList(this->users, *it);
+			modeAndArguments[0] += "v";
+			modeAndArguments.push_back(*it);
 		}
 		it++;
 	}
@@ -368,6 +424,8 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 			std::cout << "removing client from list" << std::endl;
 			addClientToList(this->users, user);
 			removeClientFromList(this->_voiced, *it);
+			modeAndArguments[1] += "v";
+			modeAndArguments.push_back(*it);
 		}
 		it++;
 	}
@@ -384,9 +442,9 @@ void	Channel::channelModes(Client& c)
 	modes += "+";
 	if (_hasKey)
 		modes+="k";
-	if (!_externalMsgAllowed)
+	if (_noExternalMsg)
 		modes+="n";
-	if (!_changeTopicAllowed)
+	if (_topicLock)
 		modes+="t";
 	if (_invitationRequired)
 		modes+="i";
@@ -414,7 +472,7 @@ void	Channel::messageToChannel(std::string message, Client& c)
 		//std::cout << "only operators and voiced are allowed" << std::endl;
 	else if (isChannelOperator(c.getNickname()) || isVoiced(c.getNickname()))
 		this->broadcast_except_myself(payload, c);
-	else if (this->isUserInChannel(c.getNickname()) || _externalMsgAllowed)
+	else if (this->isUserInChannel(c.getNickname()) || !_noExternalMsg)
 		this->broadcast_except_myself(payload, c);
 	else
 		//send reply: not allowed to write from outside channel

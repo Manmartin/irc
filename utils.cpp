@@ -27,6 +27,22 @@ std::list<std::string>	split_cpp(std::string str, char c)
 	}
 	return (l);
 }
+
+bool	anyDuplicatedChar(std::string str)
+{
+	//std::string::difference_type 	n;
+	size_t							i;
+
+	i = 0;
+	while (i < str.size())
+	{
+		if (std::count(str.begin(), str.end(), str[i]) > 1)
+			return (true);
+		i++;
+	}
+	return (false);	
+}
+
 /*
 int	main(void)
 {

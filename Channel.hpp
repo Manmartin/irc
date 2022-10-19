@@ -2,6 +2,7 @@
 # define CHANNEL_HPP
 
 # include <list>
+# include <vector>
 # include "Client.hpp"
 # include <sys/socket.h>
 # include "Reply.hpp"
@@ -31,6 +32,7 @@ class Channel {
 		void	mode(std::string modeInstruction, Client& c);
 		void	channelModes(Client& c);
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it);
+		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments);
 
 		//PRIVMSG
 		void	messageToChannel(std::string message, Client& c);
@@ -56,8 +58,8 @@ class Channel {
 
 		char				_message[2048];
 		std::string			_topic;
-		bool				_externalMsgAllowed;
-		bool				_changeTopicAllowed;
+		bool				_noExternalMsg;
+		bool				_topicLock;
 		bool				_invitationRequired;
 		bool				_secret;
 		bool				_moderated;
