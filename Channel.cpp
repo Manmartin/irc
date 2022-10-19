@@ -280,8 +280,8 @@ void	Channel::mode(std::string modeInstruction, Client& c)
 
 	std::vector<std::string>	modeAndArguments;
 
-	modeAndArguments.push_back("");
-	modeAndArguments.push_back("");
+	modeAndArguments.push_back("+");
+	modeAndArguments.push_back("-");
 	while (i < modes.size())
 	{
 		std::cout << modes[i] << std::endl;
@@ -293,7 +293,27 @@ void	Channel::mode(std::string modeInstruction, Client& c)
 			processMode(sign, modes[i], it, modeAndArguments);
 		i++;
 	}
-	std::cout << "mode and arguments: +" << modeAndArguments[0] << "-" << modeAndArguments[1] << std::endl;
+
+	std::vector<std::string>::iterator	it2;
+	std::string	sss = ":" + c.getLogin() + " MODE #pepe ";
+
+	it2 = modeAndArguments.begin();
+	if ((*it2).size() > 1)
+		sss += *it2;
+	it2++;
+	if ((*it2).size() > 1)
+		sss += *it2 + " ";
+	else 
+		sss += " ";
+	it2++;
+	while (it2 < modeAndArguments.end())
+	{
+		sss += *it2 + " ";
+		it2++;
+	}
+	sss += "\r\n";
+	this->broadcast(sss);
+	std::cout << sss << std::endl;
 }
 
 void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments)
