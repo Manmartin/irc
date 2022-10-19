@@ -53,6 +53,18 @@ bool	Server::usedNick(std::string nickname)
 	return (false);
 }
 
+Client*		Server::getClient(std::string nickname)
+{
+	std::list<Client*>::iterator it;
+
+	for (it = this->clients.begin(); it != this->clients.end(); it++)
+	{
+		if ((*it)->getNickname().compare(nickname) == 0)
+			return (*it);
+	}
+	return (NULL);
+}
+
 void	Server::addClient(Client* c)
 {
 	if (this->_activeClients <= _maxClients - 1)
@@ -237,61 +249,49 @@ void	Server::privMsg(std::string value, Client &c)
 {
 	std::list<std::string>			targetList;
 	std::list<std::string>::iterator	it;
-//	std::string						msg;
 	std::string						rawTargets;
 	std::string						message;
 	std::string						payload;
 	size_t							position;
 	Channel*						channel;
+	Client*							destinationUser;
 
 	position = value.find(" ");
 	rawTargets = value.substr(0, position);
 	targetList = split_cpp(rawTargets, ',');
 	channel = NULL;
+	destinationUser = NULL;
 	while (position < value.size() && value[position] == ' ')
 		position++;
 	message = value.substr(position + 1, value.size() - position - 1);
 	if (message.size() < 0)
 	{
-		std::cout << "empty message" << std::endl;
+		sendReply(c, ERR_NOTEXTTOSEND());
 		return ;
 	}
 	it = targetList.begin();
 	while (it != targetList.end())
 	{
 		channel = findChannel(*it);
+		destinationUser = getClient(*it);
 		if (channel)
 			channel->messageToChannel(message, c);
+		else if (destinationUser)
+			this->messageToUser(message, c, *destinationUser);
+		else
+			sendReply(c, ERR_NOSUCHNICK(c.getNickname(), *it));
 		it++;
 	}
-/*	payload = ":" + c.getLogin() + " PRIVMSG " + value + "\r\n";
-	if (channel->isUserInChannel(c.getNickname()))
-		channel->broadcast_except_myself(payload, c);
-	else
-		//send reply: not allowed to write from outside channel
-		;
-		*/
 }
-/*
-{
-	std::string						msg;
-	std::string						channelName;
-	std::string						message;
-	size_t							position;
-	Channel*						channel;
 
-	position = 0;
-	position = value.find(" ");
-	channelName = value.substr(0, position);
-	channel = findChannel(channelName);
-	message = ":" + c.getLogin() + " PRIVMSG " + value + "\r\n";
-	if (channel->isUserInChannel(c.getNickname()))
-		channel->broadcast_except_myself(message, c);
-	else
-		//send reply: not allowed to write from outside channel
-		;
+void	Server::messageToUser(std::string message, Client& c, Client& destination)
+{
+	std::string	payload;
+
+	payload = ":" + c.getNickname() + " " + destination.getNickname() +  " :" + message + "\r\n";
+	send(destination.getFd(), payload.c_str(), payload.size(), 0);
+	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
-*/
 
 void	Server::sendReply(Client &c, std::string msg)
 {
@@ -315,40 +315,3 @@ Client&	Server::lookClientByFd(int fd)
 	}
 	return (**it);
 }
-
-/*
-void	Server::kick(std::string kickInstruction, Client &c)
-{
-	size_t							pos;
-	size_t							pos2;
-	std::string						channelName;
-	std::string						userName;
-	std::string						kickMessage;
-	std::string						msg;
-	Channel*						channel;
-
-	pos = 0;
-	pos2 = 0;
-	kickMessage = "";
-	pos = kickInstruction.find(" ");
-	channelName = kickInstruction.substr(0, pos);
-	channel = findChannel(channelName);	
-	if (!channel)
-		return (sendReply(c, ERR_NOSUCHCHANNEL(channelName)));
-	if (!(channel->isChannelOperator(c.getNickname())))
-		return (sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), channelName)));
-	if (!channel->isUserInChannel(c.getNickname()))
-		return (sendReply(c, ERR_NOTONCHANNEL(c.getNickname(), channelName)));
-	pos2 = kickInstruction.find(" ", pos + 1);
-	userName = kickInstruction.substr(pos + 1, pos2 - pos - 1);
-	kickMessage += kickInstruction.substr(pos2 + 1, kickInstruction.size() - pos2);
-	msg = ":" + c.getNickname() + " KICK " + kickInstruction + "\r\n";
-	if (!channel->isUserInChannel(userName))
-		sendReply(c, ERR_USERNOTINCHANNEL(c.getNickname(), userName, channelName));
-	else
-	{
-		channel->broadcast(msg);
-		channel->kick(userName);
-	}
-}
-*/

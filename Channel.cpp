@@ -418,3 +418,4 @@ void	Channel::messageToChannel(std::string message, Client& c)
 		//send reply: not allowed to write from outside channel
 		;
 }
+

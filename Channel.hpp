@@ -27,7 +27,6 @@ class Channel {
 		//KICK
 		void	kick(std::string nickName, Client &c);
 
-
 		void	topic(std::string topicInstruction, Client &c);
 		void	mode(std::string modeInstruction, Client& c);
 		void	channelModes(Client& c);

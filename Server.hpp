@@ -29,6 +29,7 @@ class Server {
 
 		bool	usedNick(std::string nickname);
 		Channel*	findChannel(std::string channelName);
+		Client*		getClient(std::string nickname);
 		void	joinUserToChannels(std::string channelName, Client *c);
 
 		void	handleMessage(std::string message, int fd);
@@ -36,7 +37,9 @@ class Server {
 		void	execInstruction(std::string key, std::string value, Client &c);
 		void	sendReply(Client &c, std::string);
 //JOIN
-		void	messageToChannel(std::string channel, Client &sender);
+		//void	messageToChannel(std::string channel, Client &sender);
+		void	messageToUser(std::string message, Client& c, Client& destination);
+		void	messageToPrivileged(std::string message, Client& c, std::string rawDestination);
 		void	privMsg(std::string value, Client &c);
 
 		Client&	lookClientByFd(int fd);
