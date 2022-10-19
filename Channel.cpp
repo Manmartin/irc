@@ -378,6 +378,7 @@ void	Channel::channelModes(Client& c)
 {
 	std::list<std::string>	completModes;
 	std::string				modes;
+	Reply					reply("localhost");
 	//knmtlsiov
 
 	modes += "+";
@@ -395,10 +396,11 @@ void	Channel::channelModes(Client& c)
 		modes+="m";
 	std::cout << "modes: " << modes << std::endl;
 
-	std::string	payload;
-	payload = ":" + c.getLogin() + " MODE " + this->getName() + " " + modes + "\r\n";
-	send(c.getFd(), payload.c_str(), payload.size(), 0);
-	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
+	//std::string	payload;
+//	payload = ":" + c.getLogin() + " 324 " + c.getNickname() + " "  + this->getName() + " " + modes + "\r\n";
+	reply.sendReply(c, RPL_CHANNELMODEIS(c.getNickname(), this->_name, modes));
+	//send(c.getFd(), .c_str(), payload.size(), 0);
+	//std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
 
 void	Channel::messageToChannel(std::string message, Client& c)

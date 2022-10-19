@@ -6,6 +6,8 @@
 # include "Server.hpp"
 # include <sys/socket.h>
 
+#define RPL_CHANNELMODEIS(nick, channel, modes) "324 " + nick + " "  + channel + " " + modes + "\r\n"
+
 #define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""
 
 # define ERR_NOSUCHNICK(client, nick) "401 " + client + " " + nick + " :No such nick/channel\r\n"

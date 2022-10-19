@@ -136,6 +136,8 @@ void	Server::joinUserToChannels(std::string channels, Client *c)
 		sendReply(*c, RPL_TOPIC(c->getNickname(), channelName, channel->getTopic()));
 		sendReply(*c, "353 " + c->getNickname() + " = " + channelName + " :" + channel->getUsersAsString());
 		sendReply(*c, "366 " + c->getNickname() + " " + channelName + " :End of names");
+		channel->channelModes(*c);
+	//	sendReply(*c, RPL_CHANNELMODEIS(c->getLogin(), c->getNickname(), channel->getName());
 		channel->broadcast(":" + c->getLogin() + " JOIN " + channelName + "\r\n");
 		std::cout << pos_start << " " << pos_end << std::endl;
 		pos_start = pos_end + 1;
