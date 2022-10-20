@@ -48,6 +48,9 @@ class Server {
 		void	modeUser(std::string nickname, std::string modes, Client &c);
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments);
 
+		//USER
+		void	user(std::string instruction, Client &c);
+
 		Client&	lookClientByFd(int fd);
 		void	printUsers(Channel *channel);
 

@@ -20,7 +20,13 @@ class Client{
 		std::string getUser(void) const;
 		int			getFd(void) const;
 		std::string	getLogin(void) const;
-
+		std::string	getRealName(void) const;
+		std::string	getServer(void) const;
+		bool		isInvisible(void) const;
+		bool		isRegistered(void) const;
+		void		registerClient(void);
+		void		setServer(std::string nickname);
+		void		setRealName(std::string nickname);
 		void		processModeUser(char sign, char c, std::vector<std::string>& newModeUser);
 
 
@@ -28,9 +34,11 @@ class Client{
 		Client(void);
 		std::string	_nickname;
 		std::string	_user;
+		std::string	_realName;
 		int			_fd;	
 		std::string	_server;
 		bool		_invisible;
+		bool		_registered;
 };
 
 #endif

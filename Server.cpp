@@ -215,8 +215,9 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	}
 	else if (key.compare("USER") == 0)
 	{
-		c.setUser(value.substr(0, value.find(" ")));
-		reply.welcome(*this, c);
+		user(value, c);
+		//c.setUser(value.substr(0, value.find(" ")));
+		//reply.welcome(*this, c);
 	}
 	else if (key.compare("JOIN") == 0)
 		this->joinUserToChannels(value, &c);
@@ -352,6 +353,32 @@ void	Server::privMsg(std::string value, Client &c)
 			sendReply(c, ERR_NOSUCHNICK(c.getNickname(), *it));
 		it++;
 	}
+}
+
+void	Server::user(std::string instruction, Client &c)
+{
+	std::list<std::string>				values;
+	std::list<std::string>::iterator	it;
+	std::string							params;
+	std::string							realName;
+
+	params = instruction.substr(0, instruction.find(":"));
+	realName = instruction.substr(instruction.find(":") + 1, instruction.size() - 1);
+	values = split_cpp(params, ' ');
+	if (values.size() < 3 || realName.size() < 1)
+	{ 
+		std::cout << "not enough params" << std::endl;
+	}
+	it = values.begin();
+	c.setUser(*it);
+	it++; 
+	it++;
+	c.setServer(*it);
+	c.setRealName(realName);
+	Reply	reply(c.getServer());
+	reply.welcome(*this, c);
+	c.registerClient();
+	std::cout << "user: " << c.getUser() << " " << c.getRealName() << " " << c.getServer();
 }
 
 void	Server::messageToUser(std::string message, Client& c, Client& destination)
