@@ -20,8 +20,8 @@
 
 # define ERR_USERNOTINCHANNEL(client, nick, channel) "441 " + client + " " + nick + " " + channel + " :User " + client + " isn't on channel " + channel + ""
 # define ERR_NOTONCHANNEL(client, channel) "442 " + client + " " + channel + " :You're not on channel " + channel + ""
-
-
+# define ERR_NEEDMOREPARAMS(client, command) "461 " + client + " " + command + " :Not enough parameters"
+# define ERR_ALREADYREGISTERED(client) "462 " + client + " :You may not reregister"
 # define ERR_CHANOPRIVSNEEDED(client, channel) "482 " + client + " " + channel + " :You're not channel operator on " + channel + ""
 
 # define ERR_USERSDONTMATCH(client) "502 " + client + " :Cant change mode for other users\r\n"

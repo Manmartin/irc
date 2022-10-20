@@ -361,24 +361,25 @@ void	Server::user(std::string instruction, Client &c)
 	std::list<std::string>::iterator	it;
 	std::string							params;
 	std::string							realName;
+	Reply								reply("localhost");
 
+	if (c.isRegistered())
+		return (reply.sendReply(c, ERR_ALREADYREGISTERED(c.getNickname())));
 	params = instruction.substr(0, instruction.find(":"));
 	realName = instruction.substr(instruction.find(":") + 1, instruction.size() - 1);
 	values = split_cpp(params, ' ');
-	if (values.size() < 3 || realName.size() < 1)
-	{ 
-		std::cout << "not enough params" << std::endl;
-	}
 	it = values.begin();
+	if (values.size() < 3 || realName.size() < 1 || (*it).size() < 1)
+		return (reply.sendReply(c, ERR_NEEDMOREPARAMS(c.getNickname(), "USER")));
 	c.setUser(*it);
 	it++; 
 	it++;
-	c.setServer(*it);
+	//not sure about this setter,it'd be better to get it from the connection info
+//	c.setServer(*it);
 	c.setRealName(realName);
-	Reply	reply(c.getServer());
 	reply.welcome(*this, c);
 	c.registerClient();
-	std::cout << "user: " << c.getUser() << " " << c.getRealName() << " " << c.getServer();
+	//std::cout << "user: " << c.getUser() << " " << c.getRealName() << " " << c.getServer();
 }
 
 void	Server::messageToUser(std::string message, Client& c, Client& destination)
