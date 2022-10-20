@@ -1,6 +1,4 @@
-#include <list>
-#include <string>
-#include <iostream>
+#include <utils.hpp>
 
 std::list<std::string>	split_cpp(std::string str, char c)
 {
@@ -41,6 +39,43 @@ bool	anyDuplicatedChar(std::string str)
 		i++;
 	}
 	return (false);	
+}
+
+std::string	composeModeResponse(std::vector<std::string> modeAndArguments)
+{
+	std::vector<std::string>::iterator	it2;
+	std::string	message;
+	
+	message = "";
+	//":" + c.getLogin() + " MODE " + this->_name + " ";
+	bool	anyModeChange;
+
+	anyModeChange = false;
+	it2 = modeAndArguments.begin();
+	if ((*it2).size() > 1)
+	{
+		message += *it2;
+		anyModeChange = true;
+	}
+	it2++;
+	if ((*it2).size() > 1)
+	{
+		message += *it2 + " ";
+		anyModeChange = true;
+	}
+	else 
+		message += " ";
+	it2++;
+	while (it2 < modeAndArguments.end())
+	{
+		message += *it2 + " ";
+		it2++;
+	}
+	message += "\r\n";
+	if (anyModeChange)
+		return (message);//this->broadcast(message);
+	return ("");
+	//std::cout << message << std::endl;
 }
 
 /*

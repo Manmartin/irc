@@ -35,10 +35,11 @@ void	Reply::welcome(Server &s, Client &c)
 		s.sendReply(c, "001 " + c.getNickname() + " :Welcome!!");
 		s.sendReply(c, "002 " + c.getNickname() + " :Your host is " + s.getServerAddress());
 		s.sendReply(c, "003 " + c.getNickname() + " :This server was created today");
-		s.sendReply(c, "004 " + c.getNickname() + " :irc42 beta aiwro Oovimnptkl");
+		s.sendReply(c, "004 " + c.getNickname() + " :irc42 beta io Oovimnstkl");
 		s.sendReply(c, "375 : Message of the day");
 		s.sendReply(c, "376 : Have a nice day");
-		s.sendReply(c, "221 " + c.getNickname() + " +wi");
+//		s.sendReply(c, RPL_UMODEIS(c.getNickname(), "+wi"));
+//		s.sendReply(c, "221 " + c.getNickname() + " +wi");
 	}
 }
 

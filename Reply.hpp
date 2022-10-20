@@ -6,6 +6,8 @@
 # include "Server.hpp"
 # include <sys/socket.h>
 
+#define	RPL_UMODEIS(nick, modes) "221 " + nick + " " + modes + "\r\n"
+
 #define RPL_CHANNELMODEIS(nick, channel, modes) "324 " + nick + " "  + channel + " " + modes + "\r\n"
 
 #define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""
@@ -22,6 +24,7 @@
 
 # define ERR_CHANOPRIVSNEEDED(client, channel) "482 " + client + " " + channel + " :You're not channel operator on " + channel + ""
 
+# define ERR_USERSDONTMATCH(client) "502 " + client + " :Cant change mode for other users\r\n"
 
 class Server;
 class Reply{

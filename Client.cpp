@@ -1,8 +1,8 @@
 #include "Client.hpp"
 
-Client::Client(int fd, std::string server) : _fd(fd), _server(server)
+Client::Client(int fd, std::string server) : _nickname(""), _fd(fd), _server(server), _invisible(false)
 {
-	_nickname = "";
+	
 }
 
 Client::Client(void)
@@ -54,4 +54,19 @@ void	Client::setUser(std::string user)
 std::string	Client::getLogin(void) const
 {
 	return (_nickname + "!" + _user + "@" + _server);
+}
+
+void	Client::processModeUser(char sign, char c, std::vector<std::string>& newModeUser)
+{
+	if (sign == '+' && c == 'i' && !_invisible)
+	{
+		this->_invisible = true;	
+		newModeUser[0] += "i";
+	}
+	else if (sign == '-' && c == 'i' && _invisible)
+	{
+		this->_invisible = false;	
+		newModeUser[1] += "i";
+	}
+
 }

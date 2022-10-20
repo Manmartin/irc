@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 class Client{
 	public:
@@ -20,6 +21,8 @@ class Client{
 		int			getFd(void) const;
 		std::string	getLogin(void) const;
 
+		void		processModeUser(char sign, char c, std::vector<std::string>& newModeUser);
+
 
 	private:
 		Client(void);
@@ -27,6 +30,7 @@ class Client{
 		std::string	_user;
 		int			_fd;	
 		std::string	_server;
+		bool		_invisible;
 };
 
 #endif

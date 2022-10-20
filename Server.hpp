@@ -42,6 +42,12 @@ class Server {
 		void	messageToPrivileged(std::string message, Client& c, std::string rawDestination);
 		void	privMsg(std::string value, Client &c);
 
+//MODE
+
+		void	modeController(std::string modeInstruction, Client& c);
+		void	modeUser(std::string nickname, std::string modes, Client &c);
+		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments);
+
 		Client&	lookClientByFd(int fd);
 		void	printUsers(Channel *channel);
 

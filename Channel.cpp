@@ -249,39 +249,27 @@ void	Channel::addClientToList(std::list<Client*> &l, Client* c)
 		l.push_front(c);
 }
 
-void	Channel::mode(std::string modeInstruction, Client& c)
+void	Channel::mode(std::list<std::string> params, Client& c)
 {
-	std::list<std::string>				params;
 	std::list<std::string>::iterator	it;
 	std::string							modes;
-	size_t								size;
-	size_t								i;
 	char								sign;
 	Reply								reply("localhost");
 
-	params = split_cpp(modeInstruction, ' ');
-	size = params.size();
 	sign = '+';
-	if (size == 1)
-		return (channelModes(c));
+	it = params.begin();
+	it++;
+	modes = (*it);
+	it++;
 	if (!isChannelOperator(c.getNickname()))
 		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
 
-	it = params.begin();
-	i = 0;
-	it++;
-	modes = (*it);
-	if (anyDuplicatedChar(modes))
-	{
-		std::cout << "bad mode: duplicated" << std::endl;
-		return ;
-	}
-	it++;
-
 	std::vector<std::string>	modeAndArguments;
+	size_t						i;
 
 	modeAndArguments.push_back("+");
 	modeAndArguments.push_back("-");
+	i = 0;
 	while (i < modes.size())
 	{
 		std::cout << modes[i] << std::endl;
@@ -293,27 +281,12 @@ void	Channel::mode(std::string modeInstruction, Client& c)
 			processMode(sign, modes[i], it, modeAndArguments);
 		i++;
 	}
+	std::string	modeResponse;
 
-	std::vector<std::string>::iterator	it2;
-	std::string	sss = ":" + c.getLogin() + " MODE #pepe ";
-
-	it2 = modeAndArguments.begin();
-	if ((*it2).size() > 1)
-		sss += *it2;
-	it2++;
-	if ((*it2).size() > 1)
-		sss += *it2 + " ";
-	else 
-		sss += " ";
-	it2++;
-	while (it2 < modeAndArguments.end())
-	{
-		sss += *it2 + " ";
-		it2++;
-	}
-	sss += "\r\n";
-	this->broadcast(sss);
-	std::cout << sss << std::endl;
+	modeResponse = composeModeResponse(modeAndArguments);
+	if (modeResponse.size() > 0)
+		this->broadcast(":" + c.getLogin() + " MODE " + this->_name + " " + modeResponse);
+	//std::cout << sss << std::endl;
 }
 
 void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments)
@@ -399,9 +372,10 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 	else if (sign == '+' && c == 'o')
 	{
 		user = getUser(*it);
-		//std::cout << "direction of user: " << &(*user) << std::endl;
+		std::cout << "direction of user: " << &(*user) << std::endl;
 		if (user && !isChannelOperator(*it))
 		{
+			std::cout << "eooo" << std::endl;
 			addClientToList(this->_operators, user);
 			removeClientFromList(this->_voiced, *it);
 			removeClientFromList(this->users, *it);
@@ -474,11 +448,7 @@ void	Channel::channelModes(Client& c)
 		modes+="m";
 	std::cout << "modes: " << modes << std::endl;
 
-	//std::string	payload;
-//	payload = ":" + c.getLogin() + " 324 " + c.getNickname() + " "  + this->getName() + " " + modes + "\r\n";
 	reply.sendReply(c, RPL_CHANNELMODEIS(c.getNickname(), this->_name, modes));
-	//send(c.getFd(), .c_str(), payload.size(), 0);
-	//std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
 
 void	Channel::messageToChannel(std::string message, Client& c)

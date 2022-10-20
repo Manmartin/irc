@@ -189,7 +189,9 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 {
 	Reply reply("localhost");
 	Channel	*channel;
+	std::string	firstParam;
 
+	firstParam = value.substr(0, value.find(" "));
 	if (key.compare("PING") == 0)
 		sendReply(c, reply.pong(value));
 	else if (key.compare("PRIVMSG") == 0)
@@ -222,29 +224,95 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	{
 		channel = findChannel(value.substr(0, value.find(" ")));
 		if (!channel)
-			return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" ")))));
+			return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
+			//return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" ")))));
 		channel->kick(value, c);
 	}
 	else if (key.compare("QUIT") == 0)
 		std::cout << "QUIT" << std::endl;
 	else if (key.compare("TOPIC") == 0)
 	{
-		channel = findChannel(value.substr(0, value.find(" ")));
+		channel = findChannel(firstParam);
+		//channel = findChannel(value.substr(0, value.find(" ")));
 		if (!channel)
-			return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" ")))));
+			return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
 		channel->topic(value, c);
 	}
 	else if (key.compare("MODE") == 0)
-	{
-		std::cout << value << std::endl;
-		channel = findChannel(value.substr(0, value.find(" ")));
-		if (!channel && value[0] == '#')
-			return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" ")))));
-		else if (channel)
-			channel->mode(value, c);
-	}
+		modeController(value, c);
 	else
 		;
+}
+
+void	Server::modeController(std::string modeInstruction, Client& c)
+{
+	Channel*	channel;
+	Client*		user;
+	std::list<std::string>				params;
+	std::list<std::string>::iterator	it;
+	std::string							modes;
+	std::string							target;
+	size_t								size;
+	Reply								reply("localhost");
+
+	params = split_cpp(modeInstruction, ' ');
+	it = params.begin();
+	channel = findChannel(*it);
+	user = getClient(*it);
+	size = params.size();
+
+	if (size == 1 && channel)
+		return (channel->channelModes(c));
+	else if (size == 1 && user)
+		return ; // return user Mode
+	target = *it;
+	it++;
+	modes = (*it);
+	if (anyDuplicatedChar(modes))
+	{
+		std::cout << "bad mode: duplicated" << std::endl;
+		return ;
+	}
+	if (!channel && target[0] == '#')
+		return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), target)));
+	else if (channel)
+		channel->mode(params, c);
+	else if (usedNick(target))
+		modeUser(target, modes, c);
+	else
+		return (sendReply(c, ERR_NOSUCHNICK(c.getNickname(), target)));
+
+}
+
+void	Server::modeUser(std::string nickname, std::string modes, Client &c)
+{
+	char	sign;
+	std::vector<std::string>	newModeUser;
+	size_t						i;
+
+	sign = '+';
+	if (nickname.compare(c.getNickname()) != 0)
+		return (sendReply(c, ERR_USERSDONTMATCH(c.getNickname())));
+	newModeUser.push_back("+");
+	newModeUser.push_back("-");
+	i = 0;
+	while (i < modes.size())
+	{
+		std::cout << modes[i] << std::endl;
+		if (modes[i] == '+')
+			sign = '+';
+		else if (modes[i] == '-')
+			sign = '-';
+		else
+			c.processModeUser(sign, modes[i], newModeUser);
+		i++;
+	}
+	//this->broadcast(RPL_UMODEIS(c.getNickname(), modeResponse));
+	std::string	modeResponse;
+
+	modeResponse = composeModeResponse(newModeUser);
+	if (modeResponse.size() > 0)
+		this->sendReply(c, RPL_UMODEIS(c.getNickname(), modeResponse));
 }
 
 void	Server::privMsg(std::string value, Client &c)
