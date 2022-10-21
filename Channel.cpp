@@ -40,18 +40,23 @@ void	Channel::joinWelcomeSequence(Client& c)
 	if (_secret)
 		symbol = "@";
 	usersString = "353 " + c.getNickname() + " " + symbol + " " + _name + " :" + getUsersAsString();
+	this->broadcast(":" + c.getLogin() + " JOIN " + _name + "\r\n");
 	c.sendReply(RPL_TOPIC(c.getNickname(), this->_name, getTopic()));
 	c.sendReply(usersString);
 	c.sendReply(RPL_ENDOFNAMES(c.getNickname(), this->_name));
 	this->channelModes(c);
-	this->broadcast(":" + c.getLogin() + " JOIN " + _name + "\r\n");
-
+//	c.sendReply(RPL_CREATIONTIME(c.getNickname(), this->_name, "0"));
 }
 
 void	Channel::join(Client *client)
 {
 	if (!isUserInChannel(client->getNickname()))
 		this->users.push_back(client);
+}
+
+void	Channel::who(Client& client)
+{
+	client.sendReply(RPL_CREATIONTIME(client.getNickname(), this->_name, "0"));
 }
 
 std::string	Channel::getName(void) const

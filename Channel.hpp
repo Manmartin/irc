@@ -45,6 +45,9 @@ class Channel {
 		void	messageToChannel(std::string message, Client& c);
 		//NOTICE
 
+//WHO
+		void	who(Client& client);
+
 		std::string	getUsersAsString(void);
 		Client*	findUserInList(std::string nick, std::list<Client*> &l);
 		void	removeClientFromList(std::list<Client*> &l, std::string nickName);

@@ -202,6 +202,13 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		user(value, c);
 	else if (key.compare("JOIN") == 0)
 		this->joinUserToChannels(value, &c);
+	else if (key.compare("WHO") == 0)
+	{
+		channel = findChannel(value.substr(0, value.find(" ")));
+		if (!channel)
+			return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
+		channel->who(c);
+	}		
 	else if (key.compare("KICK") == 0)
 	{
 		if (c.isRegistered() == false)
@@ -339,6 +346,7 @@ void	Server::privMsg(std::string value, Client &c)
 		it++;
 	}
 }
+
 void	Server::nick(std::string instruction, Client &c)
 {
 	if (this->usedNick(instruction) == true)

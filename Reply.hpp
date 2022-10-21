@@ -8,14 +8,11 @@
 #define RPL_YOURHOST(client, host) "002 " + client + " :Your host is " + host + " running version 0.1"
 #define RPL_CREATED(client, date) "003 " + client + " :This server was created " + date
 #define RPL_MYINFO(client, host) "004 " + client + " " + host + " 0.1 " + "io ovimnstkl"
-
-
-
 #define	RPL_UMODEIS(nick, modes) "221 " + nick + " " + modes + "\r\n"
 #define RPL_LIST(client, channel, clientCount, topic) "322 " + client + " " + channel + " " + clientCount + " :" + topic
 #define RPL_LISTEND(client) "323 " + client + " :End of /LIST"
 #define RPL_CHANNELMODEIS(nick, channel, modes) "324 " + nick + " "  + channel + " " + modes + "\r\n"
-
+#define RPL_CREATIONTIME(client, channel, creationtime) "329 " + client + " " + channel + " " + creationtime
 #define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""
 #define RPL_NAMREPLY(client, symbol, channel, users) "353 " + client + " " + symbol + " " + channel + " :" users
 #define RPL_ENDOFNAMES(client, channel) "366 " + client + " " + channel + " :End of names"
