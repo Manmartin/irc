@@ -1,5 +1,6 @@
 #include <utils.hpp>
 
+
 std::list<std::string>	split_cpp(std::string str, char c)
 {
 	size_t					i;
@@ -73,3 +74,4 @@ std::string	composeModeResponse(std::vector<std::string> modeAndArguments)
 		return (message);
 	return ("");
 }
+

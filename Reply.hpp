@@ -12,7 +12,8 @@
 
 
 #define	RPL_UMODEIS(nick, modes) "221 " + nick + " " + modes + "\r\n"
-
+#define RPL_LIST(client, channel, clientCount, topic) "322 " + client + " " + channel + " " + clientCount + " :" + topic
+#define RPL_LISTEND(client) "323 " + client + " :End of /LIST"
 #define RPL_CHANNELMODEIS(nick, channel, modes) "324 " + nick + " "  + channel + " " + modes + "\r\n"
 
 #define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""

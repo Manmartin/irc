@@ -5,7 +5,7 @@ Channel::Channel(void)
 {
 }
 
-Channel::Channel(std::string name, Client* channelOperator, Server *s) : _name(name), _topic(""), _noExternalMsg(true), _topicLock(true), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false), _userLimit(-1)
+Channel::Channel(std::string name, Client* channelOperator, Server *s) : _name(name), _topic("No topic"), _noExternalMsg(true), _topicLock(true), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false), _userLimit(-1)
 {
 	memset(_message, 0, 2048);
 	_operators.push_back(channelOperator);
@@ -159,6 +159,12 @@ bool	Channel::isUserInChannel(std::string nickName)
 	if (isVoiced(nickName))
 		return (true);
 	return (false);
+}
+
+size_t	Channel::countUsers(void)
+{
+	return (this->users.size() + this->_operators.size() + this->_voiced.size());
+
 }
 
 void	Channel::kick(std::string kickInstruction, Client &c)

@@ -56,6 +56,8 @@ class Channel {
 		bool	isUserInChannel(std::string nickName);
 		bool	isBanned(std::string mask);
 
+		size_t	countUsers(void);
+
 	private:
 		Channel(void);
 		std::list<Client*>	users;

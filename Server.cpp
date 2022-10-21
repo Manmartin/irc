@@ -225,6 +225,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	}
 	else if (key.compare("MODE") == 0)
 		modeController(value, c);
+	else if (key.compare("LIST") == 0)
+		list(value, c);	
 	else
 		;
 }
@@ -382,6 +384,35 @@ void	Server::user(std::string instruction, Client &c)
 		c.registerClient();
 	}
 	//std::cout << "user: " << c.getUser() << " " << c.getRealName() << " " << c.getServer();
+}
+
+void	Server::list(std::string instruction, Client &c)
+{
+	std::list<std::string>				channelNames;
+	std::list<std::string>::iterator	it;
+	std::list<Channel*> 				channelsTarget;
+	std::list<Channel*>::iterator		it2;
+	Channel*							channelAux;
+
+	channelNames = split_cpp(instruction, ',');
+	if (channelNames.size() == 0)
+		channelsTarget = this->channels;
+	else
+	{
+		for (it = channelNames.begin(); it != channelNames.end(); it++)
+		{
+			channelAux = findChannel(*it);
+			if (channelAux)
+				channelsTarget.push_back(channelAux);
+		}
+	}
+	for (it2 = channelsTarget.begin(); it2 != channelsTarget.end(); it2++)
+	{
+		c.sendReply(RPL_LIST(c.getNickname(), (*it2)->getName(), toString<size_t>((*it2)->countUsers()), (*it2)->getTopic()));
+	}
+	c.sendReply(RPL_LISTEND(c.getNickname()));
+//RPL_LISTEND
+
 }
 
 void	Server::welcomeSequence(Client& c)
