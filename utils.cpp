@@ -28,7 +28,6 @@ std::list<std::string>	split_cpp(std::string str, char c)
 
 bool	anyDuplicatedChar(std::string str)
 {
-	//std::string::difference_type 	n;
 	size_t							i;
 
 	i = 0;
@@ -45,11 +44,9 @@ std::string	composeModeResponse(std::vector<std::string> modeAndArguments)
 {
 	std::vector<std::string>::iterator	it2;
 	std::string	message;
+	bool	anyModeChange;
 	
 	message = "";
-	//":" + c.getLogin() + " MODE " + this->_name + " ";
-	bool	anyModeChange;
-
 	anyModeChange = false;
 	it2 = modeAndArguments.begin();
 	if ((*it2).size() > 1)
@@ -73,24 +70,6 @@ std::string	composeModeResponse(std::vector<std::string> modeAndArguments)
 	}
 	message += "\r\n";
 	if (anyModeChange)
-		return (message);//this->broadcast(message);
+		return (message);
 	return ("");
-	//std::cout << message << std::endl;
 }
-
-/*
-int	main(void)
-{
-	std::string str; 
-	std::list<std::string>::iterator 	it;
-	std::list<std::string>				sp;
-
-	str = "hola que tal ";
-	sp = split_cpp(str, ' ');	
-	for (it = sp.begin(); it != sp.end(); it++)
-	{
-		std::cout << *it << std::endl;
-	}
-	return 0;
-}
-*/

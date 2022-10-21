@@ -9,38 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-//#include <sys/ioctl.h>
 #include "Client.hpp"
 #include "Server.hpp"
-#include "Reply.hpp"
 #include <ctime>
-
-void	featuresTests(void)
-{
-/*	Client *c = new Client("nick1", false);
-	std::cout << c->getNickname() << std::endl;
-
-	Server server = Server(4, 4);
-	server.addClient(c);
-
-	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
-
-	Client *d = new Client("nick2", false);
-
-	server.addClient(d);
-	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
-	server.addClient(d);
-
-	server.joinUserToChannel("channelname", d);
-	server.joinUserToChannel("channelname", c);
-	server.removeClient(d);
-
-	delete d;
-	delete c;
-	*/
-//	std::cout << "Active clients: " << server.getActiveClients() << std::endl;
-//	server.addClient(d);
-}
 
 int main(void) {
     int socketfd;
@@ -50,14 +21,9 @@ int main(void) {
 	struct pollfd fds[200];
 	int	nfds = 1;
 	int current_size;
-	Reply reply("localhost");
 	Server server(5, 5);
 
 	srand (time(NULL));
-	//
-	//testing new objects
-	//
-	//featuresTests();
 
 	current_size = 0;
 	socketfd = -1;
@@ -80,7 +46,6 @@ int main(void) {
 		exit(1);
 	}
 	rc = fcntl(socketfd, F_SETFL, O_NONBLOCK);
-//	rc = ioctl(socketfd, FIONBIO, (char *) &on);
 
 	if (rc < 0)
 	{

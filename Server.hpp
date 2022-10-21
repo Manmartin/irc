@@ -27,7 +27,6 @@ class Server {
 		void	addClient(Client* c);
 		void	removeClient(Client *c);
 
-		bool	usedNick(std::string nickname);
 		Channel*	findChannel(std::string channelName);
 		Client*		getClient(std::string nickname);
 		void	joinUserToChannels(std::string channelName, Client *c);
@@ -38,9 +37,10 @@ class Server {
 		void	sendReply(Client &c, std::string);
 
 //USER REGISTRATION
+		bool	usedNick(std::string nickname);
+		void	user(std::string instruction, Client &c);
 		void	welcomeSequence(Client& c);
 //JOIN
-		//void	messageToChannel(std::string channel, Client &sender);
 		void	messageToUser(std::string message, Client& c, Client& destination);
 		void	messageToPrivileged(std::string message, Client& c, std::string rawDestination);
 		void	privMsg(std::string value, Client &c);
@@ -51,16 +51,12 @@ class Server {
 		void	modeUser(std::string nickname, std::string modes, Client &c);
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments);
 
-		//USER
-		void	user(std::string instruction, Client &c);
-
 		Client&	lookClientByFd(int fd);
 		void	printUsers(Channel *channel);
 
 	private:
 		Server(void);
 
-	//	struct pollfd	*fds;
 		std::list<Client*> clients;
 		std::list<Channel*> channels;
 		int				_maxClients;
