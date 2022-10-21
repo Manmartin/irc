@@ -36,6 +36,9 @@ class Server {
 		void	parseMessage(std::string message, Client &c);
 		void	execInstruction(std::string key, std::string value, Client &c);
 		void	sendReply(Client &c, std::string);
+
+//USER REGISTRATION
+		void	welcomeSequence(Client& c);
 //JOIN
 		//void	messageToChannel(std::string channel, Client &sender);
 		void	messageToUser(std::string message, Client& c, Client& destination);

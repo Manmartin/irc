@@ -138,7 +138,7 @@ void	Channel::kick(std::string kickInstruction, Client &c)
 	std::string						nickName;
 	std::string						kickMessage;
 	std::string						msg;
-	Reply							reply("localhost");
+//	Reply							reply("localhost");
 
 	pos = 0;
 	pos2 = 0;
@@ -153,7 +153,7 @@ void	Channel::kick(std::string kickInstruction, Client &c)
 	kickMessage += kickInstruction.substr(pos2 + 1, kickInstruction.size() - pos2);
 	msg = ":" + c.getNickname() + " KICK " + kickInstruction + "\r\n";
 	if (!this->isUserInChannel(nickName))
-		return (reply.sendReply(c, ERR_USERNOTINCHANNEL(c.getNickname(), nickName, this->_name)));
+		return (c.sendReply(ERR_USERNOTINCHANNEL(c.getNickname(), nickName, this->_name)));
 	this->broadcast(msg);
 	if (isNormalUser(nickName))
 		removeClientFromList(this->users, nickName);
@@ -217,12 +217,12 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 void	Channel::topic(std::string topicInstruction, Client &c)
 {
 	size_t	pos;
-	Reply	reply("localhost");
+//	Reply	reply("localhost");
 
 	if (_topicLock && !isChannelOperator(c.getNickname()))
-		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
+		return (c.sendReply(ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
 	if (!isUserInChannel(c.getNickname()))
-		return (reply.sendReply(c, ERR_NOTONCHANNEL(c.getNickname(), this->_name)));
+		return (c.sendReply(ERR_NOTONCHANNEL(c.getNickname(), this->_name)));
 	pos = topicInstruction.find(":");
 	this->_topic = topicInstruction.substr(pos + 1, topicInstruction.size() - pos - 1);
 	broadcast(":" + c.getLogin() + " TOPIC " + topicInstruction + "\r\n");
@@ -254,7 +254,7 @@ void	Channel::mode(std::list<std::string> params, Client& c)
 	std::list<std::string>::iterator	it;
 	std::string							modes;
 	char								sign;
-	Reply								reply("localhost");
+//	Reply								reply("localhost");
 
 	sign = '+';
 	it = params.begin();
@@ -262,7 +262,7 @@ void	Channel::mode(std::list<std::string> params, Client& c)
 	modes = (*it);
 	it++;
 	if (!isChannelOperator(c.getNickname()))
-		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
+		return (c.sendReply(ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
 
 	std::vector<std::string>	modeAndArguments;
 	size_t						i;
@@ -430,7 +430,6 @@ void	Channel::channelModes(Client& c)
 {
 	std::list<std::string>	completModes;
 	std::string				modes;
-	Reply					reply("localhost");
 	//knmtlsiov
 
 	modes += "+";
@@ -448,17 +447,16 @@ void	Channel::channelModes(Client& c)
 		modes+="m";
 	std::cout << "modes: " << modes << std::endl;
 
-	reply.sendReply(c, RPL_CHANNELMODEIS(c.getNickname(), this->_name, modes));
+	c.sendReply(RPL_CHANNELMODEIS(c.getNickname(), this->_name, modes));
 }
 
 void	Channel::messageToChannel(std::string message, Client& c)
 {
 	std::string	payload;
-	Reply	reply("localhost");
 
 	payload = ":" + c.getLogin() + " PRIVMSG " + this->_name + " " + message + "\r\n";
 	if (_moderated && !isChannelOperator(c.getNickname()) && !isVoiced(c.getNickname()))
-		return (reply.sendReply(c, ERR_CANNOTSENDTOCHAN(c.getNickname(), this->_name, ", moderate mode is active")));
+		return (c.sendReply(ERR_CANNOTSENDTOCHAN(c.getNickname(), this->_name, ", moderate mode is active")));
 		//std::cout << "only operators and voiced are allowed" << std::endl;
 	else if (isChannelOperator(c.getNickname()) || isVoiced(c.getNickname()))
 		this->broadcast_except_myself(payload, c);

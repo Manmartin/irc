@@ -133,9 +133,9 @@ void	Server::joinUserToChannels(std::string channels, Client *c)
 		}
 		else
 			channel->join(c);
-		sendReply(*c, RPL_TOPIC(c->getNickname(), channelName, channel->getTopic()));
-		sendReply(*c, "353 " + c->getNickname() + " = " + channelName + " :" + channel->getUsersAsString());
-		sendReply(*c, "366 " + c->getNickname() + " " + channelName + " :End of names");
+		c->sendReply(RPL_TOPIC(c->getNickname(), channelName, channel->getTopic()));
+		c->sendReply("353 " + c->getNickname() + " = " + channelName + " :" + channel->getUsersAsString());
+		c->sendReply("366 " + c->getNickname() + " " + channelName + " :End of names");
 		channel->channelModes(*c);
 	//	sendReply(*c, RPL_CHANNELMODEIS(c->getLogin(), c->getNickname(), channel->getName());
 		channel->broadcast(":" + c->getLogin() + " JOIN " + channelName + "\r\n");
@@ -187,45 +187,40 @@ void	Server::parseMessage(std::string instruction, Client &c)
 
 void	Server::execInstruction(std::string key, std::string value, Client &c)
 {
-	Reply reply("localhost");
 	Channel	*channel;
 	std::string	firstParam;
 
 	firstParam = value.substr(0, value.find(" "));
 	if (key.compare("PING") == 0)
-		sendReply(c, reply.pong(value));
+		c.sendReply(PONG(value));
 	else if (key.compare("PRIVMSG") == 0)
 		privMsg(value, c);	
 	else if (key.compare("NICK") == 0)
 	{
 		if (this->usedNick(value) == true)
-			sendReply(c, reply.nickAlreadyInUse(value));
+			c.sendReply(ERR_NICKNAMEINUSE(value));
 		else if (c.getNickname().compare("") == 0 && c.getUser().compare("") == 0)
 			c.setNick(value);
 		else if (c.getUser().length() > 0)
 		{
 			c.setNick(value);
-			reply.welcome(*this, c);
+			welcomeSequence(c);	
 		}
 		else
 		{
-			sendReply(c, reply.nickChanged(value));
+			c.sendReply(RPL_NICK(value));
 			c.setNick(value);
 		}
 	}
 	else if (key.compare("USER") == 0)
-	{
 		user(value, c);
-		//c.setUser(value.substr(0, value.find(" ")));
-		//reply.welcome(*this, c);
-	}
 	else if (key.compare("JOIN") == 0)
 		this->joinUserToChannels(value, &c);
 	else if (key.compare("KICK") == 0)
 	{
 		channel = findChannel(value.substr(0, value.find(" ")));
 		if (!channel)
-			return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
+			return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
 			//return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" ")))));
 		channel->kick(value, c);
 	}
@@ -236,7 +231,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		channel = findChannel(firstParam);
 		//channel = findChannel(value.substr(0, value.find(" ")));
 		if (!channel)
-			return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
+			return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
 		channel->topic(value, c);
 	}
 	else if (key.compare("MODE") == 0)
@@ -254,7 +249,6 @@ void	Server::modeController(std::string modeInstruction, Client& c)
 	std::string							modes;
 	std::string							target;
 	size_t								size;
-	Reply								reply("localhost");
 
 	params = split_cpp(modeInstruction, ' ');
 	it = params.begin();
@@ -275,13 +269,13 @@ void	Server::modeController(std::string modeInstruction, Client& c)
 		return ;
 	}
 	if (!channel && target[0] == '#')
-		return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), target)));
+		return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), target)));
 	else if (channel)
 		channel->mode(params, c);
 	else if (usedNick(target))
 		modeUser(target, modes, c);
 	else
-		return (sendReply(c, ERR_NOSUCHNICK(c.getNickname(), target)));
+		return (c.sendReply(ERR_NOSUCHNICK(c.getNickname(), target)));
 
 }
 
@@ -293,7 +287,7 @@ void	Server::modeUser(std::string nickname, std::string modes, Client &c)
 
 	sign = '+';
 	if (nickname.compare(c.getNickname()) != 0)
-		return (sendReply(c, ERR_USERSDONTMATCH(c.getNickname())));
+		return (c.sendReply(ERR_USERSDONTMATCH(c.getNickname())));
 	newModeUser.push_back("+");
 	newModeUser.push_back("-");
 	i = 0;
@@ -313,7 +307,7 @@ void	Server::modeUser(std::string nickname, std::string modes, Client &c)
 
 	modeResponse = composeModeResponse(newModeUser);
 	if (modeResponse.size() > 0)
-		this->sendReply(c, RPL_UMODEIS(c.getNickname(), modeResponse));
+		c.sendReply(RPL_UMODEIS(c.getNickname(), modeResponse));
 }
 
 void	Server::privMsg(std::string value, Client &c)
@@ -337,7 +331,7 @@ void	Server::privMsg(std::string value, Client &c)
 	message = value.substr(position + 1, value.size() - position - 1);
 	if (message.size() < 0)
 	{
-		sendReply(c, ERR_NOTEXTTOSEND());
+		c.sendReply(ERR_NOTEXTTOSEND());
 		return ;
 	}
 	it = targetList.begin();
@@ -350,7 +344,7 @@ void	Server::privMsg(std::string value, Client &c)
 		else if (destinationUser)
 			this->messageToUser(message, c, *destinationUser);
 		else
-			sendReply(c, ERR_NOSUCHNICK(c.getNickname(), *it));
+			c.sendReply(ERR_NOSUCHNICK(c.getNickname(), *it));
 		it++;
 	}
 }
@@ -361,42 +355,43 @@ void	Server::user(std::string instruction, Client &c)
 	std::list<std::string>::iterator	it;
 	std::string							params;
 	std::string							realName;
-	Reply								reply("localhost");
 
 	if (c.isRegistered())
-		return (reply.sendReply(c, ERR_ALREADYREGISTERED(c.getNickname())));
+		return (c.sendReply(ERR_ALREADYREGISTERED(c.getNickname())));
 	params = instruction.substr(0, instruction.find(":"));
 	realName = instruction.substr(instruction.find(":") + 1, instruction.size() - 1);
 	values = split_cpp(params, ' ');
 	it = values.begin();
 	if (values.size() < 3 || realName.size() < 1 || (*it).size() < 1)
-		return (reply.sendReply(c, ERR_NEEDMOREPARAMS(c.getNickname(), "USER")));
+		return (c.sendReply(ERR_NEEDMOREPARAMS(c.getNickname(), "USER")));
 	c.setUser(*it);
 	it++; 
 	it++;
 	//not sure about this setter,it'd be better to get it from the connection info
 //	c.setServer(*it);
 	c.setRealName(realName);
-	reply.welcome(*this, c);
-	c.registerClient();
+	if (c.getNickname().size() > 0)
+	{
+		welcomeSequence(c);
+		c.registerClient();
+	}
 	//std::cout << "user: " << c.getUser() << " " << c.getRealName() << " " << c.getServer();
+}
+
+void	Server::welcomeSequence(Client& c)
+{
+	c.sendReply(RPL_WELCOME(c.getNickname(), c.getLogin()));
+	c.sendReply(RPL_YOURHOST(c.getNickname(), c.getServer()));
+	c.sendReply(RPL_CREATED(c.getNickname(), "today"));
+	c.sendReply(RPL_MYINFO(c.getNickname(), c.getServer()));
 }
 
 void	Server::messageToUser(std::string message, Client& c, Client& destination)
 {
 	std::string	payload;
 
-	payload = ":" + c.getNickname() + " " + destination.getNickname() +  " :" + message + "\r\n";
+	payload = ":" + c.getNickname() + " PRIVMSG " + destination.getNickname() +  " :" + message + "\r\n";
 	send(destination.getFd(), payload.c_str(), payload.size(), 0);
-	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
-}
-
-void	Server::sendReply(Client &c, std::string msg)
-{
-	std::string	payload;
-
-	payload = ":" + c.getLogin() + " " + msg + "\r\n";
-	send(c.getFd(), payload.c_str(), payload.size(), 0);
 	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
 

@@ -2,7 +2,7 @@
 
 Client::Client(int fd, std::string server) : _nickname(""), _user(""), _realName(""), _fd(fd), _server(server), _invisible(false), _registered(false)
 {
-	
+	//reply = new Reply(this->server);	
 }
 
 Client::Client(void)
@@ -103,4 +103,13 @@ void	Client::setServer(std::string nickname)
 void	Client::setRealName(std::string nickname)
 {
 	this->_realName = nickname;
+}
+
+void	Client::sendReply(std::string msg)
+{
+	std::string	payload;
+
+	payload = ":" + this->getLogin() + " " + msg + "\r\n";
+	send(this->_fd, payload.c_str(), payload.size(), 0);
+	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
