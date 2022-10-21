@@ -16,7 +16,8 @@
 #define RPL_CHANNELMODEIS(nick, channel, modes) "324 " + nick + " "  + channel + " " + modes + "\r\n"
 
 #define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""
-
+#define RPL_NAMREPLY(client, symbol, channel, users) "353 " + client + " " + symbol + " " + channel + " :" users
+#define RPL_ENDOFNAMES(client, channel) "366 " + client + " " + channel + " :End of names"
 
 #define RPL_MOTDSTART(client, server) "375 " + client + " :- " + server + " Message of the day - "
 #define RPL_MOTD(client, message) "372 " + client + " :" + message
@@ -31,6 +32,7 @@
 
 # define ERR_USERNOTINCHANNEL(client, nick, channel) "441 " + client + " " + nick + " " + channel + " :User " + client + " isn't on channel " + channel + ""
 # define ERR_NOTONCHANNEL(client, channel) "442 " + client + " " + channel + " :You're not on channel " + channel + ""
+# define ERR_NOTREGISTERED(client) "451 " + client + " :You have not registered"
 # define ERR_NEEDMOREPARAMS(client, command) "461 " + client + " " + command + " :Not enough parameters"
 # define ERR_ALREADYREGISTERED(client) "462 " + client + " :You may not reregister"
 # define ERR_CHANOPRIVSNEEDED(client, channel) "482 " + client + " " + channel + " :You're not channel operator on " + channel + ""

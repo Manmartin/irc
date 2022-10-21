@@ -30,6 +30,23 @@ Channel::Channel(Channel const &c)
 	*this = c;
 }
 
+void	Channel::joinWelcomeSequence(Client& c)
+{
+	std::string	usersString;
+	std::string	symbol;
+
+	symbol = "=";
+	if (_secret)
+		symbol = "@";
+	usersString = "353 " + c.getNickname() + " " + symbol + " " + _name + " :" + getUsersAsString();
+	c.sendReply(RPL_TOPIC(c.getNickname(), this->_name, getTopic()));
+	c.sendReply(usersString);
+	c.sendReply(RPL_ENDOFNAMES(c.getNickname(), this->_name));
+	this->channelModes(c);
+	this->broadcast(":" + c.getLogin() + " JOIN " + _name + "\r\n");
+
+}
+
 void	Channel::join(Client *client)
 {
 	if (!isUserInChannel(client->getNickname()))
@@ -88,8 +105,9 @@ Client*	Channel::findUserInList(std::string nick, std::list<Client*> &l)
 std::string	Channel::getUsersAsString(void)
 {
 	std::list<Client*>::iterator 	it;
-	std::string						users = "";
+	std::string						users;
 
+	users = "";
 	for (it = this->_operators.begin(); it != this->_operators.end(); it++)
 		users += "@" + (*it)->getNickname() + " ";
 	for (it = this->users.begin(); it != this->users.end(); it++)
@@ -138,16 +156,15 @@ void	Channel::kick(std::string kickInstruction, Client &c)
 	std::string						nickName;
 	std::string						kickMessage;
 	std::string						msg;
-//	Reply							reply("localhost");
 
 	pos = 0;
 	pos2 = 0;
 	kickMessage = "";
 	pos = kickInstruction.find(" ");
-//	if (!isChannelOperator(c.getNickname()))
-//		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
-//	if (!isUserInChannel(c.getNickname()))
-//		return (reply.sendReply(c, ERR_NOTONCHANNEL(c.getNickname(), this->_name)));
+	if (!isUserInChannel(c.getNickname()))
+		return (reply.sendReply(c, ERR_NOTONCHANNEL(c.getNickname(), this->_name)));
+	if (!isChannelOperator(c.getNickname()))
+		return (reply.sendReply(c, ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
 	pos2 = kickInstruction.find(" ", pos + 1);
 	nickName = kickInstruction.substr(pos + 1, pos2 - pos - 1);
 	kickMessage += kickInstruction.substr(pos2 + 1, kickInstruction.size() - pos2);

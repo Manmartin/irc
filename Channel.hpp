@@ -23,20 +23,25 @@ class Channel {
 		void	broadcast(std::string message);
 		void	broadcast_except_myself(std::string message, Client &c);
 
+//JOIN
 		void	join(Client *client);
+		void	joinWelcomeSequence(Client& c);
 
-		//KICK
+//KICK
 		void	kick(std::string nickName, Client &c);
 
+//TOPIC
 		void	topic(std::string topicInstruction, Client &c);
-		//void	mode(std::string modeInstruction, Client& c);
+
+//MODE
 		void	mode(std::list<std::string> params, Client& c);
 		void	channelModes(Client& c);
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it);
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments);
 
-		//PRIVMSG
+//PRIVMSG && NOTICE
 		void	messageToChannel(std::string message, Client& c);
+		//NOTICE
 
 		std::string	getUsersAsString(void);
 		Client*	findUserInList(std::string nick, std::list<Client*> &l);
@@ -67,7 +72,6 @@ class Channel {
 		bool				_hasKey;
 		int					_userLimit;
 		std::string			_keypass;
-
 
 };
 

@@ -118,6 +118,8 @@ void	Server::joinUserToChannels(std::string channels, Client *c)
 
 	pos_start = 0;
 	pos_end = 0;
+	if (c->isRegistered() == false)
+		return (c->sendReply(ERR_NOTREGISTERED(c->getNickname())));
 	while (pos_end != std::string::npos)
 	{
 		pos_end = channels.find(",", pos_start);
@@ -133,13 +135,7 @@ void	Server::joinUserToChannels(std::string channels, Client *c)
 		}
 		else
 			channel->join(c);
-		c->sendReply(RPL_TOPIC(c->getNickname(), channelName, channel->getTopic()));
-		c->sendReply("353 " + c->getNickname() + " = " + channelName + " :" + channel->getUsersAsString());
-		c->sendReply("366 " + c->getNickname() + " " + channelName + " :End of names");
-		channel->channelModes(*c);
-	//	sendReply(*c, RPL_CHANNELMODEIS(c->getLogin(), c->getNickname(), channel->getName());
-		channel->broadcast(":" + c->getLogin() + " JOIN " + channelName + "\r\n");
-		std::cout << pos_start << " " << pos_end << std::endl;
+		channel->joinWelcomeSequence(*c);
 		pos_start = pos_end + 1;
 	}
 }
@@ -196,22 +192,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	else if (key.compare("PRIVMSG") == 0)
 		privMsg(value, c);	
 	else if (key.compare("NICK") == 0)
-	{
-		if (this->usedNick(value) == true)
-			c.sendReply(ERR_NICKNAMEINUSE(value));
-		else if (c.getNickname().compare("") == 0 && c.getUser().compare("") == 0)
-			c.setNick(value);
-		else if (c.getUser().length() > 0)
-		{
-			c.setNick(value);
-			welcomeSequence(c);	
-		}
-		else
-		{
-			c.sendReply(RPL_NICK(value));
-			c.setNick(value);
-		}
-	}
+		nick(value, c);
 	else if (key.compare("USER") == 0)
 		user(value, c);
 	else if (key.compare("JOIN") == 0)
@@ -221,7 +202,6 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		channel = findChannel(value.substr(0, value.find(" ")));
 		if (!channel)
 			return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
-			//return (sendReply(c, ERR_NOSUCHCHANNEL(c.getNickname(), value.substr(0, value.find(" ")))));
 		channel->kick(value, c);
 	}
 	else if (key.compare("QUIT") == 0)
@@ -348,7 +328,24 @@ void	Server::privMsg(std::string value, Client &c)
 		it++;
 	}
 }
-
+void	Server::nick(std::string instruction, Client &c)
+{
+	if (this->usedNick(instruction) == true)
+		c.sendReply(ERR_NICKNAMEINUSE(instruction));
+	else if (c.getNickname().compare("") == 0 && c.getUser().compare("") == 0)
+		c.setNick(instruction);
+	else if (c.getUser().length() > 0)
+	{
+		c.setNick(instruction);
+		welcomeSequence(c);	
+		c.registerClient();
+	}
+	else
+	{
+		c.sendReply(RPL_NICK(instruction));
+		c.setNick(instruction);
+	}
+}
 void	Server::user(std::string instruction, Client &c)
 {
 	std::list<std::string>				values;

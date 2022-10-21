@@ -36,7 +36,9 @@ class Server {
 		void	execInstruction(std::string key, std::string value, Client &c);
 		void	sendReply(Client &c, std::string);
 
+
 //USER REGISTRATION
+		void	nick(std::string instruction, Client &c);
 		bool	usedNick(std::string nickname);
 		void	user(std::string instruction, Client &c);
 		void	welcomeSequence(Client& c);
