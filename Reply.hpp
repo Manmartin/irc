@@ -35,6 +35,8 @@
 # define ERR_NOTREGISTERED(client) "451 " + client + " :You have not registered"
 # define ERR_NEEDMOREPARAMS(client, command) "461 " + client + " " + command + " :Not enough parameters"
 # define ERR_ALREADYREGISTERED(client) "462 " + client + " :You may not reregister"
+# define ERR_UNKNOWNMODE(client, modechar) "472 " + client + " " + modechar + " :is unknown mode char to me"
+# define ERR_BANNEDFROMCHAN(client, channel) "474 " + client + " " + channel + " :Cannot join to channel " + channel + " (you are banned)"
 # define ERR_CHANOPRIVSNEEDED(client, channel) "482 " + client + " " + channel + " :You're not channel operator on " + channel + ""
 
 # define ERR_USERSDONTMATCH(client) "502 " + client + " :Cant change mode for other users\r\n"

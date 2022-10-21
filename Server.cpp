@@ -123,20 +123,25 @@ void	Server::joinUserToChannels(std::string channels, Client *c)
 	while (pos_end != std::string::npos)
 	{
 		pos_end = channels.find(",", pos_start);
+
 		if (pos_end == std::string::npos)
 			channelName = channels.substr(pos_start, channels.size() - pos_start);
 		else
 			channelName = channels.substr(pos_start, pos_end - pos_start);
 		channel = findChannel(channelName);
+		pos_start = pos_end + 1;
 		if (!channel)
 		{
-			this->channels.push_back(new Channel(channelName, c));
+			this->channels.push_back(new Channel(channelName, c, this));
 			channel = findChannel(channelName);
 		}
-		else
-			channel->join(c);
+		else if (channel->isBanned(c->getLogin()))
+		{
+			c->sendReply(ERR_BANNEDFROMCHAN(c->getNickname(), channel->getName()));
+			continue ;
+		}
+		channel->join(c);
 		channel->joinWelcomeSequence(*c);
-		pos_start = pos_end + 1;
 	}
 }
 
@@ -199,6 +204,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		this->joinUserToChannels(value, &c);
 	else if (key.compare("KICK") == 0)
 	{
+		if (c.isRegistered() == false)
+			return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
 		channel = findChannel(value.substr(0, value.find(" ")));
 		if (!channel)
 			return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
@@ -208,6 +215,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		std::cout << "QUIT" << std::endl;
 	else if (key.compare("TOPIC") == 0)
 	{
+		if (c.isRegistered() == false)
+			return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
 		channel = findChannel(firstParam);
 		//channel = findChannel(value.substr(0, value.find(" ")));
 		if (!channel)
@@ -230,12 +239,13 @@ void	Server::modeController(std::string modeInstruction, Client& c)
 	std::string							target;
 	size_t								size;
 
+	if (c.isRegistered() == false)
+		return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
 	params = split_cpp(modeInstruction, ' ');
 	it = params.begin();
 	channel = findChannel(*it);
 	user = getClient(*it);
 	size = params.size();
-
 	if (size == 1 && channel)
 		return (channel->channelModes(c));
 	else if (size == 1 && user)
@@ -244,10 +254,7 @@ void	Server::modeController(std::string modeInstruction, Client& c)
 	it++;
 	modes = (*it);
 	if (anyDuplicatedChar(modes))
-	{
-		std::cout << "bad mode: duplicated" << std::endl;
 		return ;
-	}
 	if (!channel && target[0] == '#')
 		return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), target)));
 	else if (channel)
@@ -256,7 +263,6 @@ void	Server::modeController(std::string modeInstruction, Client& c)
 		modeUser(target, modes, c);
 	else
 		return (c.sendReply(ERR_NOSUCHNICK(c.getNickname(), target)));
-
 }
 
 void	Server::modeUser(std::string nickname, std::string modes, Client &c)
@@ -264,6 +270,7 @@ void	Server::modeUser(std::string nickname, std::string modes, Client &c)
 	char	sign;
 	std::vector<std::string>	newModeUser;
 	size_t						i;
+
 
 	sign = '+';
 	if (nickname.compare(c.getNickname()) != 0)
@@ -301,6 +308,8 @@ void	Server::privMsg(std::string value, Client &c)
 	Channel*						channel;
 	Client*							destinationUser;
 
+	if (c.isRegistered() == false)
+		return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
 	position = value.find(" ");
 	rawTargets = value.substr(0, position);
 	targetList = split_cpp(rawTargets, ',');

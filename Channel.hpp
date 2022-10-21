@@ -6,11 +6,13 @@
 # include "Client.hpp"
 # include <sys/socket.h>
 # include "Reply.hpp"
+# include "Server.hpp"
 
+class Server;
 class Channel {
 
 	public:
-		Channel(std::string name, Client* channelOperator);
+		Channel(std::string name, Client* channelOperator, Server *s);
 		~Channel(void);
 		Channel& operator=(Channel const &c);
 		Channel(Channel const &c);
@@ -37,7 +39,7 @@ class Channel {
 		void	mode(std::list<std::string> params, Client& c);
 		void	channelModes(Client& c);
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it);
-		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments);
+		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments, Client& executor);
 
 //PRIVMSG && NOTICE
 		void	messageToChannel(std::string message, Client& c);
@@ -52,6 +54,7 @@ class Channel {
 		bool	isChannelOperator(std::string nickName);
 		bool	isVoiced(std::string nickName);
 		bool	isUserInChannel(std::string nickName);
+		bool	isBanned(std::string mask);
 
 	private:
 		Channel(void);
@@ -73,6 +76,7 @@ class Channel {
 		int					_userLimit;
 		std::string			_keypass;
 
+		Server				*_server;
 };
 
 #endif
