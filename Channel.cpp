@@ -168,8 +168,16 @@ bool	Channel::isUserInChannel(std::string nickName)
 
 size_t	Channel::countUsers(void)
 {
-	return (this->users.size() + this->_operators.size() + this->_voiced.size());
+	std::list<Client*>::iterator	it;
+	size_t							size;
 
+	size = this->users.size() + this->_operators.size();
+	for (it = _voiced.begin(); it != _voiced.end(); it++)
+	{
+		if (!isChannelOperator((*it)->getNickname()))
+			size++;
+	}
+	return (size);
 }
 
 void	Channel::kick(std::string kickInstruction, Client &c)
@@ -219,8 +227,11 @@ void	Channel::broadcast(std::string message)
 	}
 	for (it = _voiced.begin(); it != _voiced.end(); it++)
 	{
-		send((*it)->getFd(), message.c_str(), message.size(), 0); 
-		std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+		if (!isChannelOperator((*it)->getNickname()))
+		{
+			send((*it)->getFd(), message.c_str(), message.size(), 0); 
+			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+		}
 	}
 }
 
@@ -246,7 +257,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 	}
 	for (it = _voiced.begin(); it != _voiced.end(); it++)
 	{
-		if (c.getFd() != (*it)->getFd())
+		if (c.getFd() != (*it)->getFd() && !isChannelOperator((*it)->getNickname()))
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
 			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
@@ -300,6 +311,8 @@ void	Channel::mode(std::list<std::string> params, Client& c)
 	it = params.begin();
 	it++;
 	modes = (*it);
+	if (params.size() == 2 && (modes.compare("b") == 0 || modes.compare("+b") == 0))
+		return (banList(c));
 	it++;
 	if (!isChannelOperator(c.getNickname()))
 		return (c.sendReply(ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
@@ -418,7 +431,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		{
 			std::cout << "eooo" << std::endl;
 			addClientToList(this->_operators, user);
-			removeClientFromList(this->_voiced, *it);
+			//removeClientFromList(this->_voiced, *it);
 			removeClientFromList(this->users, *it);
 			modeAndArguments[0] += "o";
 			modeAndArguments.push_back(*it);
@@ -444,7 +457,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		{
 			std::cout << "adding client " << *it  << " to list" << std::endl;
 			addClientToList(this->_voiced, user);
-			removeClientFromList(this->_operators, *it);
+			//removeClientFromList(this->_operators, *it);
 			removeClientFromList(this->users, *it);
 			modeAndArguments[0] += "v";
 			modeAndArguments.push_back(*it);
@@ -516,6 +529,15 @@ void	Channel::channelModes(Client& c)
 	if (_moderated)
 		modes+="m";
 	c.sendReply(RPL_CHANNELMODEIS(c.getNickname(), this->_name, modes));
+}
+
+void	Channel::banList(Client& c)
+{
+	std::list<Client*>::iterator 	it;
+
+	for (it = this->_ban.begin(); it != this->_ban.end(); it++)
+		c.sendReply(RPL_BANLIST(c.getNickname(), this->_name, (*it)->getLogin()));
+	c.sendReply(RPL_ENDOFBANLIST(c.getNickname(), this->_name));
 }
 
 void	Channel::messageToChannel(std::string message, Client& c)

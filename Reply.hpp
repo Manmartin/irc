@@ -16,6 +16,8 @@
 #define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""
 #define RPL_NAMREPLY(client, symbol, channel, users) "353 " + client + " " + symbol + " " + channel + " :" users
 #define RPL_ENDOFNAMES(client, channel) "366 " + client + " " + channel + " :End of names"
+#define RPL_BANLIST(client, channel, mask) "367 " + client + " " + channel + " " + mask
+#define RPL_ENDOFBANLIST(client, channel) "368 " + client + " " + channel + " :End of channel ban list"
 
 #define RPL_MOTDSTART(client, server) "375 " + client + " :- " + server + " Message of the day - "
 #define RPL_MOTD(client, message) "372 " + client + " :" + message
