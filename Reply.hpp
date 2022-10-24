@@ -3,7 +3,7 @@
 
 #define RPL_NICK(value) "NICK :" + value
 #define PONG(value) "PONG :" + value
-
+#define INVITE(issuer, nick, channel) ":" + issuer + " INVITE " + nick + " " + channel
 #define BROADCAST_PART(mask, channel, reason) ":" + mask + " PART " + channel + " :" + reason
 #define RPL_WELCOME(client, mask) "001 " + client + " :Welcome to irc42, " + mask
 #define RPL_YOURHOST(client, host) "002 " + client + " :Your host is " + host + " running version 0.1"
@@ -20,6 +20,7 @@
 #define RPL_CHANNELMODEIS(nick, channel, modes) "324 " + nick + " "  + channel + " " + modes + "\r\n"
 #define RPL_CREATIONTIME(client, channel, creationtime) "329 " + client + " " + channel + " " + creationtime
 #define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""
+#define RPL_INVITING(client, nick, channel)  "341 " + client + " " + nick + " " + channel
 #define RPL_WHOREPLY(client, channel, username, host, server, nick, flags, hopcount, realname) "352 " + client + " " + channel + " " + username + " " + host + " " + server +  " " + nick + " " + flags + " :" + hopcount + " " + realname
 
 #define RPL_NAMREPLY(client, symbol, channel, users) "353 " + client + " " + symbol + " " + channel + " :" users
@@ -41,10 +42,12 @@
 
 # define ERR_USERNOTINCHANNEL(client, nick, channel) "441 " + client + " " + nick + " " + channel + " :User " + client + " isn't on channel " + channel + ""
 # define ERR_NOTONCHANNEL(client, channel) "442 " + client + " " + channel + " :You're not on channel " + channel + ""
+#define ERR_USERONCHANNEL(client, nick, channel) "443 " + client + " " + nick + " " + channel + " :is already on channel"
 # define ERR_NOTREGISTERED(client) "451 " + client + " :You have not registered"
 # define ERR_NEEDMOREPARAMS(client, command) "461 " + client + " " + command + " :Not enough parameters"
 # define ERR_ALREADYREGISTERED(client) "462 " + client + " :You may not reregister"
 # define ERR_UNKNOWNMODE(client, modechar) "472 " + client + " " + modechar + " :is unknown mode char to me"
+# define ERR_INVITEONLYCHAN(client, channel) "473 " + client + " " + channel + " :Cannot join channel (+i)"
 # define ERR_BANNEDFROMCHAN(client, channel) "474 " + client + " " + channel + " :Cannot join to channel " + channel + " (you are banned)"
 # define ERR_BADCHANMASK(channel) "476 " + channel + " :Bad Channel Mask"
 # define ERR_CHANOPRIVSNEEDED(client, channel) "482 " + client + " " + channel + " :You're not channel operator on " + channel + ""

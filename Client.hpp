@@ -25,6 +25,8 @@ class Client{
 		std::string	getLogin(void) const;
 		std::string	getRealName(void) const;
 		std::string	getServer(void) const;
+		std::list<std::string>& getInvited(void);
+		void			addInvited(std::string channel);
 		std::list<Channel*>& getChannels(void);
 
 		void		setNick(std::string nickname);
@@ -35,6 +37,7 @@ class Client{
 		bool		isInvisible(void) const;
 		bool		isRegistered(void) const;
 		bool		isInChannel(std::string channel);
+		bool		isInvited(std::string channel);
 
 		void		registerClient(void);
 		void		leaveChannel(std::string nickName);
@@ -53,6 +56,7 @@ class Client{
 		bool					_invisible;
 		bool					_registered;
 		std::list<Channel*>		_channels;
+		std::list<std::string>	_invited;
 //		Reply*		reply;
 };
 

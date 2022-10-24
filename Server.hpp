@@ -43,6 +43,10 @@ class Server {
 		bool	usedNick(std::string nickname);
 		void	user(std::string instruction, Client &c);
 		void	welcomeSequence(Client& c);
+
+//INVITE
+		void	invite(std::string instructions, Client &c);
+
 //JOIN
 		void	messageToUser(std::string message, Client& c, Client& destination);
 		void	messageToPrivileged(std::string message, Client& c, std::string rawDestination);

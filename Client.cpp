@@ -41,6 +41,30 @@ int	Client::getFd(void) const
 	return (this->_fd);
 }
 
+bool	Client::isInvited(std::string channel)
+{
+	std::list<std::string>::iterator	it;
+
+	if (this->_invited.size() == 0)
+		return (false);
+	for (it = this->_invited.begin(); it != this->_invited.end(); it++)
+	{
+		if ((*it).compare(channel) == 0)
+			return (true);
+	}
+	return (false);
+}
+
+std::list<std::string>& Client::getInvited(void)
+{
+	return (this->_invited);
+}
+
+void	Client::addInvited(std::string channel)
+{
+	this->_invited.push_back(channel);
+}
+
 void	Client::setNick(std::string nickname)
 {
 	this->_nickname = nickname;	

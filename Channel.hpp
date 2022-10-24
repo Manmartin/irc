@@ -26,6 +26,8 @@ class Channel {
 		void	broadcast(std::string message);
 		void	broadcast_except_myself(std::string message, Client &c);
 
+//INVITE
+
 //JOIN
 		void	join(Client *client);
 		void	joinWelcomeSequence(Client& c);
@@ -59,6 +61,7 @@ class Channel {
 		bool	isChannelOperator(std::string nickName);
 		bool	isVoiced(std::string nickName);
 		bool	isUserInChannel(std::string nickName);
+		bool	isInvitationRequired(void);
 		bool	isBanned(std::string mask);
 
 		size_t	countUsers(void);

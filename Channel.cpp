@@ -48,6 +48,8 @@ void	Channel::joinWelcomeSequence(Client& c)
 	c.sendReply(RPL_CREATIONTIME(c.getNickname(), this->_name, "0"));
 }
 
+
+
 void	Channel::join(Client *client)
 {
 	if (!isUserInChannel(client->getNickname()))
@@ -177,6 +179,11 @@ bool	Channel::isBanned(std::string mask)
 			return (true);
 	}
 	return (false);
+}
+
+bool	Channel::isInvitationRequired(void)
+{
+	return (this->_invitationRequired);
 }
 
 bool	Channel::isUserInChannel(std::string nickName)
