@@ -118,6 +118,9 @@ void	Server::joinUserToChannels(std::string channels, Client *c)
 
 	pos_start = 0;
 	pos_end = 0;
+	if (channels.size() == 1 && channels[0] == '0')
+		//part from all chanels of the client
+		;
 	if (c->isRegistered() == false)
 		return (c->sendReply(ERR_NOTREGISTERED(c->getNickname())));
 	while (pos_end != std::string::npos)
@@ -128,6 +131,10 @@ void	Server::joinUserToChannels(std::string channels, Client *c)
 			channelName = channels.substr(pos_start, channels.size() - pos_start);
 		else
 			channelName = channels.substr(pos_start, pos_end - pos_start);
+		if (channelName.size() == 0)
+			continue ;
+		if (channelName[0] != '#')
+			return (c->sendReply(ERR_BADCHANMASK(channelName)));
 		channel = findChannel(channelName);
 		pos_start = pos_end + 1;
 		if (!channel)
@@ -189,27 +196,33 @@ void	Server::parseMessage(std::string instruction, Client &c)
 void	Server::execInstruction(std::string key, std::string value, Client &c)
 {
 	Channel	*channel;
+	Client	*client;
 	std::string	firstParam;
 
 	firstParam = value.substr(0, value.find(" "));
-	if (key.compare("PING") == 0)
+	if (compareCaseInsensitive(key, "PING"))
 		c.sendReply(PONG(value));
-	else if (key.compare("PRIVMSG") == 0)
+	else if (compareCaseInsensitive(key, "PRIVMSG"))
 		privMsg(value, c);	
-	else if (key.compare("NICK") == 0)
+	else if (compareCaseInsensitive(key, "NICK"))
 		nick(value, c);
-	else if (key.compare("USER") == 0)
+	else if (compareCaseInsensitive(key, "USER"))
 		user(value, c);
-	else if (key.compare("JOIN") == 0)
+	else if (compareCaseInsensitive(key, "JOIN"))
 		this->joinUserToChannels(value, &c);
-	else if (key.compare("WHO") == 0)
+	else if (compareCaseInsensitive(key, "WHO"))
 	{
+		
 		channel = findChannel(value.substr(0, value.find(" ")));
-		if (!channel)
-			return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
+		client = getClient(value.substr(0, value.find(" ")));
+		if (!channel && !client)
+			return (c.sendReply(ERR_NOSUCHSERVER(c.getNickname(), firstParam)));
+	//	if (!channel)
+	//		return (who(c));
 		channel->who(c);
+		
 	}		
-	else if (key.compare("KICK") == 0)
+	else if (compareCaseInsensitive(key, "KICK"))
 	{
 		if (c.isRegistered() == false)
 			return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
@@ -217,10 +230,11 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		if (!channel)
 			return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
 		channel->kick(value, c);
+		
 	}
-	else if (key.compare("QUIT") == 0)
+	else if (compareCaseInsensitive(key, "QUIT"))
 		std::cout << "QUIT" << std::endl;
-	else if (key.compare("TOPIC") == 0)
+	else if (compareCaseInsensitive(key, "TOPIC"))
 	{
 		if (c.isRegistered() == false)
 			return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
@@ -230,9 +244,9 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 			return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
 		channel->topic(value, c);
 	}
-	else if (key.compare("MODE") == 0)
+	else if (compareCaseInsensitive(key, "MODE"))
 		modeController(value, c);
-	else if (key.compare("LIST") == 0)
+	else if (compareCaseInsensitive(key, "LIST"))
 		list(value, c);	
 	else
 		;
@@ -393,6 +407,11 @@ void	Server::user(std::string instruction, Client &c)
 	}
 	//std::cout << "user: " << c.getUser() << " " << c.getRealName() << " " << c.getServer();
 }
+
+/*void	Server::who(Client &c)
+{
+	return (RPL_WHOREPLY(
+}*/
 
 void	Server::list(std::string instruction, Client &c)
 {

@@ -10,6 +10,8 @@
 std::list<std::string>	split_cpp(std::string str, char c);
 bool	anyDuplicatedChar(std::string str);
 std::string	composeModeResponse(std::vector<std::string> modeAndArguments);
+//bool	compareCaseInsensitive(std::string& s1, std::string &s2);
+bool	compareCaseInsensitive(std::string& s1, const char *s2);
 
 template <typename T>
 std::string toString ( T Number )

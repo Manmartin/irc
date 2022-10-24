@@ -9,11 +9,15 @@
 #define RPL_CREATED(client, date) "003 " + client + " :This server was created " + date
 #define RPL_MYINFO(client, host) "004 " + client + " " + host + " 0.1 " + "io ovimnstkl"
 #define	RPL_UMODEIS(nick, modes) "221 " + nick + " " + modes + "\r\n"
+
+#define RPL_ENDOFWHO(client, mask) "315 " + client + " " + mask + " :End of WHO list"
 #define RPL_LIST(client, channel, clientCount, topic) "322 " + client + " " + channel + " " + clientCount + " :" + topic
 #define RPL_LISTEND(client) "323 " + client + " :End of /LIST"
 #define RPL_CHANNELMODEIS(nick, channel, modes) "324 " + nick + " "  + channel + " " + modes + "\r\n"
 #define RPL_CREATIONTIME(client, channel, creationtime) "329 " + client + " " + channel + " " + creationtime
 #define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""
+//#define RPL_WHOREPLY(client, channel, username, host, server, nick, flags, hopcount, realname) "352 " + client + " " + channel + " " + username + " " + host + " " + server +  " " + nick + " " + flags + " :" + hopcount + " " + realname
+
 #define RPL_NAMREPLY(client, symbol, channel, users) "353 " + client + " " + symbol + " " + channel + " :" users
 #define RPL_ENDOFNAMES(client, channel) "366 " + client + " " + channel + " :End of names"
 #define RPL_BANLIST(client, channel, mask) "367 " + client + " " + channel + " " + mask
@@ -23,7 +27,8 @@
 #define RPL_MOTD(client, message) "372 " + client + " :" + message
 #define RPL_ENDOFMOTD(client) "376 " + client + " :End of /MOTD command."
 
-# define ERR_NOSUCHNICK(client, nick) "401 " + client + " " + nick + " :No such nick/channel\r\n"
+# define ERR_NOSUCHNICK(client, nick) "401 " + client + " " + nick + " :No such nick/channel"
+# define ERR_NOSUCHSERVER(client, server) "402 " + client + " " + server + " :No such server"
 # define ERR_NOSUCHCHANNEL(client, channel) "403 " + client + " :Channel " + channel + " doesn't exist\r\n"
 # define ERR_CANNOTSENDTOCHAN(client, channel, explain) "404 " + client + " " + channel + " :Cannot send to channel" + explain + "\r\n"
 
@@ -37,6 +42,7 @@
 # define ERR_ALREADYREGISTERED(client) "462 " + client + " :You may not reregister"
 # define ERR_UNKNOWNMODE(client, modechar) "472 " + client + " " + modechar + " :is unknown mode char to me"
 # define ERR_BANNEDFROMCHAN(client, channel) "474 " + client + " " + channel + " :Cannot join to channel " + channel + " (you are banned)"
+# define ERR_BADCHANMASK(channel) "476 " + channel + " :Bad Channel Mask"
 # define ERR_CHANOPRIVSNEEDED(client, channel) "482 " + client + " " + channel + " :You're not channel operator on " + channel + ""
 
 # define ERR_USERSDONTMATCH(client) "502 " + client + " :Cant change mode for other users\r\n"

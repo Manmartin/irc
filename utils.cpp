@@ -41,6 +41,22 @@ bool	anyDuplicatedChar(std::string str)
 	return (false);	
 }
 
+bool	compareCaseInsensitive(std::string& s1, const char *s2)
+{
+	size_t	i;
+
+	i = 0;
+	if (s1.size() != strlen(s2))
+		return (false);
+	while (i < s1.size())
+	{
+		if (tolower(s1[i]) != tolower(s2[i]))
+			return (false);
+		i++;
+	}
+	return (true);
+}
+
 std::string	composeModeResponse(std::vector<std::string> modeAndArguments)
 {
 	std::vector<std::string>::iterator	it2;

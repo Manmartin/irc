@@ -45,7 +45,7 @@ void	Channel::joinWelcomeSequence(Client& c)
 	c.sendReply(usersString);
 	c.sendReply(RPL_ENDOFNAMES(c.getNickname(), this->_name));
 	this->channelModes(c);
-//	c.sendReply(RPL_CREATIONTIME(c.getNickname(), this->_name, "0"));
+	c.sendReply(RPL_CREATIONTIME(c.getNickname(), this->_name, "0"));
 }
 
 void	Channel::join(Client *client)
@@ -54,9 +54,10 @@ void	Channel::join(Client *client)
 		this->users.push_back(client);
 }
 
-void	Channel::who(Client& client)
+void	Channel::who(Client&)
 {
-	client.sendReply(RPL_CREATIONTIME(client.getNickname(), this->_name, "0"));
+	
+//	client.sendReply(RPL_CREATIONTIME(client.getNickname(), this->_name, "0"));
 }
 
 std::string	Channel::getName(void) const
@@ -345,6 +346,7 @@ void	Channel::mode(std::list<std::string> params, Client& c)
 void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments, Client& executor)
 {
 	Client*					user;
+	std::string				modes = "knmtlsiovb";
 
 	if (sign == '+' && c == 'k')
 	{
@@ -503,7 +505,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		}
 		it++;
 	}
-	else
+	else if (modes.find(c) == std::string::npos)
 		executor.sendReply(ERR_UNKNOWNMODE(executor.getNickname(), c));
 		//send unknown mode character
 //	std::cout << getUsersAsString() << std::endl;
