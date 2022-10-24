@@ -59,6 +59,9 @@ class Server {
 		Client&	lookClientByFd(int fd);
 		void	printUsers(Channel *channel);
 
+//PART
+		void	part(std::string channelsAndReason, Client& c);
+
 //WHO
 		void	who(Client &client, Client *who);
 		void	whois(Client &client, Client *who);

@@ -212,6 +212,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		user(value, c);
 	else if (compareCaseInsensitive(key, "JOIN"))
 		this->joinUserToChannels(value, &c);
+	else if (compareCaseInsensitive(key, "PART"))
+		this->part(value, c);
 	else if (compareCaseInsensitive(key, "WHO"))
 	{
 		
@@ -439,13 +441,51 @@ void	Server::whois(Client &client, Client *who)
 		else if ((*it)->isNormalUser(who->getNickname()))
 			channels += ((*it)->getName() + " ");
 	}
-	std::cout << "channels: " << channels << std::endl;
 	client.sendReply(RPL_WHOISUSER(client.getNickname(), who->getNickname(), who->getUser(), who->getServer(), who->getRealName()));
 	client.sendReply(RPL_WHOISCHANNELS(client.getNickname(), who->getNickname(), channels));
 	client.sendReply(RPL_WHOISSERVER(client.getNickname(), who->getNickname(), who->getServer(), "#irc42 beta"));
 	client.sendReply(RPL_ENDOFWHOIS(client.getNickname(), who->getNickname()));
 
 }
+
+void	Server::part(std::string channelsAndReason, Client& c)
+{
+	//void	removeClientFromList(std::list<Client*> &l, std::string nickName);
+	std::list<std::string>				instructions;
+	std::list<std::string>				channelList;
+	std::list<std::string>::iterator	chIterator;
+	Channel*							channel;
+	std::list<Channel*>::iterator		it;
+	std::string							reason;
+	std::string							channels;
+	size_t								pos;
+
+	channel = NULL;
+	pos = 0;
+	pos = channelsAndReason.find(":");
+	if (pos == std::string::npos)
+		reason = "";
+	else
+		reason = channelsAndReason.substr(pos + 1, channelsAndReason.size() - 1);
+	channelList = split_cpp(channelsAndReason.substr(0, pos - 1), ',');
+	for (chIterator = channelList.begin(); chIterator != channelList.end(); chIterator++)
+	{
+		channel = findChannel(*chIterator);
+		if (channel && c.isInChannel(*chIterator))
+		{
+			channel->broadcast_except_myself(BROADCAST_PART(c.getLogin(), *chIterator, reason), c);
+			channel->removeClientFromChannel(c.getNickname());
+			c.leaveChannel(*chIterator);
+			c.sendReply("PART " + (*chIterator));
+		}
+		else if (channel)
+			c.sendReply(ERR_NOTONCHANNEL(c.getNickname(), *chIterator));
+		else
+			c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), *chIterator));
+	}
+
+}
+
 
 void	Server::list(std::string instruction, Client &c)
 {

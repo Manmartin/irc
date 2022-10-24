@@ -34,10 +34,13 @@ class Client{
 
 		bool		isInvisible(void) const;
 		bool		isRegistered(void) const;
+		bool		isInChannel(std::string channel);
 
 		void		registerClient(void);
+		void		leaveChannel(std::string nickName);
 		void		processModeUser(char sign, char c, std::vector<std::string>& newModeUser);
 		void		sendReply(std::string msg);
+		
 
 
 	private:

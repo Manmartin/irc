@@ -263,6 +263,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 {
 	std::list<Client*>::iterator	it;
 
+	message += "\r\n";
 	for (it = users.begin(); it != users.end(); it++)
 	{
 		if (c.getFd() != (*it)->getFd())
@@ -316,6 +317,13 @@ void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)
 			break ;
 		}
 	}
+}
+
+void	Channel::removeClientFromChannel(std::string nickName)
+{
+	removeClientFromList(this->users, nickName);
+	removeClientFromList(this->_operators, nickName);
+	removeClientFromList(this->_voiced, nickName);
 }
 
 void	Channel::addClientToList(std::list<Client*> &l, Client* c)

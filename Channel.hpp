@@ -53,6 +53,7 @@ class Channel {
 		Client*	findUserInList(std::string nick, std::list<Client*> &l);
 		void	removeClientFromList(std::list<Client*> &l, std::string nickName);
 		void	addClientToList(std::list<Client*> &l, Client* c);
+		void	removeClientFromChannel(std::string nickName);
 
 		bool	isNormalUser(std::string nickName);
 		bool	isChannelOperator(std::string nickName);

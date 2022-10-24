@@ -96,6 +96,32 @@ bool	Client::isRegistered(void) const
 	return (this->_registered);
 }
 
+bool	Client::isInChannel(std::string channel)
+{
+	std::list<Channel*>::iterator	it;
+
+	for (it = this->_channels.begin(); it != this->_channels.end(); it++)
+	{
+		if ((*it)->getName().compare(channel) == 0)
+			return (true);
+	}
+	return (false);
+}
+
+void	Client::leaveChannel(std::string nickName)
+{
+	std::list<Channel*>::iterator	it;
+
+	for (it = this->_channels.begin(); it != this->_channels.end(); it++)
+	{
+		if ((*it)->getName().compare(nickName) == 0)
+		{
+			this->_channels.erase(it);
+			return ;
+		}
+	}
+}
+
 void	Client::registerClient(void)
 {
 	this->_registered = true;

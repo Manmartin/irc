@@ -4,6 +4,7 @@
 #define RPL_NICK(value) "NICK :" + value
 #define PONG(value) "PONG :" + value
 
+#define BROADCAST_PART(mask, channel, reason) ":" + mask + " PART " + channel + " :" + reason
 #define RPL_WELCOME(client, mask) "001 " + client + " :Welcome to irc42, " + mask
 #define RPL_YOURHOST(client, host) "002 " + client + " :Your host is " + host + " running version 0.1"
 #define RPL_CREATED(client, date) "003 " + client + " :This server was created " + date
