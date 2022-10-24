@@ -468,7 +468,8 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		user = getUser(*it);
 		if (user && isChannelOperator(*it))
 		{
-			addClientToList(this->users, user);
+			if (!isVoiced(*it))
+				addClientToList(this->users, user);
 			removeClientFromList(this->_operators, *it);
 			modeAndArguments[1] += "o";
 			modeAndArguments.push_back(*it);
@@ -492,9 +493,10 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 	else if (sign == '-' && c == 'v')
 	{
 		user = getUser(*it);
-		if (isVoiced(*it))
+		if (user && isVoiced(*it))
 		{
-			addClientToList(this->users, user);
+			if (!isChannelOperator(*it))
+				addClientToList(this->users, user);
 			removeClientFromList(this->_voiced, *it);
 			modeAndArguments[1] += "v";
 			modeAndArguments.push_back(*it);
@@ -509,11 +511,6 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 			modeAndArguments[0] += 'b';
 			modeAndArguments.push_back(user->getLogin());
 			addClientToList(this->_ban, user);
-		}
-		else if ((*it).size() == 0)
-		{
-			std::cout << "banned list" << std::endl;
-			//send banned list
 		}
 		it++;
 	}

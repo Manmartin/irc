@@ -423,8 +423,28 @@ void	Server::who(Client &client, Client *who)
 }
 
 void	Server::whois(Client &client, Client *who)
-{
+{	
+	std::list<Channel*>::iterator	it;
+	std::string						channels;
+
+	if (this->channels.size() == 0)
+		return ;
+	channels = "";
+	for (it = this->channels.begin(); it != this->channels.end(); it++)
+	{
+	 	if ((*it)->isChannelOperator(who->getNickname()))
+			channels += ("@" + (*it)->getName() + " ");
+		else if ((*it)->isVoiced(who->getNickname()))
+			channels += ("+" + (*it)->getName() + " ");
+		else if ((*it)->isNormalUser(who->getNickname()))
+			channels += ((*it)->getName() + " ");
+	}
+	std::cout << "channels: " << channels << std::endl;
 	client.sendReply(RPL_WHOISUSER(client.getNickname(), who->getNickname(), who->getUser(), who->getServer(), who->getRealName()));
+	client.sendReply(RPL_WHOISCHANNELS(client.getNickname(), who->getNickname(), channels));
+	client.sendReply(RPL_WHOISSERVER(client.getNickname(), who->getNickname(), who->getServer(), "#irc42 beta"));
+	client.sendReply(RPL_ENDOFWHOIS(client.getNickname(), who->getNickname()));
+
 }
 
 void	Server::list(std::string instruction, Client &c)
