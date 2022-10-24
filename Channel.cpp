@@ -51,13 +51,21 @@ void	Channel::joinWelcomeSequence(Client& c)
 void	Channel::join(Client *client)
 {
 	if (!isUserInChannel(client->getNickname()))
+	{
 		this->users.push_back(client);
+		client->getChannels().push_back(this);
+	}
 }
 
-void	Channel::who(Client&)
+void	Channel::who(Client& client)
 {
-	
-//	client.sendReply(RPL_CREATIONTIME(client.getNickname(), this->_name, "0"));
+	std::list<Client*>::iterator	it;
+	std::list<Client*>				allUsers;
+
+	allUsers = getAllUsers();
+	for (it = allUsers.begin(); it != allUsers.end(); it++)
+		client.sendReply(RPL_WHOREPLY(client.getNickname(), "*", (*it)->getUser(), (*it)->getServer(), (*it)->getServer(), (*it)->getNickname(), "H", "1", (*it)->getRealName()));
+	client.sendReply(RPL_ENDOFWHO(client.getNickname(), this->_name));
 }
 
 std::string	Channel::getName(void) const
@@ -70,9 +78,21 @@ std::string Channel::getTopic(void) const
 	return (_topic);
 }
 
-std::list<Client*>& Channel::getUsers(void)
+std::list<Client*> Channel::getAllUsers(void)
 {
-	return (this->users);
+	std::list<Client*>				allUsers;
+	std::list<Client*>::iterator	it;
+
+	for (it = this->_operators.begin(); it != this->_operators.end(); it++)
+		allUsers.push_back(*it);
+	for (it = this->users.begin(); it != this->users.end(); it++)
+		allUsers.push_back(*it);
+	for (it = this->_voiced.begin(); it != this->_voiced.end(); it++)
+	{
+		if (!isChannelOperator((*it)->getNickname()))
+			allUsers.push_back(*it);
+	}
+	return (allUsers);
 }
 
 Client* Channel::getUser(std::string nick)
@@ -119,7 +139,10 @@ std::string	Channel::getUsersAsString(void)
 	for (it = this->users.begin(); it != this->users.end(); it++)
 		users += (*it)->getNickname() + " ";
 	for (it = this->_voiced.begin(); it != this->_voiced.end(); it++)
-		users += "+" + (*it)->getNickname() + " ";
+	{
+		if (!isChannelOperator((*it)->getNickname()))
+			users += "+" + (*it)->getNickname() + " ";
+	}
 	return (users);
 }
 

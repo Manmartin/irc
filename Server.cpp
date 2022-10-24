@@ -148,7 +148,9 @@ void	Server::joinUserToChannels(std::string channels, Client *c)
 			continue ;
 		}
 		channel->join(c);
+		c->getChannels().push_back(channel);
 		channel->joinWelcomeSequence(*c);
+		std::cout << "channel size: " << channel->getAllUsers().size() << std::endl;
 	}
 }
 
@@ -157,7 +159,7 @@ void	Server::printUsers(Channel *channel)
 	std::list<Client*>::iterator it;
 	std::list<Client*> users;
 
-	users = channel->getUsers();
+	users = channel->getAllUsers();
 	std::cout << "--Users--" << std::endl;
 	for (it = users.begin(); it != users.end(); it++)
 		std::cout << (*it)->getNickname() << std::endl;
@@ -217,11 +219,17 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		client = getClient(value.substr(0, value.find(" ")));
 		if (!channel && !client)
 			return (c.sendReply(ERR_NOSUCHSERVER(c.getNickname(), firstParam)));
-	//	if (!channel)
-	//		return (who(c));
+		if (!channel)
+			return (this->who(c, client));
 		channel->who(c);
 		
-	}		
+	}
+	else if (compareCaseInsensitive(key, "WHOIS"))
+	{
+		client = getClient(value.substr(0, value.find(" ")));
+		if (client)
+			this->whois(c, client);
+	}
 	else if (compareCaseInsensitive(key, "KICK"))
 	{
 		if (c.isRegistered() == false)
@@ -408,10 +416,16 @@ void	Server::user(std::string instruction, Client &c)
 	//std::cout << "user: " << c.getUser() << " " << c.getRealName() << " " << c.getServer();
 }
 
-/*void	Server::who(Client &c)
+void	Server::who(Client &client, Client *who)
 {
-	return (RPL_WHOREPLY(
-}*/
+	client.sendReply(RPL_WHOREPLY(client.getNickname(), "*", who->getUser(), who->getServer(), who->getServer(), who->getNickname(), "H", "1", who->getRealName()));
+	client.sendReply(RPL_ENDOFWHO(client.getNickname(), who->getNickname()));
+}
+
+void	Server::whois(Client &client, Client *who)
+{
+	client.sendReply(RPL_WHOISUSER(client.getNickname(), who->getNickname(), who->getUser(), who->getServer(), who->getRealName()));
+}
 
 void	Server::list(std::string instruction, Client &c)
 {

@@ -4,8 +4,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <list>
+#include "Channel.hpp"
 #include <sys/socket.h>
 
+class Channel;
 class Client{
 	public:
 
@@ -22,6 +25,7 @@ class Client{
 		std::string	getLogin(void) const;
 		std::string	getRealName(void) const;
 		std::string	getServer(void) const;
+		std::list<Channel*>& getChannels(void);
 
 		void		setNick(std::string nickname);
 		void		setUser(std::string user);
@@ -38,13 +42,14 @@ class Client{
 
 	private:
 		Client(void);
-		std::string	_nickname;
-		std::string	_user;
-		std::string	_realName;
-		int			_fd;	
-		std::string	_server;
-		bool		_invisible;
-		bool		_registered;
+		std::string				_nickname;
+		std::string				_user;
+		std::string				_realName;
+		int						_fd;	
+		std::string				_server;
+		bool					_invisible;
+		bool					_registered;
+		std::list<Channel*>		_channels;
 //		Reply*		reply;
 };
 

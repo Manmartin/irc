@@ -12,6 +12,7 @@
 # include "utils.hpp"
 
 class Channel;
+class Client;
 class Server {
 
 	public:
@@ -57,6 +58,10 @@ class Server {
 		void	list(std::string instruction, Client &c);
 		Client&	lookClientByFd(int fd);
 		void	printUsers(Channel *channel);
+
+//WHO
+		void	who(Client &client, Client *who);
+		void	whois(Client &client, Client *who);
 
 	private:
 		Server(void);

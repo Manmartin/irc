@@ -9,6 +9,7 @@
 # include "Server.hpp"
 
 class Server;
+class Client;
 class Channel {
 
 	public:
@@ -19,7 +20,7 @@ class Channel {
 
 		std::string	getName(void) const;
 		std::string	getTopic(void) const;
-		std::list<Client*>& getUsers(void);
+		std::list<Client*> getAllUsers(void);
 		Client*	getUser(std::string nick);
 
 		void	broadcast(std::string message);

@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int fd, std::string server) : _nickname(""), _user(""), _realName(""), _fd(fd), _server(server), _invisible(false), _registered(false)
+Client::Client(int fd, std::string server) : _nickname(""), _user(""), _realName(""), _fd(fd), _server(server), _invisible(false), _registered(false), _channels(0)
 {
 	//reply = new Reply(this->server);	
 }
@@ -80,6 +80,12 @@ std::string	Client::getServer(void) const
 {
 	return (this->_server);
 }
+
+std::list<Channel*>& Client::getChannels(void)
+{
+	return (this->_channels);	
+}
+
 bool	Client::isInvisible(void) const
 {
 	return (this->_invisible);
