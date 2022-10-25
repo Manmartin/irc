@@ -551,6 +551,7 @@ void	Server::quit(std::string reason, Client& c)
 				clientsToInform.insert((*clientIterator)->getNickname());
 		}
 		c.leaveChannel((*it)->getName());
+		(*it)->removeClientFromChannel(c.getNickname());
 	}
 	payload = BROADCAST_QUIT(c.getLogin(), reason) + "\r\n";
 	for (clIt = clientsToInform.begin(); clIt != clientsToInform.end(); clIt++)

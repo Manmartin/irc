@@ -111,6 +111,7 @@ int main(void) {
 			if (fds[i].revents != POLLIN)
 			{
 				std::cout << "Error revents " << fds[i].revents << std::endl;
+				close (fds[i].fd);
 				fds[i].fd = -1;
 				//close(fds[i].fd);
 				//continue ;
