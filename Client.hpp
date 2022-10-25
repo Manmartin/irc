@@ -43,8 +43,6 @@ class Client{
 		void		leaveChannel(std::string nickName);
 		void		processModeUser(char sign, char c, std::vector<std::string>& newModeUser);
 		void		sendReply(std::string msg);
-		
-
 
 	private:
 		Client(void);
@@ -57,7 +55,6 @@ class Client{
 		bool					_registered;
 		std::list<Channel*>		_channels;
 		std::list<std::string>	_invited;
-//		Reply*		reply;
 };
 
 #endif

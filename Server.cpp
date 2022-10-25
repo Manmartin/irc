@@ -80,18 +80,22 @@ void	Server::addClient(Client* c)
 
 void	Server::removeClient(Client *c)
 {
-	std::list<Client*>::iterator it;
+	std::list<Client*>::iterator	it;
+	Client*							toFree;
 
 	for (it = this->clients.begin(); it != this->clients.end(); it++)
 	{
 		if ((*it)->getNickname() == c->getNickname())
 		{
+			toFree = (*it);
+			delete *it;
 			clients.erase(it);
 			this->_activeClients--;	
 			std::cout << "Removed " << c->getNickname() << std::endl;
 			break ;
 		}
 	}
+
 }
 
 Channel*	Server::findChannel(std::string channelName)
@@ -250,7 +254,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		
 	}
 	else if (compareCaseInsensitive(key, "QUIT"))
-		std::cout << "QUIT" << std::endl;
+		quit(value, c);
+		//std::cout << "QUIT" << std::endl;
 	else if (compareCaseInsensitive(key, "TOPIC"))
 	{
 		if (c.isRegistered() == false)
@@ -526,7 +531,32 @@ void	Server::invite(std::string instructions, Client &c)
 	send(client->getFd(), payload.c_str(), payload.size(), 0);
 }
 
+void	Server::quit(std::string reason, Client& c)
+{
+	std::set<std::string>			clientsToInform;
+	std::set<std::string>::iterator	clIt;
+	std::list<Channel*>				channels;
+	std::list<Client*>				clients;
+	std::list<Channel*>::iterator	it;
+	std::list<Client*>::iterator	clientIterator;
+	std::string						payload;
 
+	channels = c.getChannels();
+	for (it = channels.begin(); it != channels.end(); it++)
+	{
+		clients = (*it)->getAllUsers();
+		for (clientIterator = clients.begin(); clientIterator != clients.end(); clientIterator++)
+		{
+			if (c.getNickname().compare((*clientIterator)->getNickname()) != 0)
+				clientsToInform.insert((*clientIterator)->getNickname());
+		}
+		c.leaveChannel((*it)->getName());
+	}
+	payload = BROADCAST_QUIT(c.getLogin(), reason) + "\r\n";
+	for (clIt = clientsToInform.begin(); clIt != clientsToInform.end(); clIt++)
+		send(this->getClient(*clIt)->getFd(), payload.c_str(), payload.size(), 0);
+	removeClient(&c);
+}
 
 void	Server::list(std::string instruction, Client &c)
 {
@@ -553,7 +583,6 @@ void	Server::list(std::string instruction, Client &c)
 		c.sendReply(RPL_LIST(c.getNickname(), (*it2)->getName(), toString<size_t>((*it2)->countUsers()), (*it2)->getTopic()));
 	}
 	c.sendReply(RPL_LISTEND(c.getNickname()));
-//RPL_LISTEND
 
 }
 

@@ -6,6 +6,7 @@
 # include "Channel.hpp"
 # include "Reply.hpp"
 # include <list>
+# include <set>
 # include <string>
 # include <iostream>
 # include <string.h>
@@ -66,6 +67,9 @@ class Server {
 //PART
 		void	part(std::string channelsAndReason, Client& c);
 
+//QUIT
+		void	quit(std::string reason, Client& c);
+ 
 //WHO
 		void	who(Client &client, Client *who);
 		void	whois(Client &client, Client *who);

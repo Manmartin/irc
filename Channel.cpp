@@ -53,10 +53,7 @@ void	Channel::joinWelcomeSequence(Client& c)
 void	Channel::join(Client *client)
 {
 	if (!isUserInChannel(client->getNickname()))
-	{
 		this->users.push_back(client);
-		client->getChannels().push_back(this);
-	}
 }
 
 void	Channel::who(Client& client)
