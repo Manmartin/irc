@@ -28,6 +28,7 @@ class Server {
 
 		void	addClient(Client* c);
 		void	removeClient(Client *c);
+		void	removeChannel(Channel *c);
 
 		Channel*	findChannel(std::string channelName);
 		Client*		getClient(std::string nickname);

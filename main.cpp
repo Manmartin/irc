@@ -114,7 +114,7 @@ int main(void) {
 				close (fds[i].fd);
 				fds[i].fd = -1;
 				//close(fds[i].fd);
-				//continue ;
+				continue ;
 				//exit(1);
 			}
 			if (fds[i].fd == socketfd)

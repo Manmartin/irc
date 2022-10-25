@@ -465,7 +465,6 @@ void	Server::whois(Client &client, Client *who)
 
 void	Server::part(std::string channelsAndReason, Client& c)
 {
-	//void	removeClientFromList(std::list<Client*> &l, std::string nickName);
 	std::list<std::string>				instructions;
 	std::list<std::string>				channelList;
 	std::list<std::string>::iterator	chIterator;
@@ -492,6 +491,8 @@ void	Server::part(std::string channelsAndReason, Client& c)
 			channel->removeClientFromChannel(c.getNickname());
 			c.leaveChannel(*chIterator);
 			c.sendReply("PART " + (*chIterator));
+			if (channel->countUsers() == 0)
+				removeChannel(channel);
 		}
 		else if (channel)
 			c.sendReply(ERR_NOTONCHANNEL(c.getNickname(), *chIterator));
@@ -499,6 +500,21 @@ void	Server::part(std::string channelsAndReason, Client& c)
 			c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), *chIterator));
 	}
 
+}
+
+void	Server::removeChannel(Channel *c)
+{
+	std::list<Channel*>::iterator	it;
+
+	for (it = this->channels.begin(); it != this->channels.end(); it++)
+	{
+		if ((*it)->getName().compare(c->getName()) == 0)
+		{
+			this->channels.erase(it);	
+			break ;
+		}
+	}
+	delete c;
 }
 
 void	Server::invite(std::string instructions, Client &c)
@@ -552,10 +568,24 @@ void	Server::quit(std::string reason, Client& c)
 		}
 		c.leaveChannel((*it)->getName());
 		(*it)->removeClientFromChannel(c.getNickname());
+		std::cout << "users: " << (*it)->countUsers() << std::endl;
+		//if ((*it)->countUsers() == 0)
+//		{
+//			delete *it;
+//			this->channels.erase(it);
+//		}
+//		*/
+		//this->cleanChannel();
+	}
+	for (it = channels.begin(); it != channels.end(); it++)
+	{
+		if ((*it)->countUsers() == 0)
+			this->removeChannel(*it);
 	}
 	payload = BROADCAST_QUIT(c.getLogin(), reason) + "\r\n";
 	for (clIt = clientsToInform.begin(); clIt != clientsToInform.end(); clIt++)
 		send(this->getClient(*clIt)->getFd(), payload.c_str(), payload.size(), 0);
+
 	removeClient(&c);
 }
 
