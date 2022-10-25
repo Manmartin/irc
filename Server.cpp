@@ -81,17 +81,17 @@ void	Server::addClient(Client* c)
 void	Server::removeClient(Client *c)
 {
 	std::list<Client*>::iterator	it;
-	Client*							toFree;
+//	Client*							toFree;
 
 	for (it = this->clients.begin(); it != this->clients.end(); it++)
 	{
 		if ((*it)->getNickname() == c->getNickname())
 		{
-			toFree = (*it);
+//			toFree = (*it);
 			delete *it;
 			clients.erase(it);
-			this->_activeClients--;	
-			std::cout << "Removed " << c->getNickname() << std::endl;
+			this->_activeClients--;
+		//	std::cout << "Removed " << c->getNickname() << std::endl;
 			break ;
 		}
 	}

@@ -103,6 +103,7 @@ int main(void) {
 		current_size = nfds;
 		//find readable fds
 		std::cout << "Current size " << current_size  << std::endl;
+		
 		for (i = 0; i < current_size; i++)
 		{
 			if (fds[i].revents == 0)
@@ -110,7 +111,10 @@ int main(void) {
 			if (fds[i].revents != POLLIN)
 			{
 				std::cout << "Error revents " << fds[i].revents << std::endl;
-				exit(1);
+				fds[i].fd = -1;
+				//close(fds[i].fd);
+				//continue ;
+				//exit(1);
 			}
 			if (fds[i].fd == socketfd)
 			{
@@ -167,23 +171,15 @@ int main(void) {
 	    	            close(connectfd);
 	    	            break;
 	    	        }
-//					std::cout << readlen << " bytes received" << std::endl;	
-//	    	       	std::cout << msg << std::endl;
-					// std::cout << msg.length() << "    "<< j << std::endl;
-					// server.handleMessage(msg, fds[i].fd);
-
-				//	rc = send(fds[i].fd, reply.ping().c_str(), reply.ping().size(), 0);
-				//	rc = send(fds[i].fd, buff, len, 0);
 	    	        memset(buff, 0, sizeof(buff));
 					if (rc < 0)
 					{
 						perror(" send failed");
 						break;
 					}
-	    	       // std::cout << "Bucle\n";
 				}
+				if (fds[i].fd != -1)
 					server.handleMessage(msg, fds[i].fd);
-
 			}
         }
     }
