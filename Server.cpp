@@ -210,7 +210,9 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	if (compareCaseInsensitive(key, "PING"))
 		c.sendReply(PONG(value));
 	else if (compareCaseInsensitive(key, "PRIVMSG"))
-		privMsg(value, c);	
+		privMsg(value, c, false);	
+	else if (compareCaseInsensitive(key, "NOTICE"))
+		privMsg(value, c, true);
 	else if (compareCaseInsensitive(key, "NICK"))
 		nick(value, c);
 	else if (compareCaseInsensitive(key, "USER"))
@@ -337,7 +339,7 @@ void	Server::modeUser(std::string nickname, std::string modes, Client &c)
 		c.sendReply(RPL_UMODEIS(c.getNickname(), modeResponse));
 }
 
-void	Server::privMsg(std::string value, Client &c)
+void	Server::privMsg(std::string value, Client &c, bool notice)
 {
 	std::list<std::string>			targetList;
 	std::list<std::string>::iterator	it;
@@ -358,7 +360,7 @@ void	Server::privMsg(std::string value, Client &c)
 	while (position < value.size() && value[position] == ' ')
 		position++;
 	message = value.substr(position + 1, value.size() - position - 1);
-	if (message.size() < 0)
+	if (message.size() < 0 && !notice)
 	{
 		c.sendReply(ERR_NOTEXTTOSEND());
 		return ;
@@ -369,10 +371,10 @@ void	Server::privMsg(std::string value, Client &c)
 		channel = findChannel(*it);
 		destinationUser = getClient(*it);
 		if (channel)
-			channel->messageToChannel(message, c);
+			channel->messageToChannel(message, c, notice);
 		else if (destinationUser)
 			this->messageToUser(message, c, *destinationUser);
-		else
+		else if (!notice)
 			c.sendReply(ERR_NOSUCHNICK(c.getNickname(), *it));
 		it++;
 	}
@@ -396,6 +398,7 @@ void	Server::nick(std::string instruction, Client &c)
 		c.setNick(instruction);
 	}
 }
+
 void	Server::user(std::string instruction, Client &c)
 {
 	std::list<std::string>				values;

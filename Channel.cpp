@@ -577,21 +577,29 @@ void	Channel::banList(Client& c)
 	c.sendReply(RPL_ENDOFBANLIST(c.getNickname(), this->_name));
 }
 
-void	Channel::messageToChannel(std::string message, Client& c)
+void	Channel::messageToChannel(std::string message, Client& c, bool notice)
 {
 	std::string	payload;
 
-	payload = ":" + c.getLogin() + " PRIVMSG " + this->_name + " " + message + "\r\n";
+	if (!notice)
+		payload = ":" + c.getLogin() + " PRIVMSG " + this->_name + " " + message + "\r\n";
+	else
+		payload = ":" + c.getLogin() + " NOTICE " + this->_name + " " + message + "\r\n";
 	if (_moderated && !isChannelOperator(c.getNickname()) && !isVoiced(c.getNickname()))
-		return (c.sendReply(ERR_CANNOTSENDTOCHAN(c.getNickname(), this->_name, ", moderate mode is active")));
-		//std::cout << "only operators and voiced are allowed" << std::endl;
+	{
+		if (!notice)
+			return (c.sendReply(ERR_CANNOTSENDTOCHAN(c.getNickname(), this->_name, ", moderate mode is active")));
+	}
 	else if (isChannelOperator(c.getNickname()) || isVoiced(c.getNickname()))
 		this->broadcast_except_myself(payload, c);
 	else if (this->isBanned(c.getLogin()))
-		return (c.sendReply(ERR_CANNOTSENDTOCHAN(c.getNickname(), this->_name, ", you are banned")));
+	{
+		if (!notice)
+			return (c.sendReply(ERR_CANNOTSENDTOCHAN(c.getNickname(), this->_name, ", you are banned")));
+	}
 	else if (this->isUserInChannel(c.getNickname()) || !_noExternalMsg)
 		this->broadcast_except_myself(payload, c);
-	else
+	else if (!notice)
 		return (c.sendReply(ERR_CANNOTSENDTOCHAN(c.getNickname(), this->_name, ", no external messages are allowed in this channel")));
 		;
 }

@@ -50,7 +50,7 @@ class Server {
 //JOIN
 		void	messageToUser(std::string message, Client& c, Client& destination);
 		void	messageToPrivileged(std::string message, Client& c, std::string rawDestination);
-		void	privMsg(std::string value, Client &c);
+		void	privMsg(std::string value, Client &c, bool notice);
 
 //MODE
 
