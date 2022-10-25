@@ -13,6 +13,19 @@
 #include "Server.hpp"
 #include <ctime>
 
+void	reduceFds(struct pollfd *fds, int position, int *nfds)
+{
+	if (*nfds == 0)
+		return ;
+	for (int i = position; i < (*nfds) - 1; i++)
+	{
+		fds[i].fd = fds[i + 1].fd;
+		fds[i].events = fds[i + 1].events;
+		fds[i].revents = fds[i + 1].revents;
+	}
+	*nfds -= 1;
+}
+
 int main(void) {
     int socketfd;
 	int rc;
@@ -103,7 +116,7 @@ int main(void) {
 		current_size = nfds;
 		//find readable fds
 		std::cout << "Current size " << current_size  << std::endl;
-		
+
 		for (i = 0; i < current_size; i++)
 		{
 			if (fds[i].revents == 0)
@@ -113,8 +126,10 @@ int main(void) {
 				std::cout << "Error revents " << fds[i].revents << std::endl;
 				close (fds[i].fd);
 				fds[i].fd = -1;
+				reduceFds(fds, i, &nfds);
+				current_size = nfds;
 				//close(fds[i].fd);
-				continue ;
+				//continue ;
 				//exit(1);
 			}
 			if (fds[i].fd == socketfd)
