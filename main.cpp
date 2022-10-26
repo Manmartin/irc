@@ -102,7 +102,7 @@ int main(void) {
 	int i = 0;
     while (true) {
 		std::cout << "Waiting on poll..." << std::endl;
-		rc = poll(fds, nfds, 180000);
+		rc = poll(fds, nfds, -1);
 		if (rc < 0)
 		{
 			perror("poll() failed");
@@ -123,13 +123,13 @@ int main(void) {
 				continue;
 			if (fds[i].revents != POLLIN)
 			{
-				std::cout << "Error revents " << fds[i].revents << std::endl;
+				std::cout << "Error revents " << fds[i].revents << ", fd: " << i << std::endl;
 				close (fds[i].fd);
 				fds[i].fd = -1;
 				reduceFds(fds, i, &nfds);
 				current_size = nfds;
 				//close(fds[i].fd);
-				//continue ;
+				continue ;
 				//exit(1);
 			}
 			if (fds[i].fd == socketfd)
@@ -158,7 +158,7 @@ int main(void) {
 					server.addClient(client);
 				} while (connectfd != -1);
 			}
-			else
+			else if (fds[i].revents == POLLIN)
 			{
 	    	    std::string msg = "";
 	    	    memset(buff, 0, sizeof(buff));

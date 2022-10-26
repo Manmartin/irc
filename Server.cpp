@@ -176,8 +176,10 @@ void	Server::printUsers(Channel *channel)
 
 void	Server::handleMessage(std::string message, int fd)
 {
+	if (!fd || !lookClientByFd(fd))
+		return ;
 	std::cout << "\033[1;34mMessage from " << fd << "(" << 
-		lookClientByFd(fd).getNickname() << ")"
+		lookClientByFd(fd)->getNickname() << ")"
 		<< ":\n" << message << "\033[0m"<< std::endl;
 	std::string instruction;
 	size_t	position;
@@ -186,7 +188,7 @@ void	Server::handleMessage(std::string message, int fd)
 	while ((position = message.find("\r\n")) != std::string::npos)
 	{
 		instruction = message.substr(0, position);
-		parseMessage(instruction, lookClientByFd(fd));
+		parseMessage(instruction, *lookClientByFd(fd));
 		message.erase(0, position + 2);
 	}
 }
@@ -634,7 +636,7 @@ void	Server::messageToUser(std::string message, Client& c, Client& destination)
 	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
 
-Client&	Server::lookClientByFd(int fd)
+Client*	Server::lookClientByFd(int fd)
 {
 	std::list<Client*>::iterator it;
 
@@ -642,8 +644,8 @@ Client&	Server::lookClientByFd(int fd)
 	while (it != this->clients.end())
 	{
 		if ((*it)->getFd() == fd)
-			return (**it);
+			return (*it);
 		it++;
 	}
-	return (**it);
+	return (NULL);
 }

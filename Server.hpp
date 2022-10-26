@@ -62,7 +62,8 @@ class Server {
 
 //LIST
 		void	list(std::string instruction, Client &c);
-		Client&	lookClientByFd(int fd);
+	//	Client&	lookClientByFd(int fd);
+		Client*	lookClientByFd(int fd);
 		void	printUsers(Channel *channel);
 
 //PART
