@@ -13,18 +13,20 @@
 #include "Server.hpp"
 #include <ctime>
 
-void	reduceFds(struct pollfd *fds, int position, int *nfds)
+/*
+void	reduceFds(int position, int *nfds)
 {
 	if (*nfds == 0)
 		return ;
 	for (int i = position; i < (*nfds) - 1; i++)
 	{
-		fds[i].fd = fds[i + 1].fd;
-		fds[i].events = fds[i + 1].events;
-		fds[i].revents = fds[i + 1].revents;
+		this->fds[i].fd = this->fds[i + 1].fd;
+		this->fds[i].events = this->fds[i + 1].events;
+		this->fds[i].revents = this->fds[i + 1].revents;
 	}
 	*nfds -= 1;
 }
+*/
 
 int main(int argc, char **argv)
 {
@@ -38,15 +40,21 @@ int main(int argc, char **argv)
 	}
 	else
 		return (1);
+	Server server(5, 5, port, pass);
+	struct pollfd *fds;
+	fds = server.getFds();
 
-    int socketfd;
+	server.run();
+  /*  int socketfd;
 	int rc;
 	int	on;
     char buff[252];
-	struct pollfd fds[200];
+	//struct pollfd fds[200];
+
 	int	nfds = 1;
 	int current_size;
-	Server server(5, 5, pass);
+
+	//fds = new pollfd[200];
 
 	srand (time(NULL));
 
@@ -99,7 +107,7 @@ int main(int argc, char **argv)
     std::cout << "[Socket listened Port " << ntohs(serv_addr.sin_port) << "]\n";
 
 	//poll fds initialization
-   	memset(fds, 0 , sizeof(fds)); 
+   	memset(fds, 0 , sizeof(fds) * 200); 
 
 	fds[0].fd = socketfd;
 	fds[0].events = POLLIN;
@@ -127,7 +135,7 @@ int main(int argc, char **argv)
 		}
 		current_size = nfds;
 		//find readable fds
-		std::cout << "Connected users: " << current_size  << std::endl;
+		std::cout << "Connected users: " << current_size - 1  << std::endl;
 		for (i = 0; i < current_size; i++)
 		{
 			if (fds[i].revents == 0)
@@ -137,7 +145,7 @@ int main(int argc, char **argv)
 			//	std::cout << "Error revents " << fds[i].revents << ", fd: " << i << std::endl;
 				close (fds[i].fd);
 				fds[i].fd = -1;
-				reduceFds(fds, i, &nfds);
+				server.reduceFds(i, &nfds);
 				current_size = nfds;
 				continue ;
 			}
@@ -174,7 +182,7 @@ int main(int argc, char **argv)
 	    	        else if (readlen == 0) {
 						close (fds[i].fd);
 						fds[i].fd = -1;
-						reduceFds(fds, i, &nfds);
+						server.reduceFds(i, &nfds);
 						current_size = nfds;
 	    	            break;
 	    	        }
@@ -190,6 +198,9 @@ int main(int argc, char **argv)
 			}
         }
     }
+	
     close(socketfd);
+	*/
+	delete [] fds;
     return 0;
 }

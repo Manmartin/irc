@@ -4,7 +4,7 @@ Server::~Server(void)
 	std::cout << "Destroyed server" << std::endl;
 }
 
-Server::Server(int maxClients, int maxChannels, std::string pass) : _maxClients(maxClients), _maxChannels(maxChannels)
+Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _maxClients(maxClients), _maxChannels(maxChannels)
 {
 	this->_activeClients = 0;
 	this->_activeChannels = 0;
@@ -12,6 +12,10 @@ Server::Server(int maxClients, int maxChannels, std::string pass) : _maxClients(
 	this->_timestamp = std::time(nullptr);
 	std::localtime(&this->_timestamp);
 	this->_pass = this->encrypt(pass);
+	this->_fds = new pollfd[maxClients];
+	this->_nfds = 1;
+	this->_position = 0;
+	this->_port = port;
 }
 
 Server::Server(void)
@@ -88,7 +92,8 @@ void	Server::removeClient(Client *c)
 
 	for (it = this->clients.begin(); it != this->clients.end(); it++)
 	{
-		if ((*it)->getNickname() == c->getNickname())
+		//if ((*it)->getNickname() == c->getNickname())
+		if ((*it)->getFd() == c->getFd())
 		{
 //			toFree = (*it);
 			delete *it;
@@ -98,7 +103,7 @@ void	Server::removeClient(Client *c)
 			break ;
 		}
 	}
-
+	reduceFds();	
 }
 
 Channel*	Server::findChannel(std::string channelName)
@@ -189,21 +194,28 @@ void	Server::printUsers(Channel *channel)
 
 void	Server::handleMessage(std::string message, int fd)
 {
-	if (!fd || !lookClientByFd(fd))
+	Client	*c;
+	size_t	pos;
+
+	if (!fd)
 		return ;
+	c = lookClientByFd(fd);
+	if (!c)
+		return ;
+	pos = 0;
 	std::cout << "\033[1;34mMessage from " << fd << "(" << 
 		lookClientByFd(fd)->getNickname() << ")"
 		<< ":\n" << message << "\033[0m"<< std::endl;
 	std::string instruction;
-	size_t	position;
-
-	position = 0;
-	while ((position = message.find("\r\n")) != std::string::npos)
+	while ((pos = message.find("\r\n")) != std::string::npos)
 	{
-		instruction = message.substr(0, position);
-		parseMessage(instruction, *lookClientByFd(fd));
-		message.erase(0, position + 2);
+		instruction = message.substr(0, pos);
+		parseMessage(instruction, *c);
+		message.erase(0, pos + 2);
+		std::cout << "eooo" << std::endl;
 	}
+	if (!c->isChallengePassed())
+		return (removeClient(c));
 }
 
 void	Server::parseMessage(std::string instruction, Client &c)
@@ -226,7 +238,13 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	std::string	firstParam;
 
 	firstParam = value.substr(0, value.find(" "));
-	if (compareCaseInsensitive(key, "PING"))
+	if (compareCaseInsensitive(key, "CAP"))
+		return ;
+	else if (compareCaseInsensitive(key, "PASS"))
+		pass(value, c);
+	else if (!c.isChallengePassed())
+		return ;
+	else if (compareCaseInsensitive(key, "PING"))
 		c.sendReply(PONG(value));
 	else if (compareCaseInsensitive(key, "PRIVMSG"))
 		privMsg(value, c, false);	
@@ -236,8 +254,6 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		nick(value, c);
 	else if (compareCaseInsensitive(key, "USER"))
 		user(value, c);
-	else if (compareCaseInsensitive(key, "PASS"))
-		pass(value, c);
 	else if (compareCaseInsensitive(key, "JOIN"))
 		this->joinUserToChannels(value, &c);
 	else if (compareCaseInsensitive(key, "PART"))
@@ -291,6 +307,27 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		invite(value, c);
 	else
 		;
+}
+
+void	Server::reduceFds(void)
+{
+	if (_nfds == 0)
+		return ;
+	close (_fds[_position].fd);
+	_fds[_position].fd = -1;
+	std::cout << "closing " << _position << std::endl;
+	for (size_t i = _position; i < _nfds - 1; i++)
+	{
+		this->_fds[i].fd = this->_fds[i + 1].fd;
+		this->_fds[i].events = this->_fds[i + 1].events;
+		this->_fds[i].revents = this->_fds[i + 1].revents;
+	}
+	_nfds -= 1;
+}
+
+struct pollfd* Server::getFds(void)
+{
+	return (this->_fds);
 }
 
 void	Server::modeController(std::string modeInstruction, Client& c)
@@ -368,20 +405,20 @@ void	Server::privMsg(std::string value, Client &c, bool notice)
 	std::string						rawTargets;
 	std::string						message;
 	std::string						payload;
-	size_t							position;
+	//size_t							position;
 	Channel*						channel;
 	Client*							destinationUser;
 
 	if (c.isRegistered() == false)
 		return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
-	position = value.find(" ");
-	rawTargets = value.substr(0, position);
+	_position = value.find(" ");
+	rawTargets = value.substr(0, _position);
 	targetList = split_cpp(rawTargets, ',');
 	channel = NULL;
 	destinationUser = NULL;
-	while (position < value.size() && value[position] == ' ')
-		position++;
-	message = value.substr(position + 1, value.size() - position - 1);
+	while (_position < value.size() && value[_position] == ' ')
+		_position++;
+	message = value.substr(_position + 1, value.size() - _position - 1);
 	if (message.size() < 0 && !notice)
 	{
 		c.sendReply(ERR_NOTEXTTOSEND());
@@ -455,7 +492,10 @@ void	Server::user(std::string instruction, Client &c)
 
 void	Server::pass(std::string pass, Client &c)
 {
-	if (this->encrypt(pass).compare(this->_pass) == 0)
+
+	if (c.isRegistered())
+		c.sendReply(ERR_ALREADYREGISTERED(c.getNickname()));
+	else if (this->encrypt(pass).compare(this->_pass) == 0)
 		c.challengePassed();
 	else
 		c.sendReply(ERR_PASSWDMISMATCH(c.getNickname()));
@@ -674,4 +714,154 @@ Client*	Server::lookClientByFd(int fd)
 		it++;
 	}
 	return (NULL);
+}
+
+void	Server::run(void)
+{
+    int socketfd;
+	int rc;
+	int	on;
+    char buff[252];
+	size_t	current_size;
+
+	srand (time(NULL));
+	current_size = 0;
+	socketfd = -1;
+	on = 1;
+	rc = 1;
+	socketfd = -1;
+    if ((socketfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+        std::cerr << "Cant create socket\n";
+        return ;
+    }
+    std::cout << "[Socket created]\n";
+
+	//allow socket descriptor to be reuseable
+	rc = setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
+	if (rc < 0)
+	{
+		perror("setsockopt() failed");
+		close(socketfd);
+		exit(1);
+	}
+	rc = fcntl(socketfd, F_SETFL, O_NONBLOCK);
+
+	if (rc < 0)
+	{
+		perror("fcntl() failed");
+		close(socketfd);
+		exit(1);
+	}
+
+    struct sockaddr_in serv_addr;
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(this->_port);
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+
+    if (bind(socketfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) != 0){
+        std::cerr << "Cant bind socket\n";
+        close(socketfd);
+        return ;
+    }
+    std::cout << "[Socket binded]\n";
+    if (listen(socketfd, 32) != 0) {
+        std::cerr << "Socket listen failed\n";
+        close(socketfd);
+        return ;
+    }
+    std::cout << "[Socket listened Port " << ntohs(serv_addr.sin_port) << "]\n";
+
+	//poll fds initialization
+   	//memset(_fds, 0 , sizeof(_fds) * 200); 
+
+	_fds[0].fd = socketfd;
+	_fds[0].events = POLLIN;
+
+    struct sockaddr client;
+    unsigned int len = sizeof(client);
+    int connectfd, readlen;
+    std::string msg;
+
+	connectfd = -1;
+
+	//int i = 0;
+    while (true) {
+		std::cout << "Waiting on poll..." << std::endl;
+		rc = poll(_fds, _nfds, -1);
+		if (rc < 0)
+		{
+			perror("poll() failed");
+			exit(1);
+		}
+		if (rc == 0)
+		{
+			perror("poll() timeout");
+			exit(1);
+		}
+		current_size = _nfds;
+		//find readable fds
+		std::cout << "Connected users: " << current_size - 1  << std::endl;
+		for (_position = 0; _position < current_size; _position++)
+		{
+			if (_fds[_position].revents == 0)
+				continue;
+			if (_fds[_position].revents != POLLIN)
+			{
+			//	std::cout << "Error revents " << fds[i].revents << ", fd: " << i << std::endl;
+				close (_fds[_position].fd);
+				_fds[_position].fd = -1;
+				this->reduceFds();
+				current_size = _nfds;
+				continue ;
+			}
+			if (_fds[_position].fd == socketfd)
+			{
+				connectfd = accept(socketfd, &client, &len); 
+			 	if (connectfd < 0) 
+				{
+					if (errno != EWOULDBLOCK)
+					{
+		         		std::cerr << "Connection not accepted, accept() failed" << std::endl; 
+					}
+					break ;
+		       	}
+				_fds[_nfds].fd = connectfd;
+				_fds[_nfds].events = POLLIN;
+				_nfds++;
+				this->addClient(new Client(connectfd, "localhost"));
+			}
+			else if (_fds[_position].revents == POLLIN)
+			{
+	    	    std::string msg = "";
+	    	    memset(buff, 0, sizeof(buff));
+	    	    while (true) 
+				{
+	    	    	readlen = recv(_fds[_position].fd, buff, sizeof(buff), 0);
+	    	        msg = msg + buff;
+	    	        if (readlen == -1) 
+					{
+						if (errno != EWOULDBLOCK)
+							perror(" recv() failed");
+						break;
+	    	        }
+	    	        else if (readlen == 0) {
+						close (_fds[_position].fd);
+						_fds[_position].fd = -1;
+						this->reduceFds();
+						current_size = _nfds;
+	    	            break;
+	    	        }
+	    	        memset(buff, 0, sizeof(buff));
+					if (rc < 0)
+					{
+						perror(" send failed");
+						break;
+					}
+				}
+				if (_fds[_position].fd != -1)
+					this->handleMessage(msg, _fds[_position].fd);
+			}
+		}
+	}
 }

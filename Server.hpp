@@ -1,7 +1,10 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
+# include <sys/socket.h>
 # include <sys/poll.h>
+# include <netinet/in.h>
+# include <fcntl.h>
 # include "Client.hpp"
 # include "Channel.hpp"
 # include "Reply.hpp"
@@ -13,6 +16,7 @@
 # include "utils.hpp"
 # include <ctime>
 # include <iostream>
+# include <unistd.h>
 
 class Channel;
 class Client;
@@ -20,17 +24,20 @@ class Server {
 
 	public:
 		~Server();
-		Server(int maxClients, int maxChannels, std::string pass);
+		Server(int maxClients, int maxChannels, int port, std::string pass);
 
+		void		run(void);
 		int			getMaxClients(void) const;
 		int			getActiveClients(void) const;
 		int			getMaxChannels(void) const;
 		int			getActiveChannels(void) const;
 		std::string	getServerAddress(void) const;
+		struct pollfd* getFds(void);
 
 		void	addClient(Client* c);
 		void	removeClient(Client *c);
 		void	removeChannel(Channel *c);
+
 
 		Channel*	findChannel(std::string channelName);
 		Client*		getClient(std::string nickname);
@@ -42,6 +49,7 @@ class Server {
 		void	sendReply(Client &c, std::string);
 
 //SERVER UTILS
+		void		reduceFds(void);
 		Client*		lookClientByFd(int fd);
 		void		printUsers(Channel *channel);
 		std::string encrypt(std::string toEncrypt);
@@ -82,6 +90,7 @@ class Server {
 
 	private:
 		Server(void);
+		struct pollfd *_fds;
 
 		std::list<Client*> clients;
 		std::list<Channel*> channels;
@@ -92,6 +101,9 @@ class Server {
 		std::string		_serverAddress;
 		std::time_t		_timestamp;
 		std::string		_pass;
+		int				_port;
+		size_t			_nfds;
+		size_t			_position;
 };
 
 #endif

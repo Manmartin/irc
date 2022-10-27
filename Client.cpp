@@ -137,9 +137,15 @@ bool	Client::isPassOk(void)
 	return (_challengePassed);
 }
 
+
 void	Client::challengePassed(void)
 {
-	this->_challengePassed = true;
+	_challengePassed = true;
+}
+
+bool	Client::isChallengePassed(void)
+{
+	return(_challengePassed);
 }
 
 void	Client::leaveChannel(std::string nickName)
