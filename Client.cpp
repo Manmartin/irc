@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int fd, std::string server) : _nickname(""), _user(""), _realName(""), _fd(fd), _server(server), _invisible(false), _registered(false), _channels(0)
+Client::Client(int fd, std::string server) : _nickname(""), _user(""), _realName(""), _fd(fd), _server(server), _invisible(false), _registered(false), _channels(0), _challengePassed(false)
 {
 	//reply = new Reply(this->server);	
 }
@@ -132,6 +132,16 @@ bool	Client::isInChannel(std::string channel)
 	return (false);
 }
 
+bool	Client::isPassOk(void)
+{
+	return (_challengePassed);
+}
+
+void	Client::challengePassed(void)
+{
+	this->_challengePassed = true;
+}
+
 void	Client::leaveChannel(std::string nickName)
 {
 	std::list<Channel*>::iterator	it;
@@ -167,5 +177,5 @@ void	Client::sendReply(std::string msg)
 
 	payload = ":" + this->getLogin() + " " + msg + "\r\n";
 	send(this->_fd, payload.c_str(), payload.size(), 0);
-	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
+//	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }

@@ -4,11 +4,14 @@ Server::~Server(void)
 	std::cout << "Destroyed server" << std::endl;
 }
 
-Server::Server(int maxClients, int maxChannels) : _maxClients(maxClients), _maxChannels(maxChannels) 
+Server::Server(int maxClients, int maxChannels, std::string pass) : _maxClients(maxClients), _maxChannels(maxChannels)
 {
 	this->_activeClients = 0;
 	this->_activeChannels = 0;
 	this->_serverAddress = "localhost";
+	this->_timestamp = std::time(nullptr);
+	std::localtime(&this->_timestamp);
+	this->_pass = this->encrypt(pass);
 }
 
 Server::Server(void)
@@ -110,6 +113,16 @@ Channel*	Server::findChannel(std::string channelName)
 		it++;
 	}
 	return (NULL);
+}
+
+std::string Server::encrypt(std::string toEncrypt) 
+{
+	std::string output = toEncrypt;
+	std::string key = std::to_string(this->_timestamp);
+ 
+    for (size_t i = 0; i < toEncrypt.size(); i++)
+		output[i] = toEncrypt[i] ^ key[i % (sizeof(key) / sizeof(char))]; 
+    return output;
 }
 
 void	Server::joinUserToChannels(std::string channels, Client *c)
@@ -223,6 +236,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		nick(value, c);
 	else if (compareCaseInsensitive(key, "USER"))
 		user(value, c);
+	else if (compareCaseInsensitive(key, "PASS"))
+		pass(value, c);
 	else if (compareCaseInsensitive(key, "JOIN"))
 		this->joinUserToChannels(value, &c);
 	else if (compareCaseInsensitive(key, "PART"))
@@ -396,8 +411,11 @@ void	Server::nick(std::string instruction, Client &c)
 	else if (c.getUser().length() > 0)
 	{
 		c.setNick(instruction);
-		welcomeSequence(c);	
-		c.registerClient();
+		if (c.isPassOk())
+		{
+			welcomeSequence(c);	
+			c.registerClient();
+		}
 	}
 	else
 	{
@@ -427,12 +445,20 @@ void	Server::user(std::string instruction, Client &c)
 	//not sure about this setter,it'd be better to get it from the connection info
 //	c.setServer(*it);
 	c.setRealName(realName);
-	if (c.getNickname().size() > 0)
+	if (c.getNickname().size() > 0 && c.isPassOk())
 	{
 		welcomeSequence(c);
 		c.registerClient();
 	}
 	//std::cout << "user: " << c.getUser() << " " << c.getRealName() << " " << c.getServer();
+}
+
+void	Server::pass(std::string pass, Client &c)
+{
+	if (this->encrypt(pass).compare(this->_pass) == 0)
+		c.challengePassed();
+	else
+		c.sendReply(ERR_PASSWDMISMATCH(c.getNickname()));
 }
 
 void	Server::who(Client &client, Client *who)
@@ -633,7 +659,7 @@ void	Server::messageToUser(std::string message, Client& c, Client& destination)
 
 	payload = ":" + c.getNickname() + " PRIVMSG " + destination.getNickname() +  " :" + message + "\r\n";
 	send(destination.getFd(), payload.c_str(), payload.size(), 0);
-	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
+//	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
 
 Client*	Server::lookClientByFd(int fd)

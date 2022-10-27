@@ -39,6 +39,8 @@ class Client{
 		bool		isInChannel(std::string channel);
 		bool		isInvited(std::string channel);
 
+		bool		isPassOk(void);
+		void		challengePassed(void);
 		void		registerClient(void);
 		void		leaveChannel(std::string nickName);
 		void		processModeUser(char sign, char c, std::vector<std::string>& newModeUser);
@@ -55,6 +57,7 @@ class Client{
 		bool					_registered;
 		std::list<Channel*>		_channels;
 		std::list<std::string>	_invited;
+		bool					_challengePassed;
 };
 
 #endif

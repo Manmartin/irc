@@ -26,7 +26,19 @@ void	reduceFds(struct pollfd *fds, int position, int *nfds)
 	*nfds -= 1;
 }
 
-int main(void) {
+int main(int argc, char **argv)
+{
+	int			port;
+	std::string	pass;
+
+	if (argc == 3)
+	{
+		port = atoi(argv[1]);
+		pass = argv[2];
+	}
+	else
+		return (1);
+
     int socketfd;
 	int rc;
 	int	on;
@@ -34,7 +46,7 @@ int main(void) {
 	struct pollfd fds[200];
 	int	nfds = 1;
 	int current_size;
-	Server server(5, 5);
+	Server server(5, 5, pass);
 
 	srand (time(NULL));
 
@@ -70,7 +82,7 @@ int main(void) {
     struct sockaddr_in serv_addr;
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(6667);
+    serv_addr.sin_port = htons(port);
     serv_addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(socketfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) != 0){
@@ -101,7 +113,7 @@ int main(void) {
 
 	int i = 0;
     while (true) {
-		std::cout << "Waiting on poll..." << std::endl;
+		//std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(fds, nfds, -1);
 		if (rc < 0)
 		{
@@ -115,76 +127,55 @@ int main(void) {
 		}
 		current_size = nfds;
 		//find readable fds
-		std::cout << "Current size " << current_size  << std::endl;
-
+		std::cout << "Connected users: " << current_size  << std::endl;
 		for (i = 0; i < current_size; i++)
 		{
 			if (fds[i].revents == 0)
 				continue;
 			if (fds[i].revents != POLLIN)
 			{
-				std::cout << "Error revents " << fds[i].revents << ", fd: " << i << std::endl;
+			//	std::cout << "Error revents " << fds[i].revents << ", fd: " << i << std::endl;
 				close (fds[i].fd);
 				fds[i].fd = -1;
 				reduceFds(fds, i, &nfds);
 				current_size = nfds;
-				//close(fds[i].fd);
 				continue ;
-				//exit(1);
 			}
 			if (fds[i].fd == socketfd)
 			{
-				do
+				connectfd = accept(socketfd, &client, &len); 
+			 	if (connectfd < 0) 
 				{
-					connectfd = accept(socketfd, &client, &len); 
-					// check something like    if (errno != WOULDBLOCK)
-				 	if (connectfd < 0) 
+					if (errno != EWOULDBLOCK)
 					{
-						if (errno != EWOULDBLOCK)
-						{
-		      	   			std::cerr << "Connection not accepted, accept() failed" << std::endl; 
-		      	   	//		close(socketfd);
-						}
-						break ;
-		      	 		//return -1;
-		      	  	}
-					std::cout << "New incoming connection " << connectfd << std::endl;
-					fds[nfds].fd = connectfd;
-					fds[nfds].events = POLLIN;
-					nfds++;
-
-					Client *client = new Client(connectfd, "localhost");
-	    	  	//	send(connectfd, reply.welcome(*client).c_str(), reply.welcome(*client).size() + 1, 0);
-					server.addClient(client);
-				} while (connectfd != -1);
+		         		std::cerr << "Connection not accepted, accept() failed" << std::endl; 
+					}
+					break ;
+		       	}
+				fds[nfds].fd = connectfd;
+				fds[nfds].events = POLLIN;
+				nfds++;
+				server.addClient(new Client(connectfd, "localhost"));
 			}
 			else if (fds[i].revents == POLLIN)
 			{
 	    	    std::string msg = "";
 	    	    memset(buff, 0, sizeof(buff));
-
-
-				// int j = 0;
-	    	    while (true) {
-
+	    	    while (true) 
+				{
 	    	    	readlen = recv(fds[i].fd, buff, sizeof(buff), 0);
-	    	       // readlen = recv(connectfd, buff, sizeof(buff), 0);
 	    	        msg = msg + buff;
-
 	    	        if (readlen == -1) 
 					{
 						if (errno != EWOULDBLOCK)
-						{
 							perror(" recv() failed");
-	    	           		//std::cerr << "Error reading from the client\n";
-						}
 						break;
-	    	           // return -1;
 	    	        }
 	    	        else if (readlen == 0) {
-	    	            std::cout << "[SERVER]: client socket closed\n";
-	    	            std::cout << msg << std::endl;
-	    	            close(connectfd);
+						close (fds[i].fd);
+						fds[i].fd = -1;
+						reduceFds(fds, i, &nfds);
+						current_size = nfds;
 	    	            break;
 	    	        }
 	    	        memset(buff, 0, sizeof(buff));

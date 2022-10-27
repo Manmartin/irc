@@ -11,6 +11,8 @@
 # include <iostream>
 # include <string.h>
 # include "utils.hpp"
+# include <ctime>
+# include <iostream>
 
 class Channel;
 class Client;
@@ -18,7 +20,7 @@ class Server {
 
 	public:
 		~Server();
-		Server(int maxClients, int maxChannels);
+		Server(int maxClients, int maxChannels, std::string pass);
 
 		int			getMaxClients(void) const;
 		int			getActiveClients(void) const;
@@ -39,11 +41,16 @@ class Server {
 		void	execInstruction(std::string key, std::string value, Client &c);
 		void	sendReply(Client &c, std::string);
 
+//SERVER UTILS
+		Client*		lookClientByFd(int fd);
+		void		printUsers(Channel *channel);
+		std::string encrypt(std::string toEncrypt);
 
 //USER REGISTRATION
 		void	nick(std::string instruction, Client &c);
 		bool	usedNick(std::string nickname);
 		void	user(std::string instruction, Client &c);
+		void	pass(std::string pass, Client &c);
 		void	welcomeSequence(Client& c);
 
 //INVITE
@@ -55,16 +62,12 @@ class Server {
 		void	privMsg(std::string value, Client &c, bool notice);
 
 //MODE
-
 		void	modeController(std::string modeInstruction, Client& c);
 		void	modeUser(std::string nickname, std::string modes, Client &c);
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments);
 
 //LIST
 		void	list(std::string instruction, Client &c);
-	//	Client&	lookClientByFd(int fd);
-		Client*	lookClientByFd(int fd);
-		void	printUsers(Channel *channel);
 
 //PART
 		void	part(std::string channelsAndReason, Client& c);
@@ -76,6 +79,7 @@ class Server {
 		void	who(Client &client, Client *who);
 		void	whois(Client &client, Client *who);
 
+
 	private:
 		Server(void);
 
@@ -86,8 +90,8 @@ class Server {
 		int				_maxChannels;
 		int				_activeChannels;
 		std::string		_serverAddress;
+		std::time_t		_timestamp;
+		std::string		_pass;
 };
-
-
 
 #endif
