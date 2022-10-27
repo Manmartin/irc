@@ -12,7 +12,7 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_timestamp = std::time(nullptr);
 	std::localtime(&this->_timestamp);
 	this->_pass = this->encrypt(pass);
-	this->_fds = new pollfd[maxClients];
+	this->_fds = new pollfd[maxClients + 1];
 	this->_nfds = 1;
 	this->_position = 0;
 	this->_port = port;
@@ -214,7 +214,8 @@ void	Server::handleMessage(std::string message, int fd)
 		message.erase(0, pos + 2);
 		std::cout << "eooo" << std::endl;
 	}
-	if (!c->isChallengePassed())
+	if (c->sayonara())
+	//if (!c->isChallengePassed())
 		return (removeClient(c));
 }
 
@@ -322,7 +323,7 @@ void	Server::reduceFds(void)
 		this->_fds[i].events = this->_fds[i + 1].events;
 		this->_fds[i].revents = this->_fds[i + 1].revents;
 	}
-	_nfds -= 1;
+	_nfds--;
 }
 
 struct pollfd* Server::getFds(void)
@@ -653,8 +654,8 @@ void	Server::quit(std::string reason, Client& c)
 	payload = BROADCAST_QUIT(c.getLogin(), reason) + "\r\n";
 	for (clIt = clientsToInform.begin(); clIt != clientsToInform.end(); clIt++)
 		send(this->getClient(*clIt)->getFd(), payload.c_str(), payload.size(), 0);
-
-	removeClient(&c);
+	c.terminator();	
+	//removeClient(&c);
 }
 
 void	Server::list(std::string instruction, Client &c)
@@ -818,6 +819,11 @@ void	Server::run(void)
 			if (_fds[_position].fd == socketfd)
 			{
 				connectfd = accept(socketfd, &client, &len); 
+				if (_nfds == _maxClients + 1)
+				{
+					close(connectfd);
+					continue ;
+				}
 			 	if (connectfd < 0) 
 				{
 					if (errno != EWOULDBLOCK)
@@ -826,6 +832,7 @@ void	Server::run(void)
 					}
 					break ;
 		       	}
+				std::cout << "connecting new in " << _nfds << std::endl;
 				_fds[_nfds].fd = connectfd;
 				_fds[_nfds].events = POLLIN;
 				_nfds++;
@@ -846,6 +853,7 @@ void	Server::run(void)
 						break;
 	    	        }
 	    	        else if (readlen == 0) {
+						std::cout << "read 0" << std::endl;
 						close (_fds[_position].fd);
 						_fds[_position].fd = -1;
 						this->reduceFds();

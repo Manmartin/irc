@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 	}
 	else
 		return (1);
-	Server server(5, 5, port, pass);
+	Server server(200, 200, port, pass);
 	struct pollfd *fds;
 	fds = server.getFds();
 

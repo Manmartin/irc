@@ -41,7 +41,7 @@ class Channel {
 //MODE
 		void	mode(std::list<std::string> params, Client& c);
 		void	channelModes(Client& c);
-		void	processMode(char sign, char c, std::list<std::string>::iterator &it);
+		void	processMode(char sign, char c, std::list<std::string> &params, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments, Client& executor);
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments, Client& executor);
 		void	banList(Client& c);
 //PRIVMSG && NOTICE
@@ -85,6 +85,7 @@ class Channel {
 		bool				_hasKey;
 		int					_userLimit;
 		std::string			_keypass;
+
 
 		Server				*_server;
 };

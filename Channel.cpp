@@ -367,7 +367,7 @@ void	Channel::mode(std::list<std::string> params, Client& c)
 		else if (modes[i] == '-')
 			sign = '-';
 		else
-			processMode(sign, modes[i], it, modeAndArguments, c);
+			processMode(sign, modes[i], params, it, modeAndArguments, c);
 		i++;
 	}
 	std::string	modeResponse;
@@ -378,12 +378,12 @@ void	Channel::mode(std::list<std::string> params, Client& c)
 	//std::cout << sss << std::endl;
 }
 
-void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments, Client& executor)
+void	Channel::processMode(char sign, char c, std::list<std::string> &params, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments, Client& executor)
 {
 	Client*					user;
 	std::string				modes = "knmtlsiovb";
 
-	if (sign == '+' && c == 'k')
+	if (sign == '+' && c == 'k' && it != params.end())
 	{
 		_keypass = *it;
 		_hasKey = true;
@@ -428,7 +428,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		_topicLock = false;
 		modeAndArguments[1] += "t";
 	}
-	else if (sign == '+' && c == 'l' && stoi(*it) > 0)
+	else if (sign == '+' && c == 'l' && it != params.end() && stoi(*it) > 0)
 	{
 		_userLimit = stoi(*it);
 		modeAndArguments.push_back(*it);
@@ -460,7 +460,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		_invitationRequired = false;
 		modeAndArguments[1] += "i";
 	}
-	else if (sign == '+' && c == 'o')
+	else if (sign == '+' && c == 'o' && it != params.end())
 	{
 		user = getUser(*it);
 		std::cout << "direction of user: " << &(*user) << std::endl;
@@ -475,7 +475,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		}
 		it++;
 	}
-	else if (sign == '-' && c == 'o')
+	else if (sign == '-' && c == 'o' && it != params.end())
 	{
 		user = getUser(*it);
 		if (user && isChannelOperator(*it))
@@ -488,7 +488,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		}
 		it++;
 	}
-	else if (sign == '+' && c == 'v')
+	else if (sign == '+' && c == 'v' && it != params.end())
 	{
 		user = getUser(*it);
 		if (user && !isVoiced(*it))
@@ -502,7 +502,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		}
 		it++;
 	}
-	else if (sign == '-' && c == 'v')
+	else if (sign == '-' && c == 'v' && it != params.end())
 	{
 		user = getUser(*it);
 		if (user && isVoiced(*it))
@@ -515,7 +515,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		}
 		it++;
 	}
-	else if (sign == '+' && c == 'b')
+	else if (sign == '+' && c == 'b' && it != params.end())
 	{
 		user = _server->getClient(*it);
 		if (user && !isBanned(user->getLogin()))
@@ -526,7 +526,7 @@ void	Channel::processMode(char sign, char c, std::list<std::string>::iterator &i
 		}
 		it++;
 	}
-	else if (sign == '-' && c == 'b')
+	else if (sign == '-' && c == 'b' && it != params.end())
 	{
 		user = _server->getClient(*it);
 		if (user && isBanned(user->getLogin()))

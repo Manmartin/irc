@@ -1,22 +1,22 @@
 NAME = ircserv
 
 CXX = clang++
-CXXFLAGS = -Wall -Wextra -Werror -O3 -std=c++98 
-DEBUGFLAGS = -O3 -g3 -fsanitize=address -fno-omit-frame-pointer
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 
+DEBUGFLAGS = -g -fsanitize=address
 INC = -I .
 
 SRCS = main.cpp Client.cpp Server.cpp Channel.cpp utils.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) $(INC) -c $< -o $@
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(INC) $(OBJS) -o $@
+	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) $(INC) $(OBJS) -o $@
 
-debug: $(OBJS)
+debug: $(OBJS) 
 	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) $(INC) $(OBJS) -o $(NAME) 
 
 clean:

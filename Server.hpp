@@ -94,8 +94,8 @@ class Server {
 
 		std::list<Client*> clients;
 		std::list<Channel*> channels;
-		int				_maxClients;
-		int				_activeClients;
+		size_t			_maxClients;
+		size_t			_activeClients;
 		int				_maxChannels;
 		int				_activeChannels;
 		std::string		_serverAddress;
