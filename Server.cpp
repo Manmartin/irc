@@ -751,6 +751,8 @@ void	Server::run(void)
 	int	on;
     char buff[252];
 	size_t	current_size;
+    struct	sockaddr_in6 serv_addr, client;
+	//char	clientAddress[INET6_ADDRSTRLEN];
 
 	srand (time(NULL));
 	current_size = 0;
@@ -758,12 +760,11 @@ void	Server::run(void)
 	on = 1;
 	rc = 1;
 	socketfd = -1;
-    if ((socketfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+    if ((socketfd = socket(AF_INET6, SOCK_STREAM, 0)) == -1) {
         std::cerr << "Cant create socket\n";
         return ;
     }
     std::cout << "[Socket created]\n";
-
 	//allow socket descriptor to be reuseable
 	rc = setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
 	if (rc < 0)
@@ -773,32 +774,30 @@ void	Server::run(void)
 		exit(1);
 	}
 	rc = fcntl(socketfd, F_SETFL, O_NONBLOCK);
-
 	if (rc < 0)
 	{
 		perror("fcntl() failed");
 		close(socketfd);
 		exit(1);
 	}
-
-    struct sockaddr_in serv_addr;
     memset(&serv_addr, 0, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(this->_port);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin6_family = AF_INET6;
+    serv_addr.sin6_port = htons(this->_port);
+    serv_addr.sin6_addr = in6addr_any;
 
-    if (bind(socketfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) != 0){
+    if (bind(socketfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
+    //if (bind(socketfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) != 0){
         std::cerr << "Cant bind socket\n";
         close(socketfd);
         return ;
     }
     std::cout << "[Socket binded]\n";
-    if (listen(socketfd, 32) != 0) {
+    if (listen(socketfd, 10) < 0) {
         std::cerr << "Socket listen failed\n";
         close(socketfd);
         return ;
     }
-    std::cout << "[Socket listened Port " << ntohs(serv_addr.sin_port) << "]\n";
+    std::cout << "[Socket listened Port " << ntohs(serv_addr.sin6_port) << "]\n";
 
 	//poll fds initialization
    	//memset(_fds, 0 , sizeof(_fds) * 200); 
@@ -806,7 +805,7 @@ void	Server::run(void)
 	_fds[0].fd = socketfd;
 	_fds[0].events = POLLIN;
 
-    struct sockaddr client;
+    //struct sockaddr client;
     unsigned int len = sizeof(client);
     int connectfd, readlen;
     std::string msg;
@@ -846,7 +845,7 @@ void	Server::run(void)
 				continue;
 			if (_fds[_position].revents != POLLIN)
 			{
-			//	std::cout << "Error revents " << fds[i].revents << ", fd: " << i << std::endl;
+				std::cout << "Error revents " << _fds[_position].revents << ", fd: " << _position << std::endl;
 				close (_fds[_position].fd);
 				_fds[_position].fd = -1;
 				this->reduceFds();
@@ -855,7 +854,10 @@ void	Server::run(void)
 			}
 			if (_fds[_position].fd == socketfd)
 			{
-				connectfd = accept(socketfd, &client, &len); 
+				//(stuct sockaddr*)
+				connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
+				//connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
+				//connectfd = accept(socketfd, &client, &len); 
 				if (_nfds == _maxClients + 1)
 				{
 					close(connectfd);
