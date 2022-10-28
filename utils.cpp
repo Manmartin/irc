@@ -1,5 +1,10 @@
 #include <utils.hpp>
 
+void	setTimestamp(std::time_t	*var)
+{
+	*var = std::time(nullptr);
+	std::localtime(var);
+}
 
 std::list<std::string>	split_cpp(std::string str, char c)
 {

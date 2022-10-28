@@ -53,6 +53,8 @@ class Server {
 		Client*		lookClientByFd(int fd);
 		void		printUsers(Channel *channel);
 		std::string encrypt(std::string toEncrypt);
+		void		pingAndClean(std::time_t currentTime);
+		void		cleanInactive(void);
 
 //USER REGISTRATION
 		void	nick(std::string instruction, Client &c);
@@ -105,6 +107,7 @@ class Server {
 		int				_port;
 		size_t			_nfds;
 		size_t			_position;
+		std::time_t		_lastPing;
 };
 
 #endif

@@ -110,6 +110,11 @@ std::list<Channel*>& Client::getChannels(void)
 	return (this->_channels);	
 }
 
+std::time_t& Client::getLastTimeSeen(void)
+{
+	return (this->_lastTimeSeenAt);
+}
+
 bool	Client::isInvisible(void) const
 {
 	return (this->_invisible);

@@ -243,6 +243,7 @@ void	Channel::broadcast(std::string message)
 {
 	std::list<Client*>::iterator	it;
 		
+	message += "\r\n";
 	for (it = users.begin(); it != users.end(); it++)
 	{
 		send((*it)->getFd(), message.c_str(), message.size(), 0); 
@@ -273,7 +274,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 		if (c.getFd() != (*it)->getFd())
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 		}
 	}
 	for (it = _operators.begin(); it != _operators.end(); it++)
@@ -281,7 +282,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 		if (c.getFd() != (*it)->getFd())
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 		}
 	}
 	for (it = _voiced.begin(); it != _voiced.end(); it++)
@@ -289,7 +290,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 		if (c.getFd() != (*it)->getFd() && !isChannelOperator((*it)->getNickname()))
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 		}
 	}
 }
@@ -579,9 +580,9 @@ void	Channel::messageToChannel(std::string message, Client& c, bool notice)
 	std::string	payload;
 
 	if (!notice)
-		payload = ":" + c.getLogin() + " PRIVMSG " + this->_name + " " + message + "\r\n";
+		payload = ":" + c.getLogin() + " PRIVMSG " + this->_name + " :" + message + "\r\n";
 	else
-		payload = ":" + c.getLogin() + " NOTICE " + this->_name + " " + message + "\r\n";
+		payload = ":" + c.getLogin() + " NOTICE " + this->_name + " :" + message + "\r\n";
 	if (_moderated && !isChannelOperator(c.getNickname()) && !isVoiced(c.getNickname()))
 	{
 		if (!notice)

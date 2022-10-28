@@ -25,6 +25,7 @@ class Client{
 		std::string	getLogin(void) const;
 		std::string	getRealName(void) const;
 		std::string	getServer(void) const;
+		std::time_t &getLastTimeSeen(void);
 		std::list<std::string>& getInvited(void);
 		void			addInvited(std::string channel);
 		std::list<Channel*>& getChannels(void);
@@ -62,6 +63,7 @@ class Client{
 		std::list<std::string>	_invited;
 		bool					_challengePassed;
 		bool					_sayonara;
+		std::time_t				_lastTimeSeenAt;
 };
 
 #endif

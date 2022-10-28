@@ -3,6 +3,7 @@
 
 #define RPL_NICK(value) "NICK :" + value
 #define PONG(value) "PONG :" + value
+#define PING(nick) "PING :" + nick
 #define INVITE(issuer, nick, channel) ":" + issuer + " INVITE " + nick + " " + channel
 #define BROADCAST_PART(mask, channel, reason) ":" + mask + " PART " + channel + " :" + reason
 #define BROADCAST_QUIT(mask, reason) ":" + mask + " QUIT " + reason
@@ -19,7 +20,7 @@
 #define RPL_WHOISCHANNELS(client, nick, channels) "319 " + client + " " + nick + " :" + channels
 #define RPL_LIST(client, channel, clientCount, topic) "322 " + client + " " + channel + " " + clientCount + " :" + topic
 #define RPL_LISTEND(client) "323 " + client + " :End of /LIST"
-#define RPL_CHANNELMODEIS(nick, channel, modes) "324 " + nick + " "  + channel + " " + modes + "\r\n"
+#define RPL_CHANNELMODEIS(nick, channel, modes) "324 " + nick + " "  + channel + " " + modes
 #define RPL_CREATIONTIME(client, channel, creationtime) "329 " + client + " " + channel + " " + creationtime
 #define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""
 #define RPL_INVITING(client, nick, channel)  "341 " + client + " " + nick + " " + channel

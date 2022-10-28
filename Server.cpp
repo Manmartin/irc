@@ -9,8 +9,7 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_activeClients = 0;
 	this->_activeChannels = 0;
 	this->_serverAddress = "localhost";
-	this->_timestamp = std::time(nullptr);
-	std::localtime(&this->_timestamp);
+	setTimestamp(&this->_timestamp);
 	this->_pass = this->encrypt(pass);
 	this->_fds = new pollfd[maxClients + 1];
 	this->_nfds = 1;
@@ -88,18 +87,15 @@ void	Server::addClient(Client* c)
 void	Server::removeClient(Client *c)
 {
 	std::list<Client*>::iterator	it;
-//	Client*							toFree;
 
 	for (it = this->clients.begin(); it != this->clients.end(); it++)
 	{
-		//if ((*it)->getNickname() == c->getNickname())
 		if ((*it)->getFd() == c->getFd())
 		{
 //			toFree = (*it);
 			delete *it;
 			clients.erase(it);
 			this->_activeClients--;
-		//	std::cout << "Removed " << c->getNickname() << std::endl;
 			break ;
 		}
 	}
@@ -203,7 +199,8 @@ void	Server::handleMessage(std::string message, int fd)
 	if (!c)
 		return ;
 	pos = 0;
-	std::cout << "\033[1;34mMessage from " << fd << "(" << 
+	setTimestamp(&c->getLastTimeSeen());
+	std::cout << "\033[1;34m" << c->getLastTimeSeen() << ": Message from " << fd << "(" << 
 		lookClientByFd(fd)->getNickname() << ")"
 		<< ":\n" << message << "\033[0m"<< std::endl;
 	std::string instruction;
@@ -259,7 +256,6 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		this->part(value, c);
 	else if (compareCaseInsensitive(key, "WHO"))
 	{
-		
 		channel = findChannel(value.substr(0, value.find(" ")));
 		client = getClient(value.substr(0, value.find(" ")));
 		if (!channel && !client)
@@ -267,7 +263,6 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		if (!channel)
 			return (this->who(c, client));
 		channel->who(c);
-		
 	}
 	else if (compareCaseInsensitive(key, "WHOIS"))
 	{
@@ -722,6 +717,33 @@ Client*	Server::lookClientByFd(int fd)
 	return (NULL);
 }
 
+void		Server::pingAndClean(std::time_t currentTime)
+{
+	std::list<Client*>::iterator it;	
+	std::string	payload;
+	payload = "";
+	for(it = clients.begin(); it != clients.end(); it++)
+	{
+		if (currentTime - (*it)->getLastTimeSeen() > 10)
+		{
+			this->quit("User was inactive for a long time", (**it));
+			this->removeClient(*it);
+			break ;
+		}
+		if (currentTime - (*it)->getLastTimeSeen() > 3)
+		{
+			payload = PING((*it)->getNickname()) + "\r\n";
+			send((*it)->getFd(), payload.c_str(), payload.size(), 0);
+		}
+	}
+	setTimestamp(&this->_lastPing);
+}
+
+void		Server::cleanInactive(void)
+{
+	return ;
+}
+
 void	Server::run(void)
 {
     int socketfd;
@@ -788,13 +810,22 @@ void	Server::run(void)
     unsigned int len = sizeof(client);
     int connectfd, readlen;
     std::string msg;
+	std::time_t	currentTime;
 
 	connectfd = -1;
-
+	setTimestamp(&this->_lastPing);
 	//int i = 0;
     while (true) {
-		std::cout << "Waiting on poll..." << std::endl;
-		rc = poll(_fds, _nfds, -1);
+		//std::cout << "Waiting on poll..." << std::endl;
+		rc = poll(_fds, _nfds, 5);
+		current_size = _nfds;
+		setTimestamp(&currentTime);
+		//std::cout << currentTime << " " << this->_lastPing << " " << currentTime - this->_lastPing << std::endl;
+		if (currentTime - this->_lastPing > 5)
+		{
+			pingAndClean(currentTime);
+			cleanInactive();
+		}
 		if (rc < 0)
 		{
 			perror("poll() failed");
@@ -802,12 +833,13 @@ void	Server::run(void)
 		}
 		if (rc == 0)
 		{
-			perror("poll() timeout");
-			exit(1);
+
+			//perror("poll() timeout");
+			//exit(1);
 		}
-		current_size = _nfds;
+
 		//find readable fds
-		std::cout << "Connected users: " << current_size - 1  << std::endl;
+		//std::cout << "Connected users: " << current_size - 1  << std::endl;
 		for (_position = 0; _position < current_size; _position++)
 		{
 			if (_fds[_position].revents == 0)
@@ -842,6 +874,7 @@ void	Server::run(void)
 				_fds[_nfds].events = POLLIN;
 				_nfds++;
 				this->addClient(new Client(connectfd, "localhost"));
+				std::cout << "Connected users: " << current_size - 1  << std::endl;
 			}
 			else if (_fds[_position].revents == POLLIN)
 			{

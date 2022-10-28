@@ -7,6 +7,7 @@
 #include <vector>
 #include <sstream>
 
+void	setTimestamp(std::time_t *var);
 std::list<std::string>	split_cpp(std::string str, char c);
 bool	anyDuplicatedChar(std::string str);
 std::string	composeModeResponse(std::vector<std::string> modeAndArguments);
