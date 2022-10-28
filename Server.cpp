@@ -212,10 +212,8 @@ void	Server::handleMessage(std::string message, int fd)
 		instruction = message.substr(0, pos);
 		parseMessage(instruction, *c);
 		message.erase(0, pos + 2);
-		std::cout << "eooo" << std::endl;
 	}
 	if (c->sayonara())
-	//if (!c->isChallengePassed())
 		return (removeClient(c));
 }
 
@@ -244,7 +242,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	else if (compareCaseInsensitive(key, "PASS"))
 		pass(value, c);
 	else if (!c.isChallengePassed())
-		return ;
+		c.terminator();	
 	else if (compareCaseInsensitive(key, "PING"))
 		c.sendReply(PONG(value));
 	else if (compareCaseInsensitive(key, "PRIVMSG"))
@@ -345,34 +343,46 @@ void	Server::modeController(std::string modeInstruction, Client& c)
 		return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
 	params = split_cpp(modeInstruction, ' ');
 	it = params.begin();
-	channel = findChannel(*it);
-	user = getClient(*it);
+	target = *it;
+	channel = findChannel(target);
+	user = getClient(target);
 	size = params.size();
 	if (size == 1 && channel)
 		return (channel->channelModes(c));
+	else if (size == 1 && user && target.compare(c.getNickname()) != 0)
+		return (c.sendReply(ERR_USERSDONTMATCH(c.getNickname())));
 	else if (size == 1 && user)
-		return ; // return user Mode
-	target = *it;
+		return (modeUser(user));
+	else if (!channel && target[0] == '#')
+		return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), target)));
+	else if (!user && target[0] != '#')
+		return (c.sendReply(ERR_NOSUCHNICK(c.getNickname(), target)));
 	it++;
 	modes = (*it);
 	if (anyDuplicatedChar(modes))
 		return ;
-	if (!channel && target[0] == '#')
-		return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), target)));
-	else if (channel)
+	if (channel)
 		channel->mode(params, c);
-	else if (usedNick(target))
-		modeUser(target, modes, c);
-	else
-		return (c.sendReply(ERR_NOSUCHNICK(c.getNickname(), target)));
+	else if (user)
+		changeModeUser(target, modes, c);
 }
 
-void	Server::modeUser(std::string nickname, std::string modes, Client &c)
+void	Server::modeUser(Client *user)
+{
+	std::string	modeResponse;
+
+	modeResponse = "";
+	if (user->isInvisible())
+		modeResponse += "i";
+	user->sendReply(RPL_UMODEIS(user->getNickname(), modeResponse));
+}
+
+
+void	Server::changeModeUser(std::string nickname, std::string modes, Client &c)
 {
 	char	sign;
 	std::vector<std::string>	newModeUser;
 	size_t						i;
-
 
 	sign = '+';
 	if (nickname.compare(c.getNickname()) != 0)
@@ -391,6 +401,7 @@ void	Server::modeUser(std::string nickname, std::string modes, Client &c)
 			c.processModeUser(sign, modes[i], newModeUser);
 		i++;
 	}
+	//std::cout << "siii " << *newModeUser.begin() << std::endl;
 	//this->broadcast(RPL_UMODEIS(c.getNickname(), modeResponse));
 	std::string	modeResponse;
 
@@ -493,13 +504,15 @@ void	Server::user(std::string instruction, Client &c)
 
 void	Server::pass(std::string pass, Client &c)
 {
-
 	if (c.isRegistered())
 		c.sendReply(ERR_ALREADYREGISTERED(c.getNickname()));
 	else if (this->encrypt(pass).compare(this->_pass) == 0)
 		c.challengePassed();
 	else
+	{
 		c.sendReply(ERR_PASSWDMISMATCH(c.getNickname()));
+		c.terminator();	
+	}
 }
 
 void	Server::who(Client &client, Client *who)
@@ -638,13 +651,6 @@ void	Server::quit(std::string reason, Client& c)
 		c.leaveChannel((*it)->getName());
 		(*it)->removeClientFromChannel(c.getNickname());
 		std::cout << "users: " << (*it)->countUsers() << std::endl;
-		//if ((*it)->countUsers() == 0)
-//		{
-//			delete *it;
-//			this->channels.erase(it);
-//		}
-//		*/
-		//this->cleanChannel();
 	}
 	for (it = channels.begin(); it != channels.end(); it++)
 	{
@@ -655,7 +661,6 @@ void	Server::quit(std::string reason, Client& c)
 	for (clIt = clientsToInform.begin(); clIt != clientsToInform.end(); clIt++)
 		send(this->getClient(*clIt)->getFd(), payload.c_str(), payload.size(), 0);
 	c.terminator();	
-	//removeClient(&c);
 }
 
 void	Server::list(std::string instruction, Client &c)

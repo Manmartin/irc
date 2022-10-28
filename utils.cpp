@@ -62,7 +62,8 @@ std::string	composeModeResponse(std::vector<std::string> modeAndArguments)
 	std::vector<std::string>::iterator	it2;
 	std::string	message;
 	bool	anyModeChange;
-	
+
+	std::cout << "yeeees" << std::endl;
 	message = "";
 	anyModeChange = false;
 	it2 = modeAndArguments.begin();

@@ -71,7 +71,8 @@ class Server {
 
 //MODE
 		void	modeController(std::string modeInstruction, Client& c);
-		void	modeUser(std::string nickname, std::string modes, Client &c);
+		void	changeModeUser(std::string nickname, std::string modes, Client &c);
+		void	modeUser(Client *user);
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments);
 
 //LIST

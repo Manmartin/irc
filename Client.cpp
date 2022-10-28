@@ -183,7 +183,7 @@ void	Client::sendReply(std::string msg)
 
 	payload = ":" + this->getLogin() + " " + msg + "\r\n";
 	send(this->_fd, payload.c_str(), payload.size(), 0);
-//	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
+	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
 
 void	Client::terminator(void)
