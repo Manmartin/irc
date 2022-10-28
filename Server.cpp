@@ -93,6 +93,8 @@ void	Server::removeClient(Client *c)
 		if ((*it)->getFd() == c->getFd())
 		{
 //			toFree = (*it);
+			std::cout << "closing " << c->getFd() << std::endl;
+			close(c->getFd());
 			delete *it;
 			clients.erase(it);
 			this->_activeClients--;
@@ -210,7 +212,7 @@ void	Server::handleMessage(std::string message, int fd)
 		parseMessage(instruction, *c);
 		message.erase(0, pos + 2);
 	}
-	if (c->sayonara())
+	if (c->sayonara() && c->getFd() > 0)
 		return (removeClient(c));
 }
 
@@ -305,17 +307,18 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 
 void	Server::reduceFds(void)
 {
-	if (_nfds == 0)
+	if (_nfds <= 1 || _position == 0)
 		return ;
-	close (_fds[_position].fd);
 	_fds[_position].fd = -1;
-	std::cout << "closing " << _position << std::endl;
+	_fds[_position].events = 0;
+	_fds[_position].revents = 0;
 	for (size_t i = _position; i < _nfds - 1; i++)
 	{
 		this->_fds[i].fd = this->_fds[i + 1].fd;
 		this->_fds[i].events = this->_fds[i + 1].events;
 		this->_fds[i].revents = this->_fds[i + 1].revents;
 	}
+	std::cout << "closed " << _position << std::endl;
 	_nfds--;
 }
 
@@ -724,19 +727,22 @@ void		Server::pingAndClean(std::time_t currentTime)
 	payload = "";
 	for(it = clients.begin(); it != clients.end(); it++)
 	{
-		if (currentTime - (*it)->getLastTimeSeen() > 10)
+		if (currentTime - (*it)->getLastTimeSeen() > 12)
 		{
+			std::cout << "inactivity" << std::endl;
 			this->quit("User was inactive for a long time", (**it));
 			this->removeClient(*it);
 			break ;
 		}
-		if (currentTime - (*it)->getLastTimeSeen() > 3)
+		else if (currentTime - (*it)->getLastTimeSeen() > 3)
 		{
 			payload = PING((*it)->getNickname()) + "\r\n";
 			send((*it)->getFd(), payload.c_str(), payload.size(), 0);
+			std::cout << "\033[1;31mServer reply to " << (*it)->getFd() << " ->" << payload << "\033[0m" << std::endl;
 		}
 	}
 	setTimestamp(&this->_lastPing);
+	
 }
 
 void		Server::cleanInactive(void)
@@ -750,12 +756,13 @@ void	Server::run(void)
 	int rc;
 	int	on;
     char buff[252];
-	size_t	current_size;
-    struct	sockaddr_in6 serv_addr, client;
-	//char	clientAddress[INET6_ADDRSTRLEN];
+	//size_t	current_size;
+    struct	sockaddr_in6	serv_addr;
+	struct sockaddr_storage	client;
+	char	clientAddress[INET6_ADDRSTRLEN];
 
 	srand (time(NULL));
-	current_size = 0;
+	//current_size = 0;
 	socketfd = -1;
 	on = 1;
 	rc = 1;
@@ -799,6 +806,7 @@ void	Server::run(void)
     }
     std::cout << "[Socket listened Port " << ntohs(serv_addr.sin6_port) << "]\n";
 
+	//std::cout << inet_ntop(AF_INET6, &serv_addr.sin6_addr, clientAddress, sizeof(clientAddress)) << std::endl;
 	//poll fds initialization
    	//memset(_fds, 0 , sizeof(_fds) * 200); 
 
@@ -806,7 +814,7 @@ void	Server::run(void)
 	_fds[0].events = POLLIN;
 
     //struct sockaddr client;
-    unsigned int len = sizeof(client);
+    socklen_t len = sizeof(client);
     int connectfd, readlen;
     std::string msg;
 	std::time_t	currentTime;
@@ -816,50 +824,64 @@ void	Server::run(void)
 	//int i = 0;
     while (true) {
 		//std::cout << "Waiting on poll..." << std::endl;
-		rc = poll(_fds, _nfds, 5);
-		current_size = _nfds;
+		rc = poll(_fds, _nfds, 1000);
+		//current_size = _nfds;
 		setTimestamp(&currentTime);
 		//std::cout << currentTime << " " << this->_lastPing << " " << currentTime - this->_lastPing << std::endl;
 		if (currentTime - this->_lastPing > 5)
 		{
 			pingAndClean(currentTime);
-			cleanInactive();
+			//cleanInactive();
 		}
+		std::cout << "pingandclean ok" << std::endl;
 		if (rc < 0)
 		{
 			perror("poll() failed");
 			exit(1);
 		}
-		if (rc == 0)
-		{
-
-			//perror("poll() timeout");
-			//exit(1);
-		}
-
 		//find readable fds
 		//std::cout << "Connected users: " << current_size - 1  << std::endl;
-		for (_position = 0; _position < current_size; _position++)
+		std::cout << "_nfds: " << _nfds << std::endl;
+		for (_position = 0; _position < _nfds; _position++)
 		{
+			std::cout << _position << std::endl;
+			if (_fds[_position].fd == -1)
+				continue ;
 			if (_fds[_position].revents == 0)
 				continue;
-			if (_fds[_position].revents != POLLIN)
+			if (_fds[_position].revents & (POLLERR|POLLHUP|POLLNVAL))
 			{
-				std::cout << "Error revents " << _fds[_position].revents << ", fd: " << _position << std::endl;
-				close (_fds[_position].fd);
-				_fds[_position].fd = -1;
-				this->reduceFds();
-				current_size = _nfds;
+				std::cout << "Error revents " << _fds[_position].revents << ", fd: " << _position << ", fd" << _fds[_position].fd << std::endl;
+				std::cout << "Active clients" << _activeClients << std::endl;
+				Client *cc = lookClientByFd(_fds[_position].fd);
+				if (cc)
+					removeClient(cc);
+				else
+					close (_fds[_position].fd);
 				continue ;
 			}
 			if (_fds[_position].fd == socketfd)
 			{
 				//(stuct sockaddr*)
 				connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
+				fcntl(connectfd, F_SETFL, O_NONBLOCK);
+				if (client.ss_family == AF_INET6)
+				{
+					struct sockaddr_in6 *cAddr = (struct sockaddr_in6 *)&client;
+					inet_ntop(AF_INET6, &cAddr->sin6_addr, clientAddress, sizeof(clientAddress));
+				}
+				else
+				{
+					struct sockaddr_in *cAddr = (struct sockaddr_in *)&client;
+					inet_ntop(AF_INET, &cAddr->sin_addr, clientAddress, sizeof(clientAddress));
+				}
+
+				std::cout << "ip: " << clientAddress << std::endl;
 				//connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
 				//connectfd = accept(socketfd, &client, &len); 
 				if (_nfds == _maxClients + 1)
 				{
+					std::cout << "max clients" << std::endl;
 					close(connectfd);
 					continue ;
 				}
@@ -871,12 +893,14 @@ void	Server::run(void)
 					}
 					break ;
 		       	}
-				std::cout << "connecting new in " << _nfds << std::endl;
+				std::cout << "connecting new in " << _nfds << " with fd " << connectfd << std::endl;
 				_fds[_nfds].fd = connectfd;
 				_fds[_nfds].events = POLLIN;
+				_fds[_nfds].revents = 0;
 				_nfds++;
 				this->addClient(new Client(connectfd, "localhost"));
-				std::cout << "Connected users: " << current_size - 1  << std::endl;
+				std::cout << "Connected users: " << _nfds - 1  << std::endl;
+				connectfd = -1;
 			}
 			else if (_fds[_position].revents == POLLIN)
 			{
@@ -894,10 +918,9 @@ void	Server::run(void)
 	    	        }
 	    	        else if (readlen == 0) {
 						std::cout << "read 0" << std::endl;
-						close (_fds[_position].fd);
-						_fds[_position].fd = -1;
+						close(_fds[_position].fd);
 						this->reduceFds();
-						current_size = _nfds;
+						//current_size = _nfds;
 	    	            break;
 	    	        }
 	    	        memset(buff, 0, sizeof(buff));
@@ -907,7 +930,7 @@ void	Server::run(void)
 						break;
 					}
 				}
-				if (_fds[_position].fd != -1)
+				if (_fds[_position].fd > 0)
 					this->handleMessage(msg, _fds[_position].fd);
 			}
 		}

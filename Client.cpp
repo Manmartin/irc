@@ -2,6 +2,7 @@
 
 Client::Client(int fd, std::string server) : _nickname(""), _user(""), _realName(""), _fd(fd), _server(server), _invisible(false), _registered(false), _channels(0), _challengePassed(false), _sayonara(false)
 {
+	setTimestamp(&_lastTimeSeenAt);
 	//reply = new Reply(this->server);	
 }
 
@@ -193,6 +194,7 @@ void	Client::sendReply(std::string msg)
 
 void	Client::terminator(void)
 {
+	std::cout << "sayonara " << this->getFd() << std::endl;
 	this->_sayonara = true;
 }
 
