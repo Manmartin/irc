@@ -50,7 +50,7 @@ class Server {
 		void	sendReply(Client &c, std::string);
 
 //SERVER UTILS
-		void		reduceFds(void);
+		void		reduceFds(int fd);
 		Client*		lookClientByFd(int fd);
 		void		printUsers(Channel *channel);
 		std::string encrypt(std::string toEncrypt);

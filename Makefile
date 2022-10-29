@@ -2,7 +2,7 @@ NAME = ircserv
 
 CXX = clang++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 
-DEBUGFLAGS = -g -fsanitize=address
+DEBUGFLAGS = -g #-fsanitize=address
 INC = -I .
 
 SRCS = main.cpp Client.cpp Server.cpp Channel.cpp utils.cpp

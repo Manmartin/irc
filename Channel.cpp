@@ -274,7 +274,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 		if (c.getFd() != (*it)->getFd())
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 		}
 	}
 	for (it = _operators.begin(); it != _operators.end(); it++)
@@ -282,7 +282,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 		if (c.getFd() != (*it)->getFd())
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 		}
 	}
 	for (it = _voiced.begin(); it != _voiced.end(); it++)
@@ -290,7 +290,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 		if (c.getFd() != (*it)->getFd() && !isChannelOperator((*it)->getNickname()))
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-			std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 		}
 	}
 }

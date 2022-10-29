@@ -87,21 +87,22 @@ void	Server::addClient(Client* c)
 void	Server::removeClient(Client *c)
 {
 	std::list<Client*>::iterator	it;
+	int	fd;
 
+	fd = -1;
 	for (it = this->clients.begin(); it != this->clients.end(); it++)
 	{
 		if ((*it)->getFd() == c->getFd())
 		{
-//			toFree = (*it);
-			std::cout << "closing " << c->getFd() << std::endl;
 			close(c->getFd());
+			fd = c->getFd();	
 			delete *it;
 			clients.erase(it);
 			this->_activeClients--;
 			break ;
 		}
 	}
-	reduceFds();	
+	reduceFds(fd);
 }
 
 Channel*	Server::findChannel(std::string channelName)
@@ -305,20 +306,29 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		;
 }
 
-void	Server::reduceFds(void)
+void	Server::reduceFds(int fd)
 {
-	if (_nfds <= 1 || _position == 0)
+	size_t	pos;
+	if (_nfds <= 1)
 		return ;
-	_fds[_position].fd = -1;
-	_fds[_position].events = 0;
-	_fds[_position].revents = 0;
-	for (size_t i = _position; i < _nfds - 1; i++)
+	pos = 1;
+	while (_fds[pos].fd != fd)
+		pos++;
+	if (_fds[pos].fd == fd)
+	{
+		this->_fds[pos].fd = -1;
+		this->_fds[pos].events = 0;
+		this->_fds[pos].revents = 0;
+	}
+	for (size_t i = pos; i < _nfds - 1; i++)
 	{
 		this->_fds[i].fd = this->_fds[i + 1].fd;
 		this->_fds[i].events = this->_fds[i + 1].events;
 		this->_fds[i].revents = this->_fds[i + 1].revents;
 	}
-	std::cout << "closed " << _position << std::endl;
+	this->_fds[_nfds - 1].fd = -1;
+	this->_fds[_nfds - 1].events = 0;
+	this->_fds[_nfds - 1].revents = 0;
 	_nfds--;
 }
 
@@ -738,7 +748,7 @@ void		Server::pingAndClean(std::time_t currentTime)
 		{
 			payload = PING((*it)->getNickname()) + "\r\n";
 			send((*it)->getFd(), payload.c_str(), payload.size(), 0);
-			std::cout << "\033[1;31mServer reply to " << (*it)->getFd() << " ->" << payload << "\033[0m" << std::endl;
+			//std::cout << "\033[1;31mServer reply to " << (*it)->getFd() << " ->" << payload << "\033[0m" << std::endl;
 		}
 	}
 	setTimestamp(&this->_lastPing);
@@ -823,17 +833,10 @@ void	Server::run(void)
 	setTimestamp(&this->_lastPing);
 	//int i = 0;
     while (true) {
-		//std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(_fds, _nfds, 1000);
-		//current_size = _nfds;
 		setTimestamp(&currentTime);
-		//std::cout << currentTime << " " << this->_lastPing << " " << currentTime - this->_lastPing << std::endl;
-		if (currentTime - this->_lastPing > 5)
-		{
+		if (currentTime - this->_lastPing > 3)
 			pingAndClean(currentTime);
-			//cleanInactive();
-		}
-		std::cout << "pingandclean ok" << std::endl;
 		if (rc < 0)
 		{
 			perror("poll() failed");
@@ -841,10 +844,9 @@ void	Server::run(void)
 		}
 		//find readable fds
 		//std::cout << "Connected users: " << current_size - 1  << std::endl;
-		std::cout << "_nfds: " << _nfds << std::endl;
+		//std::cout << "_nfds: " << _nfds << std::endl;
 		for (_position = 0; _position < _nfds; _position++)
 		{
-			std::cout << _position << std::endl;
 			if (_fds[_position].fd == -1)
 				continue ;
 			if (_fds[_position].revents == 0)
@@ -857,12 +859,15 @@ void	Server::run(void)
 				if (cc)
 					removeClient(cc);
 				else
+				{
 					close (_fds[_position].fd);
+					reduceFds(_fds[_position].fd); //not sure if necessary
+					//_fds[_position].fd = -1;
+				}
 				continue ;
 			}
 			if (_fds[_position].fd == socketfd)
 			{
-				//(stuct sockaddr*)
 				connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
 				fcntl(connectfd, F_SETFL, O_NONBLOCK);
 				if (client.ss_family == AF_INET6)
@@ -877,8 +882,6 @@ void	Server::run(void)
 				}
 
 				std::cout << "ip: " << clientAddress << std::endl;
-				//connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
-				//connectfd = accept(socketfd, &client, &len); 
 				if (_nfds == _maxClients + 1)
 				{
 					std::cout << "max clients" << std::endl;
@@ -919,8 +922,7 @@ void	Server::run(void)
 	    	        else if (readlen == 0) {
 						std::cout << "read 0" << std::endl;
 						close(_fds[_position].fd);
-						this->reduceFds();
-						//current_size = _nfds;
+						this->reduceFds(_fds[_position].fd);
 	    	            break;
 	    	        }
 	    	        memset(buff, 0, sizeof(buff));
