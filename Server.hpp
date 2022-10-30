@@ -9,6 +9,9 @@
 # include "Client.hpp"
 # include "Channel.hpp"
 # include "Reply.hpp"
+# include "Command.hpp"
+# include "Join.hpp"
+# include <map>
 # include <list>
 # include <set>
 # include <string>
@@ -21,6 +24,7 @@
 
 class Channel;
 class Client;
+class Command;
 class Server {
 
 	public:
@@ -42,7 +46,7 @@ class Server {
 
 		Channel*	findChannel(std::string channelName);
 		Client*		getClient(std::string nickname);
-		void	joinUserToChannels(std::string channelName, Client *c);
+		std::list<Channel*>& getChannels(void);
 
 		void	handleMessage(std::string message, int fd);
 		void	parseMessage(std::string message, Client &c);
@@ -52,7 +56,6 @@ class Server {
 //SERVER UTILS
 		void		reduceFds(int fd);
 		Client*		lookClientByFd(int fd);
-		void		printUsers(Channel *channel);
 		std::string encrypt(std::string toEncrypt);
 		void		pingAndClean(std::time_t currentTime);
 		void		cleanInactive(void);
@@ -109,6 +112,7 @@ class Server {
 		size_t			_nfds;
 		size_t			_position;
 		std::time_t		_lastPing;
+		std::map<std::string, Command*> _commands;
 };
 
 #endif

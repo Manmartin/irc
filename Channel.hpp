@@ -29,7 +29,7 @@ class Channel {
 //INVITE
 
 //JOIN
-		void	join(Client *client);
+		void	join(Client& client);
 		void	joinWelcomeSequence(Client& c);
 
 //KICK

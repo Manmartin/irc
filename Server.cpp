@@ -15,6 +15,28 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_nfds = 1;
 	this->_position = 0;
 	this->_port = port;
+
+	//Load commands and channel operations
+	/*this->_commands["PASS"] = new Registration(this);
+	this->_commands["NICK"] = new Registration(this);
+	this->_commands["USER"] = new Registration(this);
+	this->_commands["MODE"] = new Mode(this);
+	this->_commands["QUIT"] = new Leave(this);
+	*/
+	this->_commands["JOIN"] = new Join(this);
+/*	this->_commands["PART"] = new Leave(this);
+	this->_commands["TOPIC"] = new Topic(this);
+	//this->_commands["NAMES"] = new Names(this);
+	this->_commands["LIST"] = new List(this);
+	this->_commands["INVITE"] = new List(this);
+	this->_commands["KICK"] = new Kick(this);
+	this->_commands["PRIVMSG"] = new Privmsg(this);
+	this->_commands["NOTICE"] = new Privmsg(this);
+	this->_commands["WHO"] = new Who(this);
+	this->_commands["WHOIS"] = new Whois(this);
+	this->_commands["PING"] = new PingPong(this);
+	this->_commands["PONG"] = new PingPong(this);
+	*/
 }
 
 Server::Server(void)
@@ -129,68 +151,6 @@ std::string Server::encrypt(std::string toEncrypt)
     return output;
 }
 
-void	Server::joinUserToChannels(std::string channels, Client *c)
-{
-	std::list<std::string>::iterator	it;	
-	size_t								pos_start;
-	size_t								pos_end;
-	Channel*							channel;
-	std::string							channelName;
-
-	pos_start = 0;
-	pos_end = 0;
-	if (channels.size() == 1 && channels[0] == '0')
-		//part from all chanels of the client
-		;
-	if (c->isRegistered() == false)
-		return (c->sendReply(ERR_NOTREGISTERED(c->getNickname())));
-	while (pos_end != std::string::npos)
-	{
-		pos_end = channels.find(",", pos_start);
-
-		if (pos_end == std::string::npos)
-			channelName = channels.substr(pos_start, channels.size() - pos_start);
-		else
-			channelName = channels.substr(pos_start, pos_end - pos_start);
-		if (channelName.size() == 0)
-			continue ;
-		if (channelName[0] != '#')
-			return (c->sendReply(ERR_BADCHANMASK(channelName)));
-		channel = findChannel(channelName);
-		pos_start = pos_end + 1;
-		if (!channel)
-		{
-			this->channels.push_back(new Channel(channelName, c, this));
-			channel = findChannel(channelName);
-		}
-		else if (channel->isBanned(c->getLogin()))
-		{
-			c->sendReply(ERR_BANNEDFROMCHAN(c->getNickname(), channel->getName()));
-			continue ;
-		}
-		if (channel->isInvitationRequired() && !c->isInvited(channel->getName()))	
-		{
-			c->sendReply(ERR_INVITEONLYCHAN(c->getNickname(), channel->getName()));
-			continue ;
-		}
-		channel->join(c);
-		c->getChannels().push_back(channel);
-		channel->joinWelcomeSequence(*c);
-		std::cout << "channel size: " << channel->getAllUsers().size() << std::endl;
-	}
-}
-
-void	Server::printUsers(Channel *channel)
-{
-	std::list<Client*>::iterator it;
-	std::list<Client*> users;
-
-	users = channel->getAllUsers();
-	std::cout << "--Users--" << std::endl;
-	for (it = users.begin(); it != users.end(); it++)
-		std::cout << (*it)->getNickname() << std::endl;
-}
-
 void	Server::handleMessage(std::string message, int fd)
 {
 	Client	*c;
@@ -235,7 +195,12 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	Channel	*channel;
 	Client	*client;
 	std::string	firstParam;
+	Command *command = NULL;
+//	std::map<std::string, Command*> commands;
 
+//	Command *join = new Join(this);
+//	_commands["JOIN"] = join;
+	command = _commands[key];
 	firstParam = value.substr(0, value.find(" "));
 	if (compareCaseInsensitive(key, "CAP"))
 		return ;
@@ -253,8 +218,13 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		nick(value, c);
 	else if (compareCaseInsensitive(key, "USER"))
 		user(value, c);
-	else if (compareCaseInsensitive(key, "JOIN"))
-		this->joinUserToChannels(value, &c);
+	//else if (compareCaseInsensitive(key, "JOIN"))
+	//	this->joinUserToChannels(value, &c);
+	else if (command)
+	{
+		command->exec(value, c);
+		//this->joinUserToChannels(value, &c);
+	}
 	else if (compareCaseInsensitive(key, "PART"))
 		this->part(value, c);
 	else if (compareCaseInsensitive(key, "WHO"))
@@ -304,6 +274,11 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		invite(value, c);
 	else
 		;
+}
+
+std::list<Channel*>& Server::getChannels(void)
+{
+	return (this->channels);
 }
 
 void	Server::reduceFds(int fd)
