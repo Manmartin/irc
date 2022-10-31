@@ -17,6 +17,7 @@ void Join::exec(std::string params, Client& c){
 	Channel*							channel;
 	std::string							channelName;
 
+	this->separateParamsAndMessage(params);
 	pos_start = 0;
 	pos_end = 0;
 	if (params.size() == 1 && params[0] == '0')
@@ -40,7 +41,7 @@ void Join::exec(std::string params, Client& c){
 		pos_start = pos_end + 1;
 		if (!channel)
 		{
-			this->server->getChannels().push_back(new Channel(channelName, &c, server));
+			this->server->getChannels().push_back(new Channel(channelName, server));
 			channel = this->server->findChannel(channelName);
 		}
 		else if (channel->isBanned(c.getLogin()))

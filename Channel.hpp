@@ -13,7 +13,7 @@ class Client;
 class Channel {
 
 	public:
-		Channel(std::string name, Client* channelOperator, Server *s);
+		Channel(std::string name, Server *s);
 		~Channel(void);
 		Channel& operator=(Channel const &c);
 		Channel(Channel const &c);

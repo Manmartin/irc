@@ -5,13 +5,10 @@ Channel::Channel(void)
 {
 }
 
-Channel::Channel(std::string name, Client* channelOperator, Server *s) : _name(name), _topic("No topic"), _noExternalMsg(true), _topicLock(true), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false), _userLimit(-1)
+Channel::Channel(std::string name, Server *s) : _name(name), _topic("No topic"), _noExternalMsg(true), _topicLock(true), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false), _userLimit(-1)
 {
 	memset(_message, 0, 2048);
 	_server = s;
-	_operators.push_back(channelOperator);
-	channelOperator->getChannels().push_back(this);
-	this->joinWelcomeSequence(*channelOperator);
 }
 
 Channel::~Channel(void)
@@ -56,7 +53,10 @@ void	Channel::join(Client& client)
 {
 	if (isUserInChannel(client.getNickname()))
 		return ;
-	this->users.push_back(&client);
+	else if (!isUserInChannel(client.getNickname()) && countUsers() == 0)
+		this->_operators.push_back(&client);
+	else
+		this->users.push_back(&client);
 	client.getChannels().push_back(this);
 	this->joinWelcomeSequence(client);
 }
