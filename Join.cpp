@@ -1,5 +1,14 @@
 #include "Join.hpp"
 
+Join::Join(void) {
+}
+
+Join::Join(Server *s) : Command(s) {}
+
+Join::~Join(void)
+{
+}
+
 //todo: handle channels,* and keys,*. JOIN 0, more error handling
 void Join::exec(std::string params, Client& c){
 	std::list<std::string>::iterator	it;	

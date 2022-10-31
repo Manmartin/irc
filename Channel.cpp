@@ -8,8 +8,10 @@ Channel::Channel(void)
 Channel::Channel(std::string name, Client* channelOperator, Server *s) : _name(name), _topic("No topic"), _noExternalMsg(true), _topicLock(true), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false), _userLimit(-1)
 {
 	memset(_message, 0, 2048);
+	_server = s;
 	_operators.push_back(channelOperator);
-	_server = s;	
+	channelOperator->getChannels().push_back(this);
+	this->joinWelcomeSequence(*channelOperator);
 }
 
 Channel::~Channel(void)

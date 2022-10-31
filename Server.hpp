@@ -9,7 +9,7 @@
 # include "Client.hpp"
 # include "Channel.hpp"
 # include "Reply.hpp"
-# include "Command.hpp"
+//# include "Command.hpp"
 # include "Join.hpp"
 # include <map>
 # include <list>
@@ -25,6 +25,7 @@
 class Channel;
 class Client;
 class Command;
+//class Join;
 class Server {
 
 	public:
