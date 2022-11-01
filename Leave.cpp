@@ -68,4 +68,35 @@ void	Leave::part(std::string channelsAndReason, Client& client)
 	}
 }
 
+void	Leave::quit(std::string reason, Client& client)
+{
+	std::set<std::string>			clientsToInform;
+	std::set<std::string>::iterator	clIt;
+	std::list<Channel*>				channels;
+	std::list<Client*>				clients;
+	std::list<Channel*>::iterator	it;
+	std::list<Client*>::iterator	clientIterator;
+	std::string						payload;
 
+	channels = client.getChannels();
+	for (it = channels.begin(); it != channels.end(); it++)
+	{
+		clients = (*it)->getAllUsers();
+		for (clientIterator = clients.begin(); clientIterator != clients.end(); clientIterator++)
+		{
+			if (client.getNickname().compare((*clientIterator)->getNickname()) != 0)
+				clientsToInform.insert((*clientIterator)->getNickname());
+		}
+		client.leaveChannel((*it)->getName());
+		(*it)->removeClientFromChannel(client.getNickname());
+	}
+	for (it = channels.begin(); it != channels.end(); it++)
+	{
+		if ((*it)->countUsers() == 0)
+			this->server->removeChannel(*it);
+	}
+	payload = BROADCAST_QUIT(client.getLogin(), reason) + "\r\n";
+	for (clIt = clientsToInform.begin(); clIt != clientsToInform.end(); clIt++)
+		send(this->server->getClient(*clIt)->getFd(), payload.c_str(), payload.size(), 0);
+	client.terminator();
+}

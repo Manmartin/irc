@@ -9,7 +9,6 @@ Join::~Join(void)
 {
 }
 
-//todo: handle channels,* and keys,*. JOIN 0, more error handling
 void Join::exec(std::string params, Client& c){
 	Channel*							channel;
 	std::vector<std::string>			rawChannelsAndKeys;
@@ -17,10 +16,8 @@ void Join::exec(std::string params, Client& c){
 	std::vector<std::string>			keys;
 	std::map<std::string, std::string>	channelsAndItsKeys;
 
-//	this->_type = key;
 	if (params.size() == 1 && params[0] == '0')
 		return (this->server->callCommand("PART", params, c));
-		//part from all chanels of the client
 	if (c.isRegistered() == false)
 		return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
 	rawChannelsAndKeys = splitToVector(params, ' ');

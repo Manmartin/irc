@@ -204,6 +204,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	firstParam = value.substr(0, value.find(" "));
 	if (compareCaseInsensitive(key, "CAP"))
 		return ;
+	else if (command)
+		command->exec(value, c);
 	else if (compareCaseInsensitive(key, "PASS"))
 		pass(value, c);
 	else if (!c.isChallengePassed())
@@ -218,15 +220,6 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		nick(value, c);
 	else if (compareCaseInsensitive(key, "USER"))
 		user(value, c);
-	//else if (compareCaseInsensitive(key, "JOIN"))
-	//	this->joinUserToChannels(value, &c);
-	else if (command)
-	{
-		command->exec(value, c);
-		//this->joinUserToChannels(value, &c);
-	}
-//	else if (compareCaseInsensitive(key, "PART"))
-//		this->part(value, c);
 	else if (compareCaseInsensitive(key, "WHO"))
 	{
 		channel = findChannel(value.substr(0, value.find(" ")));
@@ -253,9 +246,6 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		channel->kick(value, c);
 		
 	}
-	else if (compareCaseInsensitive(key, "QUIT"))
-		quit(value, c);
-		//std::cout << "QUIT" << std::endl;
 	else if (compareCaseInsensitive(key, "TOPIC"))
 	{
 		if (c.isRegistered() == false)
@@ -578,40 +568,6 @@ void	Server::invite(std::string instructions, Client &c)
 	send(client->getFd(), payload.c_str(), payload.size(), 0);
 }
 
-void	Server::quit(std::string reason, Client& c)
-{
-	std::set<std::string>			clientsToInform;
-	std::set<std::string>::iterator	clIt;
-	std::list<Channel*>				channels;
-	std::list<Client*>				clients;
-	std::list<Channel*>::iterator	it;
-	std::list<Client*>::iterator	clientIterator;
-	std::string						payload;
-
-	channels = c.getChannels();
-	for (it = channels.begin(); it != channels.end(); it++)
-	{
-		clients = (*it)->getAllUsers();
-		for (clientIterator = clients.begin(); clientIterator != clients.end(); clientIterator++)
-		{
-			if (c.getNickname().compare((*clientIterator)->getNickname()) != 0)
-				clientsToInform.insert((*clientIterator)->getNickname());
-		}
-		c.leaveChannel((*it)->getName());
-		(*it)->removeClientFromChannel(c.getNickname());
-		std::cout << "users: " << (*it)->countUsers() << std::endl;
-	}
-	for (it = channels.begin(); it != channels.end(); it++)
-	{
-		if ((*it)->countUsers() == 0)
-			this->removeChannel(*it);
-	}
-	payload = BROADCAST_QUIT(c.getLogin(), reason) + "\r\n";
-	for (clIt = clientsToInform.begin(); clIt != clientsToInform.end(); clIt++)
-		send(this->getClient(*clIt)->getFd(), payload.c_str(), payload.size(), 0);
-	c.terminator();
-}
-
 void	Server::list(std::string instruction, Client &c)
 {
 	std::list<std::string>				channelNames;
@@ -681,7 +637,8 @@ void		Server::pingAndClean(std::time_t currentTime)
 		if (currentTime - (*it)->getLastTimeSeen() > 12)
 		{
 			std::cout << "inactivity" << std::endl;
-			this->quit("User was inactive for a long time", (**it));
+			this->callCommand("QUIT", "User was inactive for a long time", **it);
+			//this->quit("User was inactive for a long time", (**it));
 			this->removeClient(*it);
 			break ;
 		}

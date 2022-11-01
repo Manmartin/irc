@@ -3,13 +3,11 @@
 
 
 #include "Command.hpp"
-//#include "Server.hpp"
 #include "Client.hpp"
 #include <array>
 #include <iostream>
 #include <list>
 class Client;
-//class Command;
 class Server;
 class Channel;
 

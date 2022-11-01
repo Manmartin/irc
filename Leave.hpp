@@ -2,13 +2,11 @@
 # define LEAVE_HPP
 
 #include "Command.hpp"
-//#include "Server.hpp"
 #include "Client.hpp"
 #include <array>
 #include <iostream>
 #include <list>
 class Client;
-//class Command;
 class Server;
 class Channel;
 
@@ -23,6 +21,7 @@ class Leave : public Command
 	private:
 		void	part(std::string channelsAndReason, Client& client);
 		void	partFromAllChannels(Client &client);
+		void	quit(std::string reason, Client& client);
 	
 };
 
