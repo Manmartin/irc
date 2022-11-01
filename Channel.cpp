@@ -47,13 +47,9 @@ void	Channel::joinWelcomeSequence(Client& c)
 	c.sendReply(RPL_CREATIONTIME(c.getNickname(), this->_name, "0"));
 }
 
-
-
 void	Channel::join(Client& client)
 {
-	if (isUserInChannel(client.getNickname()))
-		return ;
-	else if (!isUserInChannel(client.getNickname()) && countUsers() == 0)
+	if (countUsers() == 0)
 		this->_operators.push_back(&client);
 	else
 		this->users.push_back(&client);
@@ -61,7 +57,14 @@ void	Channel::join(Client& client)
 	this->joinWelcomeSequence(client);
 }
 
-
+bool	Channel::keyChallengePassed(std::string submittedKey)
+{
+	if (!_hasKey)
+		return (true);
+	else if (this->_keypass.compare(submittedKey) == 0)
+		return (true);
+	return (false);
+}
 void	Channel::who(Client& client)
 {
 	std::list<Client*>::iterator	it;
@@ -248,7 +251,7 @@ void	Channel::kick(std::string kickInstruction, Client &c)
 void	Channel::broadcast(std::string message)
 {
 	std::list<Client*>::iterator	it;
-		
+
 	message += "\r\n";
 	for (it = users.begin(); it != users.end(); it++)
 	{

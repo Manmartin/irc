@@ -32,6 +32,32 @@ std::list<std::string>	split_cpp(std::string str, char c)
 	return (l);
 }
 
+std::vector<std::string>	splitToVector(std::string str, char c)
+{
+	size_t					i;
+	std::vector<std::string>	l;
+	std::string				sub;
+	size_t					pos;
+
+	i = 0;
+	pos = 0;
+	sub = "";
+	while (pos != std::string::npos)
+	{		
+		while (str[i] == ' ')
+		{
+			i++;
+			pos++;
+		}
+		pos = str.find(c, i);
+		sub = str.substr(i, pos - i);
+		if (sub != "")
+			l.push_back(sub);
+		i = pos + 1;
+	}
+	return (l);
+}
+
 bool	anyDuplicatedChar(std::string str)
 {
 	size_t							i;

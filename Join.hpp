@@ -23,6 +23,8 @@ class Join : public Command
 	
 	protected:
 		std::string cmd;
+	private:
+		void joinChannel(Channel *channel, Client& client, std::string submittedKey);
 };
 
 #endif

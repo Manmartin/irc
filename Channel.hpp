@@ -63,6 +63,7 @@ class Channel {
 		bool	isUserInChannel(std::string nickName);
 		bool	isInvitationRequired(void);
 		bool	isBanned(std::string mask);
+		bool	keyChallengePassed(std::string submittedKey);
 
 		size_t	countUsers(void);
 

@@ -11,50 +11,55 @@ Join::~Join(void)
 
 //todo: handle channels,* and keys,*. JOIN 0, more error handling
 void Join::exec(std::string params, Client& c){
-	std::list<std::string>::iterator	it;	
-	size_t								pos_start;
-	size_t								pos_end;
 	Channel*							channel;
-	std::string							channelName;
+	std::vector<std::string>			rawChannelsAndKeys;
+	std::vector<std::string>			channels;
+	std::vector<std::string>			keys;
+	std::map<std::string, std::string>	channelsAndItsKeys;
 
-	this->separateParamsAndMessage(params);
-	pos_start = 0;
-	pos_end = 0;
 	if (params.size() == 1 && params[0] == '0')
 		//part from all chanels of the client
-		;
+		return ;
 	if (c.isRegistered() == false)
 		return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
-	while (pos_end != std::string::npos)
+	rawChannelsAndKeys = splitToVector(params, ' ');
+	if (rawChannelsAndKeys.size() == 0 || rawChannelsAndKeys[0].size() == 0)
+		return (c.sendReply(ERR_NEEDMOREPARAMS(c.getNickname(), "JOIN")));
+	channels = splitToVector(rawChannelsAndKeys[0], ',');
+	if (rawChannelsAndKeys.size() == 1)
+		keys.push_back("");
+	else
+		keys = splitToVector(rawChannelsAndKeys[1], ',');
+	for (size_t	i = 0; i < channels.size(); i++)
 	{
-		pos_end = params.find(",", pos_start);
-
-		if (pos_end == std::string::npos)
-			channelName = params.substr(pos_start, params.size() - pos_start);
+		if (i < keys.size())
+			channelsAndItsKeys[channels[i]] = keys[i];
 		else
-			channelName = params.substr(pos_start, pos_end - pos_start);
-		if (channelName.size() == 0)
-			continue ;
-		if (channelName[0] != '#')
-			return (c.sendReply(ERR_BADCHANMASK(channelName)));
-		channel = this->server->findChannel(channelName);
-		pos_start = pos_end + 1;
+			channelsAndItsKeys[channels[i]] = "";
+		if (channels[i][0] != '#')
+			return (c.sendReply(ERR_BADCHANMASK(channels[i])));
+		channel = this->server->findChannel(channels[i]);
 		if (!channel)
 		{
-			this->server->getChannels().push_back(new Channel(channelName, server));
-			channel = this->server->findChannel(channelName);
+			this->server->getChannels().push_back(new Channel(channels[i], server));
+			channel = this->server->findChannel(channels[i]);
 		}
-		else if (channel->isBanned(c.getLogin()))
-		{
-			c.sendReply(ERR_BANNEDFROMCHAN(c.getNickname(), channel->getName()));
-			continue ;
-		}
-		if (channel->isInvitationRequired() && !c.isInvited(channel->getName()))	
-		{
-			c.sendReply(ERR_INVITEONLYCHAN(c.getNickname(), channel->getName()));
-			continue ;
-		}
-		channel->join(c);
+		this->joinChannel(channel, c, channelsAndItsKeys[channels[i]]);
 	}
 }
+
+void Join::joinChannel(Channel *channel, Client& client, std::string submittedKey)
+{
+	if (channel->isUserInChannel(client.getNickname()))
+		return ;
+	else if (channel->isBanned(client.getLogin()))
+		return client.sendReply(ERR_BANNEDFROMCHAN(client.getNickname(), channel->getName()));
+	else if (channel->isInvitationRequired() && !client.isInvited(channel->getName()))	
+		return client.sendReply(ERR_INVITEONLYCHAN(client.getNickname(), channel->getName()));
+	else if (!channel->keyChallengePassed(submittedKey))
+		return (client.sendReply(ERR_BADCHANNELKEY(client.getNickname(), channel->getName())));
+	channel->join(client);
+}
+
+
 
