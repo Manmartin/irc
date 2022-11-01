@@ -12,6 +12,7 @@
 //# include "Command.hpp"
 # include "Join.hpp"
 # include "Leave.hpp"
+# include "Invite.hpp"
 # include <map>
 # include <list>
 # include <set>

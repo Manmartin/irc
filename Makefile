@@ -2,10 +2,10 @@ NAME = ircserv
 
 CXX = clang++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 
-DEBUGFLAGS = -g #-fsanitize=address
+DEBUGFLAGS = -g -fsanitize=address
 INC = -I .
 
-SRCS = main.cpp Client.cpp Server.cpp Channel.cpp Command.cpp Join.cpp Leave.cpp utils.cpp
+SRCS = main.cpp Client.cpp Server.cpp Channel.cpp Command.cpp Join.cpp Leave.cpp utils.cpp Invite.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 %.o: %.cpp
