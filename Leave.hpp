@@ -1,6 +1,5 @@
-#ifndef JOIN_HPP
-# define JOIN_HPP
-
+#ifndef LEAVE_HPP
+# define LEAVE_HPP
 
 #include "Command.hpp"
 //#include "Server.hpp"
@@ -13,18 +12,18 @@ class Client;
 class Server;
 class Channel;
 
-class Join : public Command
+class Leave : public Command
 {
 	public:
-		Join(void);
-		Join(Server *s, std::string type);
-		~Join(void);
+		Leave(void);
+		Leave(Server *s, std::string type);
+		~Leave(void);
 		virtual void exec(std::string params, Client &c);
-	
-	protected:
-		std::string cmd;
+
 	private:
-		void joinChannel(Channel *channel, Client& client, std::string submittedKey);
+		void	part(std::string channelsAndReason, Client& client);
+		void	partFromAllChannels(Client &client);
+	
 };
 
 #endif

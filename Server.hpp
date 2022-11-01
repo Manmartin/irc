@@ -11,6 +11,7 @@
 # include "Reply.hpp"
 //# include "Command.hpp"
 # include "Join.hpp"
+# include "Leave.hpp"
 # include <map>
 # include <list>
 # include <set>
@@ -53,6 +54,7 @@ class Server {
 		void	parseMessage(std::string message, Client &c);
 		void	execInstruction(std::string key, std::string value, Client &c);
 		void	sendReply(Client &c, std::string);
+		void	callCommand(std::string cmd, std::string params, Client &c);
 
 //SERVER UTILS
 		void		reduceFds(int fd);
@@ -85,11 +87,8 @@ class Server {
 //LIST
 		void	list(std::string instruction, Client &c);
 
-//PART
-		void	part(std::string channelsAndReason, Client& c);
-
 //QUIT
-		void	quit(std::string reason, Client& c);
+//		void	quit(std::string reason, Client& c);
  
 //WHO
 		void	who(Client &client, Client *who);

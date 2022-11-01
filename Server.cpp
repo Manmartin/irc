@@ -21,11 +21,11 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_commands["NICK"] = new Registration(this);
 	this->_commands["USER"] = new Registration(this);
 	this->_commands["MODE"] = new Mode(this);
-	this->_commands["QUIT"] = new Leave(this);
+	this->_commands["QUIT"] = new Leave(this,);
 	*/
-	this->_commands["JOIN"] = new Join(this);
-/*	this->_commands["PART"] = new Leave(this);
-	this->_commands["TOPIC"] = new Topic(this);
+	this->_commands["JOIN"] = new Join(this, "JOIN");
+	this->_commands["PART"] = new Leave(this, "PART");
+/*	this->_commands["TOPIC"] = new Topic(this);
 	//this->_commands["NAMES"] = new Names(this);
 	this->_commands["LIST"] = new List(this);
 	this->_commands["INVITE"] = new List(this);
@@ -225,8 +225,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		command->exec(value, c);
 		//this->joinUserToChannels(value, &c);
 	}
-	else if (compareCaseInsensitive(key, "PART"))
-		this->part(value, c);
+//	else if (compareCaseInsensitive(key, "PART"))
+//		this->part(value, c);
 	else if (compareCaseInsensitive(key, "WHO"))
 	{
 		channel = findChannel(value.substr(0, value.find(" ")));
@@ -274,6 +274,11 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		invite(value, c);
 	else
 		;
+}
+
+void	Server::callCommand(std::string cmd, std::string params, Client &c)
+{
+	this->_commands[cmd]->exec(params, c);
 }
 
 std::list<Channel*>& Server::getChannels(void)
@@ -528,45 +533,6 @@ void	Server::whois(Client &client, Client *who)
 
 }
 
-void	Server::part(std::string channelsAndReason, Client& c)
-{
-	std::list<std::string>				instructions;
-	std::list<std::string>				channelList;
-	std::list<std::string>::iterator	chIterator;
-	Channel*							channel;
-	std::list<Channel*>::iterator		it;
-	std::string							reason;
-	std::string							channels;
-	size_t								pos;
-
-	channel = NULL;
-	pos = 0;
-	pos = channelsAndReason.find(":");
-	if (pos == std::string::npos)
-		reason = "";
-	else
-		reason = channelsAndReason.substr(pos + 1, channelsAndReason.size() - 1);
-	channelList = split_cpp(channelsAndReason.substr(0, pos - 1), ',');
-	for (chIterator = channelList.begin(); chIterator != channelList.end(); chIterator++)
-	{
-		channel = findChannel(*chIterator);
-		if (channel && c.isInChannel(*chIterator))
-		{
-			channel->broadcast_except_myself(BROADCAST_PART(c.getLogin(), *chIterator, reason), c);
-			channel->removeClientFromChannel(c.getNickname());
-			c.leaveChannel(*chIterator);
-			c.sendReply("PART " + (*chIterator));
-			if (channel->countUsers() == 0)
-				removeChannel(channel);
-		}
-		else if (channel)
-			c.sendReply(ERR_NOTONCHANNEL(c.getNickname(), *chIterator));
-		else
-			c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), *chIterator));
-	}
-
-}
-
 void	Server::removeChannel(Channel *c)
 {
 	std::list<Channel*>::iterator	it;
@@ -643,7 +609,7 @@ void	Server::quit(std::string reason, Client& c)
 	payload = BROADCAST_QUIT(c.getLogin(), reason) + "\r\n";
 	for (clIt = clientsToInform.begin(); clIt != clientsToInform.end(); clIt++)
 		send(this->getClient(*clIt)->getFd(), payload.c_str(), payload.size(), 0);
-	c.terminator();	
+	c.terminator();
 }
 
 void	Server::list(std::string instruction, Client &c)

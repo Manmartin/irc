@@ -16,8 +16,6 @@ class Client{
 		Client(Client const &c);
 		Client& operator=(Client const &c);
 		Client(int fd, std::string server);
-//		Client(std::string const &nickname, int fd);
-
 
 		std::string	getNickname(void) const;
 		std::string getUser(void) const;

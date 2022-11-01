@@ -3,7 +3,7 @@
 Join::Join(void) {
 }
 
-Join::Join(Server *s) : Command(s) {}
+Join::Join(Server *s, std::string type) : Command(s, type) {}
 
 Join::~Join(void)
 {
@@ -17,9 +17,10 @@ void Join::exec(std::string params, Client& c){
 	std::vector<std::string>			keys;
 	std::map<std::string, std::string>	channelsAndItsKeys;
 
+//	this->_type = key;
 	if (params.size() == 1 && params[0] == '0')
+		return (this->server->callCommand("PART", params, c));
 		//part from all chanels of the client
-		return ;
 	if (c.isRegistered() == false)
 		return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
 	rawChannelsAndKeys = splitToVector(params, ' ');
