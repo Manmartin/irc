@@ -229,37 +229,6 @@ size_t	Channel::countUsers(void)
 	return (size);
 }
 
-void	Channel::kick(std::string kickInstruction, Client &c)
-{
-	size_t							pos;
-	size_t							pos2;
-	std::string						nickName;
-	std::string						kickMessage;
-	std::string						msg;
-
-	pos = 0;
-	pos2 = 0;
-	kickMessage = "";
-	pos = kickInstruction.find(" ");
-	if (!isUserInChannel(c.getNickname()))
-		return (c.sendReply(ERR_NOTONCHANNEL(c.getNickname(), this->_name)));
-	if (!isChannelOperator(c.getNickname()))
-		return (c.sendReply(ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
-	pos2 = kickInstruction.find(" ", pos + 1);
-	nickName = kickInstruction.substr(pos + 1, pos2 - pos - 1);
-	kickMessage += kickInstruction.substr(pos2 + 1, kickInstruction.size() - pos2);
-	msg = ":" + c.getNickname() + " KICK " + kickInstruction + "\r\n";
-	if (!this->isUserInChannel(nickName))
-		return (c.sendReply(ERR_USERNOTINCHANNEL(c.getNickname(), nickName, this->_name)));
-	this->broadcast(msg);
-	if (isNormalUser(nickName))
-		removeClientFromList(this->users, nickName);
-	else if (isChannelOperator(nickName))
-		removeClientFromList(this->_operators, nickName);
-	else if (isVoiced(nickName))
-		removeClientFromList(this->_voiced, nickName);
-}
-
 void	Channel::broadcast(std::string message)
 {
 	std::list<Client*>::iterator	it;

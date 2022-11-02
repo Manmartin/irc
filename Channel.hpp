@@ -37,12 +37,6 @@ class Channel {
 		void	join(Client& client);
 		void	joinWelcomeSequence(Client& c);
 
-//KICK
-		void	kick(std::string nickName, Client &c);
-
-//TOPIC
-		//void	topic(std::string topicInstruction, Client &c);
-
 //MODE
 		void	mode(std::list<std::string> params, Client& c);
 		void	channelModes(Client& c);

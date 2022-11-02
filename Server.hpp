@@ -15,6 +15,7 @@
 # include "Invite.hpp"
 # include "Topic.hpp"
 # include "List.hpp"
+# include "Kick.hpp"
 # include <map>
 # include <list>
 # include <set>

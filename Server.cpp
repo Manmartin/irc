@@ -29,9 +29,8 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	//this->_commands["NAMES"] = new Names(this);
 	this->_commands["LIST"] = new List(this, "LIST");
 	this->_commands["INVITE"] = new Invite(this, "INVITE");
-	/*
-	this->_commands["KICK"] = new Kick(this);
-	this->_commands["PRIVMSG"] = new Privmsg(this);
+	this->_commands["KICK"] = new Kick(this, "KICK");
+/*	this->_commands["PRIVMSG"] = new Privmsg(this);
 	this->_commands["NOTICE"] = new Privmsg(this);
 	this->_commands["WHO"] = new Who(this);
 	this->_commands["WHOIS"] = new Whois(this);
@@ -197,10 +196,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	Client	*client;
 	std::string	firstParam;
 	Command *command = NULL;
-//	std::map<std::string, Command*> commands;
 
-//	Command *join = new Join(this);
-//	_commands["JOIN"] = join;
 	command = _commands[key];
 	firstParam = value.substr(0, value.find(" "));
 	if (compareCaseInsensitive(key, "CAP"))
@@ -237,20 +233,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		if (client)
 			this->whois(c, client);
 	}
-	else if (compareCaseInsensitive(key, "KICK"))
-	{
-		if (c.isRegistered() == false)
-			return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
-		channel = findChannel(value.substr(0, value.find(" ")));
-		if (!channel)
-			return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
-		channel->kick(value, c);
-		
-	}
 	else if (compareCaseInsensitive(key, "MODE"))
 		modeController(value, c);
-	//else if (compareCaseInsensitive(key, "LIST"))
-	//	list(value, c);	
 	else
 		;
 }

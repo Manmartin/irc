@@ -6,6 +6,7 @@
 #define PING(nick) "PING :" + nick
 #define INVITE(issuer, nick, channel) ":" + issuer + " INVITE " + nick + " " + channel
 #define BROADCAST_PART(mask, channel, reason) ":" + mask + " PART " + channel + " :" + reason
+#define BROADCAST_KICK(mask, channel, nick, reason) ":" + mask + " KICK " + channel + " " + nick + " :" + reason
 #define BROADCAST_QUIT(mask, reason) ":" + mask + " QUIT " + reason
 
 #define RPL_WELCOME(client, mask) "001 " + client + " :Welcome to irc42, " + mask
@@ -45,7 +46,7 @@
 # define ERR_NOTEXTTOSEND() "412 :No text to send\r\n"
 # define ERR_NICKNAMEINUSE(nick) "433 * " + nick + " :Nickname already in use"
 
-# define ERR_USERNOTINCHANNEL(client, nick, channel) "441 " + client + " " + nick + " " + channel + " :User " + client + " isn't on channel " + channel + ""
+# define ERR_USERNOTINCHANNEL(client, nick, channel) "441 " + client + " " + nick + " " + channel + " :User " + nick + " isn't on channel " + channel + ""
 # define ERR_NOTONCHANNEL(client, channel) "442 " + client + " " + channel + " :You're not on channel " + channel + ""
 #define ERR_USERONCHANNEL(client, nick, channel) "443 " + client + " " + nick + " " + channel + " :is already on channel"
 # define ERR_NOTREGISTERED(client) "451 " + client + " :You have not registered"
