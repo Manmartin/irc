@@ -20,8 +20,13 @@ class Channel {
 
 		std::string	getName(void) const;
 		std::string	getTopic(void) const;
+		std::string	getTopicCreator(void) const;
+		std::time_t	getTopicSetAt(void) const;
 		std::list<Client*> getAllUsers(void);
 		Client*	getUser(std::string nick);
+
+		void	setTopic(std::string newTopic, std::string nick);
+
 
 		void	broadcast(std::string message);
 		void	broadcast_except_myself(std::string message, Client &c);
@@ -36,7 +41,7 @@ class Channel {
 		void	kick(std::string nickName, Client &c);
 
 //TOPIC
-		void	topic(std::string topicInstruction, Client &c);
+		//void	topic(std::string topicInstruction, Client &c);
 
 //MODE
 		void	mode(std::list<std::string> params, Client& c);
@@ -64,6 +69,7 @@ class Channel {
 		bool	isInvitationRequired(void);
 		bool	isBanned(std::string mask);
 		bool	keyChallengePassed(std::string submittedKey);
+		bool	isTopicLocked(void);
 
 		size_t	countUsers(void);
 
@@ -78,6 +84,8 @@ class Channel {
 
 		char				_message[2048];
 		std::string			_topic;
+		std::time_t			_topicSetAt;
+		std::string			_topicSetBy;
 		bool				_noExternalMsg;
 		bool				_topicLock;
 		bool				_invitationRequired;

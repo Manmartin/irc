@@ -16,3 +16,4 @@ std::array<std::string, 2>	Command::separateParamsAndMessage(std::string params)
 	//std::cout << params << std::endl;
 	return (s);
 }
+

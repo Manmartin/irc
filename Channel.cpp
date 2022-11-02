@@ -9,6 +9,8 @@ Channel::Channel(std::string name, Server *s) : _name(name), _topic("No topic"),
 {
 	memset(_message, 0, 2048);
 	_server = s;
+	setTimestamp(&_topicSetAt);
+	this->_topicSetBy = "";
 }
 
 Channel::~Channel(void)
@@ -84,6 +86,16 @@ std::string	Channel::getName(void) const
 std::string Channel::getTopic(void) const
 {
 	return (_topic);
+}
+
+std::string	Channel::getTopicCreator(void) const
+{
+	return (this->_topicSetBy);
+}
+
+std::time_t	Channel::getTopicSetAt(void) const
+{
+	return (this->_topicSetAt);
 }
 
 std::list<Client*> Channel::getAllUsers(void)
@@ -304,18 +316,16 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 	}
 }
 
-void	Channel::topic(std::string topicInstruction, Client &c)
+bool	Channel::isTopicLocked(void)
 {
-	size_t	pos;
-//	Reply	reply("localhost");
+	return (this->_topicLock);
+}
 
-	if (_topicLock && !isChannelOperator(c.getNickname()))
-		return (c.sendReply(ERR_CHANOPRIVSNEEDED(c.getNickname(), this->_name)));
-	if (!isUserInChannel(c.getNickname()))
-		return (c.sendReply(ERR_NOTONCHANNEL(c.getNickname(), this->_name)));
-	pos = topicInstruction.find(":");
-	this->_topic = topicInstruction.substr(pos + 1, topicInstruction.size() - pos - 1);
-	broadcast(":" + c.getLogin() + " TOPIC " + topicInstruction + "\r\n");
+void	Channel::setTopic(std::string newTopic, std::string nick)
+{
+	this->_topic = newTopic;
+	this->_topicSetBy = nick;
+	setTimestamp(&_topicSetAt);
 }
 
 void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)

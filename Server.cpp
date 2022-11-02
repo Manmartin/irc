@@ -25,9 +25,9 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	*/
 	this->_commands["JOIN"] = new Join(this, "JOIN");
 	this->_commands["PART"] = new Leave(this, "PART");
-/*	this->_commands["TOPIC"] = new Topic(this);
+	this->_commands["TOPIC"] = new Topic(this, "TOPIC");
 	//this->_commands["NAMES"] = new Names(this);
-	this->_commands["LIST"] = new List(this);
+/*	this->_commands["LIST"] = new List(this);
 	*/
 	this->_commands["INVITE"] = new Invite(this, "INVITE");
 	/*
@@ -247,16 +247,6 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 			return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
 		channel->kick(value, c);
 		
-	}
-	else if (compareCaseInsensitive(key, "TOPIC"))
-	{
-		if (c.isRegistered() == false)
-			return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
-		channel = findChannel(firstParam);
-		//channel = findChannel(value.substr(0, value.find(" ")));
-		if (!channel)
-			return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), firstParam)));
-		channel->topic(value, c);
 	}
 	else if (compareCaseInsensitive(key, "MODE"))
 		modeController(value, c);

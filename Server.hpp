@@ -13,6 +13,7 @@
 # include "Join.hpp"
 # include "Leave.hpp"
 # include "Invite.hpp"
+# include "Topic.hpp"
 # include <map>
 # include <list>
 # include <set>

@@ -1,4 +1,4 @@
-#include <utils.hpp>
+#include "utils.hpp"
 
 void	setTimestamp(std::time_t	*var)
 {
@@ -123,3 +123,37 @@ std::string	composeModeResponse(std::vector<std::string> modeAndArguments)
 	return ("");
 }
 
+std::string	trimSpaces(std::string str)
+{
+	size_t	i;
+
+	if (str.size() == 0)
+		return (str);
+	i = 0;
+	while (i < str.size())
+	{
+		if (str[i] == ' ')
+		{
+			str.erase(str.begin() + i);
+			i--;
+		}
+		else
+			break ;
+		i++;
+	}
+	if (str.size() ==  0)
+		return (str);
+	i = str.size() - 1;
+	while (i > 0)
+	{
+		if (str[i] == ' ')
+		{
+			str.erase(str.begin() + i);
+			//i++;
+		}
+		else 
+			break ;
+		i--;
+	}
+	return (str);
+}

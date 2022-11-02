@@ -22,7 +22,8 @@
 #define RPL_LISTEND(client) "323 " + client + " :End of /LIST"
 #define RPL_CHANNELMODEIS(nick, channel, modes) "324 " + nick + " "  + channel + " " + modes
 #define RPL_CREATIONTIME(client, channel, creationtime) "329 " + client + " " + channel + " " + creationtime
-#define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + ""
+#define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic
+#define RPL_TOPICWHOTIME(client, channel, nick, setat) "333 " + client + " " + channel + " " + nick + " " + setat
 #define RPL_INVITING(client, nick, channel)  "341 " + client + " " + nick + " " + channel
 #define RPL_WHOREPLY(client, channel, username, host, server, nick, flags, hopcount, realname) "352 " + client + " " + channel + " " + username + " " + host + " " + server +  " " + nick + " " + flags + " :" + hopcount + " " + realname
 
