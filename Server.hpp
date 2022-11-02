@@ -14,6 +14,7 @@
 # include "Leave.hpp"
 # include "Invite.hpp"
 # include "Topic.hpp"
+# include "List.hpp"
 # include <map>
 # include <list>
 # include <set>
@@ -72,9 +73,6 @@ class Server {
 		void	pass(std::string pass, Client &c);
 		void	welcomeSequence(Client& c);
 
-//INVITE
-		void	invite(std::string instructions, Client &c);
-
 //JOIN
 		void	messageToUser(std::string message, Client& c, Client& destination);
 		void	messageToPrivileged(std::string message, Client& c, std::string rawDestination);
@@ -86,12 +84,6 @@ class Server {
 		void	modeUser(Client *user);
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments);
 
-//LIST
-		void	list(std::string instruction, Client &c);
-
-//QUIT
-//		void	quit(std::string reason, Client& c);
- 
 //WHO
 		void	who(Client &client, Client *who);
 		void	whois(Client &client, Client *who);

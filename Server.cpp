@@ -27,8 +27,7 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_commands["PART"] = new Leave(this, "PART");
 	this->_commands["TOPIC"] = new Topic(this, "TOPIC");
 	//this->_commands["NAMES"] = new Names(this);
-/*	this->_commands["LIST"] = new List(this);
-	*/
+	this->_commands["LIST"] = new List(this, "LIST");
 	this->_commands["INVITE"] = new Invite(this, "INVITE");
 	/*
 	this->_commands["KICK"] = new Kick(this);
@@ -207,7 +206,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	if (compareCaseInsensitive(key, "CAP"))
 		return ;
 	else if (command)
-		command->exec(value, c);
+		command->exec(trimSpaces(value), c);
 	else if (compareCaseInsensitive(key, "PASS"))
 		pass(value, c);
 	else if (!c.isChallengePassed())
@@ -250,8 +249,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	}
 	else if (compareCaseInsensitive(key, "MODE"))
 		modeController(value, c);
-	else if (compareCaseInsensitive(key, "LIST"))
-		list(value, c);	
+	//else if (compareCaseInsensitive(key, "LIST"))
+	//	list(value, c);	
 	else
 		;
 }
@@ -526,34 +525,6 @@ void	Server::removeChannel(Channel *c)
 		}
 	}
 	delete c;
-}
-
-void	Server::list(std::string instruction, Client &c)
-{
-	std::list<std::string>				channelNames;
-	std::list<std::string>::iterator	it;
-	std::list<Channel*> 				channelsTarget;
-	std::list<Channel*>::iterator		it2;
-	Channel*							channelAux;
-
-	channelNames = split_cpp(instruction, ',');
-	if (channelNames.size() == 0)
-		channelsTarget = this->channels;
-	else
-	{
-		for (it = channelNames.begin(); it != channelNames.end(); it++)
-		{
-			channelAux = findChannel(*it);
-			if (channelAux)
-				channelsTarget.push_back(channelAux);
-		}
-	}
-	for (it2 = channelsTarget.begin(); it2 != channelsTarget.end(); it2++)
-	{
-		c.sendReply(RPL_LIST(c.getNickname(), (*it2)->getName(), toString<size_t>((*it2)->countUsers()), (*it2)->getTopic()));
-	}
-	c.sendReply(RPL_LISTEND(c.getNickname()));
-
 }
 
 void	Server::welcomeSequence(Client& c)

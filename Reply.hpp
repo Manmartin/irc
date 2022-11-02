@@ -18,6 +18,7 @@
 #define RPL_ENDOFWHO(client, mask) "315 " + client + " " + mask + " :End of WHO list"
 #define RPL_ENDOFWHOIS(client, nick) "318 " + client + " " + nick + " :End of /WHOIS list"
 #define RPL_WHOISCHANNELS(client, nick, channels) "319 " + client + " " + nick + " :" + channels
+#define RPL_LISTSTART(client) "321 " + client + " Channel :Users  Topic"
 #define RPL_LIST(client, channel, clientCount, topic) "322 " + client + " " + channel + " " + clientCount + " :" + topic
 #define RPL_LISTEND(client) "323 " + client + " :End of /LIST"
 #define RPL_CHANNELMODEIS(nick, channel, modes) "324 " + nick + " "  + channel + " " + modes
