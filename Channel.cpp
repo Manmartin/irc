@@ -5,7 +5,7 @@ Channel::Channel(void)
 {
 }
 
-Channel::Channel(std::string name, Server *s) : _name(name), _topic("No topic"), _noExternalMsg(true), _topicLock(true), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false), _userLimit(-1)
+Channel::Channel(std::string name, Server *s) : _name(name), _topic("No topic"), _noExternalMsg(true), _topicLock(true), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false)//, _userLimit(-1)
 {
 	memset(_message, 0, 2048);
 	_server = s;
@@ -45,7 +45,7 @@ void	Channel::joinWelcomeSequence(Client& c)
 	c.sendReply(RPL_TOPIC(c.getNickname(), this->_name, getTopic()));
 	c.sendReply(usersString);
 	c.sendReply(RPL_ENDOFNAMES(c.getNickname(), this->_name));
-	this->channelModes(c);
+	//this->channelModes(c);
 	c.sendReply(RPL_CREATIONTIME(c.getNickname(), this->_name, "0"));
 }
 
@@ -86,6 +86,11 @@ std::string	Channel::getTopicCreator(void) const
 std::time_t	Channel::getTopicSetAt(void) const
 {
 	return (this->_topicSetAt);
+}
+
+int	Channel::getUserLimit(void) const
+{
+	return (this->_userLimit);
 }
 
 std::list<Client*> Channel::getAllUsers(void)
@@ -285,6 +290,15 @@ bool	Channel::isModerated(void)
 	return (this->_moderated);
 }
 
+bool	Channel::isSecret(void)
+{
+	return (this->_secret);
+}
+
+bool	Channel::isKeyLocked(void)
+{
+	return (this->_hasKey);
+}
 
 bool	Channel::areExternalMessagesAllowed(void)
 {
@@ -296,6 +310,42 @@ void	Channel::setTopic(std::string newTopic, std::string nick)
 	this->_topic = newTopic;
 	this->_topicSetBy = nick;
 	setTimestamp(&_topicSetAt);
+}
+
+void	Channel::setKey(std::string& key, bool active)
+{
+	this->_keypass = key;
+	this->_hasKey = active;
+}
+
+void	Channel::setNoExternalMsgAllowed(bool value)
+{
+	this->_noExternalMsg = value;
+}
+
+void	Channel::setModerated(bool value)
+{
+	this->_moderated = value;
+}
+
+void	Channel::setTopicLocked(bool value)
+{
+	this->_topicLock = value;
+}
+
+void	Channel::setUserLimit(int limit)
+{
+	this->_userLimit = limit;
+}
+
+void	Channel::setSecret(bool value)
+{
+	this->_secret = value;
+}
+
+void	Channel::setInvitationRequired(bool value)
+{
+	this->_invitationRequired = value;
 }
 
 void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)
@@ -325,13 +375,12 @@ void	Channel::addClientToList(std::list<Client*> &l, Client* c)
 	if (c)
 		l.push_front(c);
 }
-
+/*
 void	Channel::mode(std::list<std::string> params, Client& c)
 {
 	std::list<std::string>::iterator	it;
 	std::string							modes;
 	char								sign;
-//	Reply								reply("localhost");
 
 	sign = '+';
 	it = params.begin();
@@ -367,7 +416,8 @@ void	Channel::mode(std::list<std::string> params, Client& c)
 		this->broadcast(":" + c.getLogin() + " MODE " + this->_name + " " + modeResponse);
 	//std::cout << sss << std::endl;
 }
-
+*/
+/*
 void	Channel::processMode(char sign, char c, std::list<std::string> &params, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments, Client& executor)
 {
 	Client*					user;
@@ -532,7 +582,8 @@ void	Channel::processMode(char sign, char c, std::list<std::string> &params, std
 		//send unknown mode character
 //	std::cout << getUsersAsString() << std::endl;
 }
-
+*/
+/*
 void	Channel::channelModes(Client& c)
 {
 	std::list<std::string>	completModes;
@@ -554,6 +605,7 @@ void	Channel::channelModes(Client& c)
 		modes+="m";
 	c.sendReply(RPL_CHANNELMODEIS(c.getNickname(), this->_name, modes));
 }
+*/
 
 void	Channel::banList(Client& c)
 {

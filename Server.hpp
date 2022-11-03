@@ -19,6 +19,7 @@
 # include "Whois.hpp"
 # include "Message.hpp"
 # include "Who.hpp"
+# include "Mode.hpp"
 # include <map>
 # include <list>
 # include <set>

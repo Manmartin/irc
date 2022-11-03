@@ -20,7 +20,9 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	/*this->_commands["PASS"] = new Registration(this);
 	this->_commands["NICK"] = new Registration(this);
 	this->_commands["USER"] = new Registration(this);
-	this->_commands["MODE"] = new Mode(this);
+	*/
+	this->_commands["MODE"] = new Mode(this, "MODE");
+	/*
 	this->_commands["QUIT"] = new Leave(this,);
 	*/
 	this->_commands["JOIN"] = new Join(this, "JOIN");
@@ -212,8 +214,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		nick(value, c);
 	else if (compareCaseInsensitive(key, "USER"))
 		user(value, c);
-	else if (compareCaseInsensitive(key, "MODE"))
-		modeController(value, c);
+	//else if (compareCaseInsensitive(key, "MODE"))
+	//	modeController(value, c);
 	else
 		;
 }
@@ -258,7 +260,7 @@ struct pollfd* Server::getFds(void)
 {
 	return (this->_fds);
 }
-
+/*
 void	Server::modeController(std::string modeInstruction, Client& c)
 {
 	Channel*	channel;
@@ -296,7 +298,8 @@ void	Server::modeController(std::string modeInstruction, Client& c)
 	else if (user)
 		changeModeUser(target, modes, c);
 }
-
+*/
+/*
 void	Server::modeUser(Client *user)
 {
 	std::string	modeResponse;
@@ -306,13 +309,15 @@ void	Server::modeUser(Client *user)
 		modeResponse += "i";
 	user->sendReply(RPL_UMODEIS(user->getNickname(), modeResponse));
 }
+*/
 
-
+/*
 void	Server::changeModeUser(std::string nickname, std::string modes, Client &c)
 {
 	char	sign;
 	std::vector<std::string>	newModeUser;
 	size_t						i;
+	std::string	modeResponse;
 
 	sign = '+';
 	if (nickname.compare(c.getNickname()) != 0)
@@ -331,14 +336,11 @@ void	Server::changeModeUser(std::string nickname, std::string modes, Client &c)
 			c.processModeUser(sign, modes[i], newModeUser);
 		i++;
 	}
-	//std::cout << "siii " << *newModeUser.begin() << std::endl;
-	//this->broadcast(RPL_UMODEIS(c.getNickname(), modeResponse));
-	std::string	modeResponse;
-
 	modeResponse = composeModeResponse(newModeUser);
 	if (modeResponse.size() > 0)
 		c.sendReply(RPL_UMODEIS(c.getNickname(), modeResponse));
 }
+*/
 
 void	Server::nick(std::string instruction, Client &c)
 {

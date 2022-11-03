@@ -60,7 +60,7 @@
 # define ERR_BADCHANNELKEY(client, channel) "475 " + client + " " + channel + " :Cannot join channel (+k)"
 # define ERR_BADCHANMASK(channel) "476 " + channel + " :Bad Channel Mask"
 # define ERR_CHANOPRIVSNEEDED(client, channel) "482 " + client + " " + channel + " :You're not channel operator on " + channel + ""
-
+# define ERR_UMODEUNKNOWNFLAG(client, flag) "501 " + client + " :Unknown MODE flag " + flag
 # define ERR_USERSDONTMATCH(client) "502 " + client + " :Cant change mode for other users\r\n"
 
 #endif

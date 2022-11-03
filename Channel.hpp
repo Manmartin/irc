@@ -22,33 +22,28 @@ class Channel {
 		std::string	getTopic(void) const;
 		std::string	getTopicCreator(void) const;
 		std::time_t	getTopicSetAt(void) const;
+		int			getUserLimit(void) const;
 		std::list<Client*> getAllUsers(void);
 		Client*	getUser(std::string nick);
 
 		void	setTopic(std::string newTopic, std::string nick);
-
+		void	setKey(std::string& key, bool active);
+		void	setNoExternalMsgAllowed(bool value);
+		void	setModerated(bool value);
+		void	setTopicLocked(bool value);
+		void	setUserLimit(int limit);
+		void	setSecret(bool value);
+		void	setInvitationRequired(bool value);
 
 		void	broadcast(std::string message);
 		void	broadcast_except_myself(std::string message, Client &c);
-
-//INVITE
 
 //JOIN
 		void	join(Client& client);
 		void	joinWelcomeSequence(Client& c);
 
 //MODE
-		void	mode(std::list<std::string> params, Client& c);
-		void	channelModes(Client& c);
-		void	processMode(char sign, char c, std::list<std::string> &params, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments, Client& executor);
-		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments, Client& executor);
 		void	banList(Client& c);
-//PRIVMSG && NOTICE
-//		void	messageToChannel(std::string message, Client& c, bool notice);
-		//NOTICE
-
-//WHO
-//		void	who(Client& client);
 
 		std::string	getUsersAsString(void);
 		Client*	findUserInList(std::string nick, std::list<Client*> &l);
@@ -65,6 +60,8 @@ class Channel {
 		bool	keyChallengePassed(std::string submittedKey);
 		bool	isTopicLocked(void);
 		bool	isModerated(void);
+		bool	isSecret(void);
+		bool	isKeyLocked(void);
 		bool	areExternalMessagesAllowed(void);
 
 		size_t	countUsers(void);

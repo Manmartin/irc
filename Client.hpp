@@ -32,6 +32,7 @@ class Client{
 		void		setUser(std::string user);
 		void		setServer(std::string nickname);
 		void		setRealName(std::string nickname);
+		void		setInvisible(bool value);
 
 		bool		isInvisible(void) const;
 		bool		isRegistered(void) const;
@@ -43,7 +44,7 @@ class Client{
 		bool		isChallengePassed(void);
 		void		registerClient(void);
 		void		leaveChannel(std::string nickName);
-		void		processModeUser(char sign, char c, std::vector<std::string>& newModeUser);
+		//void		processModeUser(char sign, char c, std::vector<std::string>& newModeUser);
 		void		sendReply(std::string msg);
 		void		terminator(void);
 		bool		sayonara(void);

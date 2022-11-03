@@ -87,7 +87,7 @@ bool	compareCaseInsensitive(std::string& s1, const char *s2)
 	}
 	return (true);
 }
-
+/*
 std::string	composeModeResponse(std::vector<std::string> modeAndArguments)
 {
 	std::vector<std::string>::iterator	it2;
@@ -122,7 +122,7 @@ std::string	composeModeResponse(std::vector<std::string> modeAndArguments)
 		return (message);
 	return ("");
 }
-
+*/
 std::string	trimSpaces(std::string str)
 {
 	size_t	i;
