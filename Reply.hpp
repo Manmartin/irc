@@ -5,6 +5,7 @@
 #define PONG(value) "PONG :" + value
 #define PING(nick) "PING :" + nick
 #define INVITE(issuer, nick, channel) ":" + issuer + " INVITE " + nick + " " + channel
+#define MSG(mask, type, destination, message) ":" + mask + " " + type + " " + destination + " :" + message + "\r\n"
 #define BROADCAST_PART(mask, channel, reason) ":" + mask + " PART " + channel + " :" + reason
 #define BROADCAST_KICK(mask, channel, nick, reason) ":" + mask + " KICK " + channel + " " + nick + " :" + reason
 #define BROADCAST_QUIT(mask, reason) ":" + mask + " QUIT " + reason

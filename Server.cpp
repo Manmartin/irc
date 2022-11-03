@@ -30,8 +30,9 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_commands["LIST"] = new List(this, "LIST");
 	this->_commands["INVITE"] = new Invite(this, "INVITE");
 	this->_commands["KICK"] = new Kick(this, "KICK");
-/*	this->_commands["PRIVMSG"] = new Privmsg(this);
-	this->_commands["NOTICE"] = new Privmsg(this);
+	this->_commands["PRIVMSG"] = new Message(this, "PRIVMSG");
+	this->_commands["NOTICE"] = new Message(this, "NOTICE");
+	/*
 	this->_commands["WHO"] = new Who(this);
 	this->_commands["WHOIS"] = new Whois(this);
 	this->_commands["PING"] = new PingPong(this);
@@ -209,10 +210,12 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		c.terminator();	
 	else if (compareCaseInsensitive(key, "PING"))
 		c.sendReply(PONG(value));
+	/*
 	else if (compareCaseInsensitive(key, "PRIVMSG"))
 		privMsg(value, c, false);	
 	else if (compareCaseInsensitive(key, "NOTICE"))
 		privMsg(value, c, true);
+		*/
 	else if (compareCaseInsensitive(key, "NICK"))
 		nick(value, c);
 	else if (compareCaseInsensitive(key, "USER"))
@@ -361,47 +364,6 @@ void	Server::changeModeUser(std::string nickname, std::string modes, Client &c)
 		c.sendReply(RPL_UMODEIS(c.getNickname(), modeResponse));
 }
 
-void	Server::privMsg(std::string value, Client &c, bool notice)
-{
-	std::list<std::string>			targetList;
-	std::list<std::string>::iterator	it;
-	std::string						rawTargets;
-	std::string						message;
-	std::string						payload;
-	//size_t							position;
-	Channel*						channel;
-	Client*							destinationUser;
-
-	if (c.isRegistered() == false)
-		return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
-	_position = value.find(" ");
-	rawTargets = value.substr(0, _position);
-	targetList = split_cpp(rawTargets, ',');
-	channel = NULL;
-	destinationUser = NULL;
-	while (_position < value.size() && value[_position] == ' ')
-		_position++;
-	message = value.substr(_position + 1, value.size() - _position - 1);
-	if (message.size() < 0 && !notice)
-	{
-		c.sendReply(ERR_NOTEXTTOSEND());
-		return ;
-	}
-	it = targetList.begin();
-	while (it != targetList.end())
-	{
-		channel = findChannel(*it);
-		destinationUser = getClient(*it);
-		if (channel)
-			channel->messageToChannel(message, c, notice);
-		else if (destinationUser)
-			this->messageToUser(message, c, *destinationUser);
-		else if (!notice)
-			c.sendReply(ERR_NOSUCHNICK(c.getNickname(), *it));
-		it++;
-	}
-}
-
 void	Server::nick(std::string instruction, Client &c)
 {
 	if (this->usedNick(instruction) == true)
@@ -517,15 +479,6 @@ void	Server::welcomeSequence(Client& c)
 	c.sendReply(RPL_YOURHOST(c.getNickname(), c.getServer()));
 	c.sendReply(RPL_CREATED(c.getNickname(), "today"));
 	c.sendReply(RPL_MYINFO(c.getNickname(), c.getServer()));
-}
-
-void	Server::messageToUser(std::string message, Client& c, Client& destination)
-{
-	std::string	payload;
-
-	payload = ":" + c.getNickname() + " PRIVMSG " + destination.getNickname() +  " :" + message + "\r\n";
-	send(destination.getFd(), payload.c_str(), payload.size(), 0);
-//	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
 }
 
 Client*	Server::lookClientByFd(int fd)

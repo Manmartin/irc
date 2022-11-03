@@ -44,7 +44,7 @@ class Channel {
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments, Client& executor);
 		void	banList(Client& c);
 //PRIVMSG && NOTICE
-		void	messageToChannel(std::string message, Client& c, bool notice);
+//		void	messageToChannel(std::string message, Client& c, bool notice);
 		//NOTICE
 
 //WHO
@@ -64,6 +64,8 @@ class Channel {
 		bool	isBanned(std::string mask);
 		bool	keyChallengePassed(std::string submittedKey);
 		bool	isTopicLocked(void);
+		bool	isModerated(void);
+		bool	areExternalMessagesAllowed(void);
 
 		size_t	countUsers(void);
 

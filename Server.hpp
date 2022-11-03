@@ -16,6 +16,7 @@
 # include "Topic.hpp"
 # include "List.hpp"
 # include "Kick.hpp"
+# include "Message.hpp"
 # include <map>
 # include <list>
 # include <set>
@@ -73,11 +74,6 @@ class Server {
 		void	user(std::string instruction, Client &c);
 		void	pass(std::string pass, Client &c);
 		void	welcomeSequence(Client& c);
-
-//JOIN
-		void	messageToUser(std::string message, Client& c, Client& destination);
-		void	messageToPrivileged(std::string message, Client& c, std::string rawDestination);
-		void	privMsg(std::string value, Client &c, bool notice);
 
 //MODE
 		void	modeController(std::string modeInstruction, Client& c);

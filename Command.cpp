@@ -1,4 +1,5 @@
 #include "Command.hpp"
+#include "utils.hpp"
 
 Command::Command(void) : server(NULL) {}
 
@@ -10,10 +11,8 @@ std::array<std::string, 2>	Command::separateParamsAndMessage(std::string params)
 	size_t	pos;
 
 	pos = params.find(":");
-	s[0] = params.substr(0, pos);
-	s[1] = params.substr(pos + 1, params.size() - pos - 1);
-	//std::cout << s[0] << "." << s[1] << std::endl;
-	//std::cout << params << std::endl;
+	s[0] = trimSpaces(params.substr(0, pos));
+	s[1] = trimSpaces(params.substr(pos + 1, params.size() - pos - 1));
 	return (s);
 }
 

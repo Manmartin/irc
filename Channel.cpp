@@ -290,6 +290,17 @@ bool	Channel::isTopicLocked(void)
 	return (this->_topicLock);
 }
 
+bool	Channel::isModerated(void)
+{
+	return (this->_moderated);
+}
+
+
+bool	Channel::areExternalMessagesAllowed(void)
+{
+	return (!_noExternalMsg);
+}
+
 void	Channel::setTopic(std::string newTopic, std::string nick)
 {
 	this->_topic = newTopic;
@@ -562,7 +573,7 @@ void	Channel::banList(Client& c)
 		c.sendReply(RPL_BANLIST(c.getNickname(), this->_name, (*it)->getLogin()));
 	c.sendReply(RPL_ENDOFBANLIST(c.getNickname(), this->_name));
 }
-
+/*
 void	Channel::messageToChannel(std::string message, Client& c, bool notice)
 {
 	std::string	payload;
@@ -589,4 +600,4 @@ void	Channel::messageToChannel(std::string message, Client& c, bool notice)
 		return (c.sendReply(ERR_CANNOTSENDTOCHAN(c.getNickname(), this->_name, ", no external messages are allowed in this channel")));
 		;
 }
-
+*/
