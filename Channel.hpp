@@ -48,7 +48,7 @@ class Channel {
 		//NOTICE
 
 //WHO
-		void	who(Client& client);
+//		void	who(Client& client);
 
 		std::string	getUsersAsString(void);
 		Client*	findUserInList(std::string nick, std::list<Client*> &l);

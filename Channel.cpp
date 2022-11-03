@@ -67,16 +67,6 @@ bool	Channel::keyChallengePassed(std::string submittedKey)
 		return (true);
 	return (false);
 }
-void	Channel::who(Client& client)
-{
-	std::list<Client*>::iterator	it;
-	std::list<Client*>				allUsers;
-
-	allUsers = getAllUsers();
-	for (it = allUsers.begin(); it != allUsers.end(); it++)
-		client.sendReply(RPL_WHOREPLY(client.getNickname(), "*", (*it)->getUser(), (*it)->getServer(), (*it)->getServer(), (*it)->getNickname(), "H", "1", (*it)->getRealName()));
-	client.sendReply(RPL_ENDOFWHO(client.getNickname(), this->_name));
-}
 
 std::string	Channel::getName(void) const
 {

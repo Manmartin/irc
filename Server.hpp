@@ -16,7 +16,9 @@
 # include "Topic.hpp"
 # include "List.hpp"
 # include "Kick.hpp"
+# include "Whois.hpp"
 # include "Message.hpp"
+# include "Who.hpp"
 # include <map>
 # include <list>
 # include <set>
@@ -82,8 +84,8 @@ class Server {
 		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments);
 
 //WHO
-		void	who(Client &client, Client *who);
-		void	whois(Client &client, Client *who);
+//		void	who(Client &client, Client *who);
+//		void	whois(Client &client, Client *who);
 
 
 	private:

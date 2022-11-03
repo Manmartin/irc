@@ -32,9 +32,9 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_commands["KICK"] = new Kick(this, "KICK");
 	this->_commands["PRIVMSG"] = new Message(this, "PRIVMSG");
 	this->_commands["NOTICE"] = new Message(this, "NOTICE");
-	/*
-	this->_commands["WHO"] = new Who(this);
-	this->_commands["WHOIS"] = new Whois(this);
+	this->_commands["WHOIS"] = new Whois(this, "WHOIS");
+	this->_commands["WHO"] = new Who(this, "WHO");
+/*	
 	this->_commands["PING"] = new PingPong(this);
 	this->_commands["PONG"] = new PingPong(this);
 	*/
@@ -193,8 +193,6 @@ void	Server::parseMessage(std::string instruction, Client &c)
 
 void	Server::execInstruction(std::string key, std::string value, Client &c)
 {
-	Channel	*channel;
-	Client	*client;
 	std::string	firstParam;
 	Command *command = NULL;
 
@@ -210,32 +208,10 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		c.terminator();	
 	else if (compareCaseInsensitive(key, "PING"))
 		c.sendReply(PONG(value));
-	/*
-	else if (compareCaseInsensitive(key, "PRIVMSG"))
-		privMsg(value, c, false);	
-	else if (compareCaseInsensitive(key, "NOTICE"))
-		privMsg(value, c, true);
-		*/
 	else if (compareCaseInsensitive(key, "NICK"))
 		nick(value, c);
 	else if (compareCaseInsensitive(key, "USER"))
 		user(value, c);
-	else if (compareCaseInsensitive(key, "WHO"))
-	{
-		channel = findChannel(value.substr(0, value.find(" ")));
-		client = getClient(value.substr(0, value.find(" ")));
-		if (!channel && !client)
-			return (c.sendReply(ERR_NOSUCHSERVER(c.getNickname(), firstParam)));
-		if (!channel)
-			return (this->who(c, client));
-		channel->who(c);
-	}
-	else if (compareCaseInsensitive(key, "WHOIS"))
-	{
-		client = getClient(value.substr(0, value.find(" ")));
-		if (client)
-			this->whois(c, client);
-	}
 	else if (compareCaseInsensitive(key, "MODE"))
 		modeController(value, c);
 	else
@@ -426,36 +402,6 @@ void	Server::pass(std::string pass, Client &c)
 		c.sendReply(ERR_PASSWDMISMATCH(c.getNickname()));
 		c.terminator();	
 	}
-}
-
-void	Server::who(Client &client, Client *who)
-{
-	client.sendReply(RPL_WHOREPLY(client.getNickname(), "*", who->getUser(), who->getServer(), who->getServer(), who->getNickname(), "H", "1", who->getRealName()));
-	client.sendReply(RPL_ENDOFWHO(client.getNickname(), who->getNickname()));
-}
-
-void	Server::whois(Client &client, Client *who)
-{	
-	std::list<Channel*>::iterator	it;
-	std::string						channels;
-
-	if (this->channels.size() == 0)
-		return ;
-	channels = "";
-	for (it = this->channels.begin(); it != this->channels.end(); it++)
-	{
-	 	if ((*it)->isChannelOperator(who->getNickname()))
-			channels += ("@" + (*it)->getName() + " ");
-		else if ((*it)->isVoiced(who->getNickname()))
-			channels += ("+" + (*it)->getName() + " ");
-		else if ((*it)->isNormalUser(who->getNickname()))
-			channels += ((*it)->getName() + " ");
-	}
-	client.sendReply(RPL_WHOISUSER(client.getNickname(), who->getNickname(), who->getUser(), who->getServer(), who->getRealName()));
-	client.sendReply(RPL_WHOISCHANNELS(client.getNickname(), who->getNickname(), channels));
-	client.sendReply(RPL_WHOISSERVER(client.getNickname(), who->getNickname(), who->getServer(), "#irc42 beta"));
-	client.sendReply(RPL_ENDOFWHOIS(client.getNickname(), who->getNickname()));
-
 }
 
 void	Server::removeChannel(Channel *c)
