@@ -27,6 +27,7 @@ class Mode : public Command
 		void	changeModeUser(std::string nickname, std::string modes, Client &client);
 		void	processModeUser(char sign, char c, std::vector<std::string>& newModeUser, Client& client);
 		std::string	composeModeResponse(std::vector<std::string> modeAndArguments);
+		void	whatBanned(Channel *channel, Client& client);
 
 
 

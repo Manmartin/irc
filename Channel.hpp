@@ -25,6 +25,7 @@ class Channel {
 		int			getUserLimit(void) const;
 		std::list<Client*> getAllUsers(void);
 		Client*	getUser(std::string nick);
+		std::list<Client*> getBannedUsers(void) const;	
 
 		void	setTopic(std::string newTopic, std::string nick);
 		void	setKey(std::string& key, bool active);
@@ -48,7 +49,8 @@ class Channel {
 		std::string	getUsersAsString(void);
 		Client*	findUserInList(std::string nick, std::list<Client*> &l);
 		void	removeClientFromList(std::list<Client*> &l, std::string nickName);
-		void	addClientToList(std::list<Client*> &l, Client* c);
+		void	removeClientType(std::string type, std::string nickName);
+		void	addClient(std::string type, Client*c);
 		void	removeClientFromChannel(std::string nickName);
 
 		bool	isNormalUser(std::string nickName);

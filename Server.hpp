@@ -78,17 +78,6 @@ class Server {
 		void	pass(std::string pass, Client &c);
 		void	welcomeSequence(Client& c);
 
-//MODE
-		void	modeController(std::string modeInstruction, Client& c);
-		void	changeModeUser(std::string nickname, std::string modes, Client &c);
-		void	modeUser(Client *user);
-		void	processMode(char sign, char c, std::list<std::string>::iterator &it, std::vector<std::string>& modeAndArguments);
-
-//WHO
-//		void	who(Client &client, Client *who);
-//		void	whois(Client &client, Client *who);
-
-
 	private:
 		Server(void);
 		struct pollfd *_fds;

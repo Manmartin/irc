@@ -214,8 +214,6 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		nick(value, c);
 	else if (compareCaseInsensitive(key, "USER"))
 		user(value, c);
-	//else if (compareCaseInsensitive(key, "MODE"))
-	//	modeController(value, c);
 	else
 		;
 }
@@ -260,87 +258,6 @@ struct pollfd* Server::getFds(void)
 {
 	return (this->_fds);
 }
-/*
-void	Server::modeController(std::string modeInstruction, Client& c)
-{
-	Channel*	channel;
-	Client*		user;
-	std::list<std::string>				params;
-	std::list<std::string>::iterator	it;
-	std::string							modes;
-	std::string							target;
-	size_t								size;
-
-	if (c.isRegistered() == false)
-		return (c.sendReply(ERR_NOTREGISTERED(c.getNickname())));
-	params = split_cpp(modeInstruction, ' ');
-	it = params.begin();
-	target = *it;
-	channel = findChannel(target);
-	user = getClient(target);
-	size = params.size();
-	if (size == 1 && channel)
-		return (channel->channelModes(c));
-	else if (size == 1 && user && target.compare(c.getNickname()) != 0)
-		return (c.sendReply(ERR_USERSDONTMATCH(c.getNickname())));
-	else if (size == 1 && user)
-		return (modeUser(user));
-	else if (!channel && target[0] == '#')
-		return (c.sendReply(ERR_NOSUCHCHANNEL(c.getNickname(), target)));
-	else if (!user && target[0] != '#')
-		return (c.sendReply(ERR_NOSUCHNICK(c.getNickname(), target)));
-	it++;
-	modes = (*it);
-	if (anyDuplicatedChar(modes))
-		return ;
-	if (channel)
-		channel->mode(params, c);
-	else if (user)
-		changeModeUser(target, modes, c);
-}
-*/
-/*
-void	Server::modeUser(Client *user)
-{
-	std::string	modeResponse;
-
-	modeResponse = "";
-	if (user->isInvisible())
-		modeResponse += "i";
-	user->sendReply(RPL_UMODEIS(user->getNickname(), modeResponse));
-}
-*/
-
-/*
-void	Server::changeModeUser(std::string nickname, std::string modes, Client &c)
-{
-	char	sign;
-	std::vector<std::string>	newModeUser;
-	size_t						i;
-	std::string	modeResponse;
-
-	sign = '+';
-	if (nickname.compare(c.getNickname()) != 0)
-		return (c.sendReply(ERR_USERSDONTMATCH(c.getNickname())));
-	newModeUser.push_back("+");
-	newModeUser.push_back("-");
-	i = 0;
-	while (i < modes.size())
-	{
-		std::cout << modes[i] << std::endl;
-		if (modes[i] == '+')
-			sign = '+';
-		else if (modes[i] == '-')
-			sign = '-';
-		else
-			c.processModeUser(sign, modes[i], newModeUser);
-		i++;
-	}
-	modeResponse = composeModeResponse(newModeUser);
-	if (modeResponse.size() > 0)
-		c.sendReply(RPL_UMODEIS(c.getNickname(), modeResponse));
-}
-*/
 
 void	Server::nick(std::string instruction, Client &c)
 {

@@ -80,7 +80,7 @@ void	Mode::changeModeChannel(Channel *channel, std::vector<std::string> params, 
 
 	sign = '+';
 	if (params.size() == 2 && (params[1].compare("b") == 0 || params[1].compare("+b") == 0))
-		return (channel->banList(client));
+		return (this->whatBanned(channel, client));
 	else if (!channel->isChannelOperator(client.getNickname()))
 		return (client.sendReply(ERR_CHANOPRIVSNEEDED(client.getNickname(), channel->getName())));
 	modeAndArguments.push_back("+");
@@ -102,7 +102,7 @@ void	Mode::changeModeChannel(Channel *channel, std::vector<std::string> params, 
 
 void	Mode::processMode(Channel *channel, char sign, char c, std::vector<std::string> &params, size_t *j, std::vector<std::string>& modeAndArguments, Client& executor)
 {
-	//Client*					user;
+	Client*					user;
 	std::string				modes = "knmtlsiovb";
 
 	if (sign == '+' && c == 'k' && *j < params.size())
@@ -123,43 +123,36 @@ void	Mode::processMode(Channel *channel, char sign, char c, std::vector<std::str
 	else if (sign == '+' && c == 'n' && channel->areExternalMessagesAllowed())
 	{
 		channel->setNoExternalMsgAllowed(true);
-		//_noExternalMsg = true;
 		modeAndArguments[0] += "n";
 	}
 	else if (sign == '-' && c == 'n' && !channel->areExternalMessagesAllowed())
 	{
 		channel->setNoExternalMsgAllowed(false);
-		//_noExternalMsg = false;
 		modeAndArguments[1] += "n";
 	}
 	else if (sign == '+' && c == 'm' && !channel->isModerated())
 	{
 		channel->setModerated(true);
-	//	_moderated = true;
 		modeAndArguments[0] += 'm';
 	}
 	else if (sign == '-' && c == 'm' && channel->isModerated())
 	{
 		channel->setModerated(false);
-		//_moderated = false;
 		modeAndArguments[1] += 'm';
 	}
 	else if (sign == '+' && c == 't' && !channel->isTopicLocked())
 	{
 		channel->setTopicLocked(true);
-		//_topicLock = true;
 		modeAndArguments[0] += "t";
 	}
 	else if (sign == '-' && c == 't' && channel->isTopicLocked())
 	{
 		channel->setTopicLocked(false);
-		//_topicLock = false;
 		modeAndArguments[1] += "t";
 	}
 	else if (sign == '+' && c == 'l' && *j < params.size() && stoi(params[*j]) > 0)
 	{
 		channel->setUserLimit(stoi(params[*j]));
-		//_userLimit = stoi(params[*j]);
 		modeAndArguments.push_back(params[*j]);
 		modeAndArguments[0] += "l";
 		(*j)++;
@@ -167,112 +160,104 @@ void	Mode::processMode(Channel *channel, char sign, char c, std::vector<std::str
 	else if (sign == '-' && c == 'l' && channel->getUserLimit() != -1)
 	{
 		channel->setUserLimit(-1);
-		//_userLimit = -1;
 		modeAndArguments[1] += "l";
 	}
 	else if (sign == '+' && c == 's' && !channel->isSecret())
 	{
 		channel->setSecret(true);
-		//_secret = true;
 		modeAndArguments[0] += "s";
 	}
 	else if (sign == '-' && c == 's' && channel->isSecret())
 	{
 		channel->setSecret(false);
-		//_secret = false;
 		modeAndArguments[1] += "s";
 	}
 	else if (sign == '+' && c == 'i' && !channel->isInvitationRequired())
 	{
 		channel->setInvitationRequired(true);
-		//_invitationRequired = true;
 		modeAndArguments[0] += "i";
 	}
 	else if (sign == '-' && c == 'i' && channel->isInvitationRequired())
 	{
 		channel->setInvitationRequired(false);
-		//_invitationRequired = false;
 		modeAndArguments[1] += "i";
 	}
-	/*
-	else if (sign == '+' && c == 'o' && it != params.end())
+	else if (sign == '+' && c == 'o' && *j < params.size())
 	{
-		user = getUser(*it);
-		std::cout << "direction of user: " << &(*user) << std::endl;
-		if (user && !isChannelOperator(*it))
+		user = channel->getUser(params[*j]);
+		if (user && !channel->isChannelOperator(params[*j]))
 		{
-			std::cout << "eooo" << std::endl;
-			addClientToList(this->_operators, user);
-			//removeClientFromList(this->_voiced, *it);
-			removeClientFromList(this->users, *it);
+			channel->addClient("operator", user);
+			channel->removeClientType("user", params[*j]);
 			modeAndArguments[0] += "o";
-			modeAndArguments.push_back(*it);
+			modeAndArguments.push_back(params[*j]);
 		}
-		it++;
+		(*j)++;
 	}
-	else if (sign == '-' && c == 'o' && it != params.end())
+	else if (sign == '-' && c == 'o' && *j < params.size())
 	{
-		user = getUser(*it);
-		if (user && isChannelOperator(*it))
+		user = channel->getUser(params[*j]);
+		if (user && channel->isChannelOperator(params[*j]))
 		{
-			if (!isVoiced(*it))
-				addClientToList(this->users, user);
-			removeClientFromList(this->_operators, *it);
+			if (!channel->isVoiced(params[*j]))
+				channel->addClient("user", user);
+			channel->removeClientType("operator", params[*j]);
 			modeAndArguments[1] += "o";
-			modeAndArguments.push_back(*it);
+			modeAndArguments.push_back(params[*j]);
 		}
-		it++;
+		(*j)++;
 	}
-	else if (sign == '+' && c == 'v' && it != params.end())
+	else if (sign == '+' && c == 'v' && *j < params.size())
 	{
-		user = getUser(*it);
-		if (user && !isVoiced(*it))
+		user = channel->getUser(params[*j]);
+		if (user && !channel->isVoiced(params[*j]))
 		{
-			std::cout << "adding client " << *it  << " to list" << std::endl;
-			addClientToList(this->_voiced, user);
-			//removeClientFromList(this->_operators, *it);
-			removeClientFromList(this->users, *it);
+			channel->addClient("voiced", user);
+			channel->removeClientType("user", params[*j]);
 			modeAndArguments[0] += "v";
-			modeAndArguments.push_back(*it);
+			modeAndArguments.push_back(params[*j]);
 		}
-		it++;
+		(*j)++;
 	}
-	else if (sign == '-' && c == 'v' && it != params.end())
+	else if (sign == '-' && c == 'v' && *j < params.size())
 	{
-		user = getUser(*it);
-		if (user && isVoiced(*it))
+		user = channel->getUser(params[*j]);
+		if (user && channel->isVoiced(params[*j]))
 		{
-			if (!isChannelOperator(*it))
-				addClientToList(this->users, user);
-			removeClientFromList(this->_voiced, *it);
+			if (!channel->isChannelOperator(params[*j]))
+				channel->addClient("user", user);
+			channel->removeClientType("voiced", params[*j]);
 			modeAndArguments[1] += "v";
-			modeAndArguments.push_back(*it);
+			modeAndArguments.push_back(params[*j]);
 		}
-		it++;
+		(*j)++;
 	}
-	else if (sign == '+' && c == 'b' && it != params.end())
+	else if (sign == '+' && c == 'b' && *j < params.size())
 	{
-		user = _server->getClient(*it);
-		if (user && !isBanned(user->getLogin()))
+		user = this->server->getClient(params[*j]);
+		if (user && !channel->isBanned(user->getLogin()))
 		{
 			modeAndArguments[0] += 'b';
 			modeAndArguments.push_back(user->getLogin());
-			addClientToList(this->_ban, user);
+			channel->addClient("ban", user);
+			//addClientToList(this->_ban, user);
 		}
-		it++;
+		(*j)++;
+		//it++;
 	}
-	else if (sign == '-' && c == 'b' && it != params.end())
+	else if (sign == '-' && c == 'b' && *j < params.size())
 	{
-		user = _server->getClient(*it);
-		if (user && isBanned(user->getLogin()))
+		user = this->server->getClient(params[*j]);
+		if (user && channel->isBanned(user->getLogin()))
 		{
-			removeClientFromList(this->_ban, *it);
+			channel->removeClientType("ban", params[*j]);
+			//removeClientFromList(this->_ban, *it);
 			modeAndArguments[1] += 'b';
 			modeAndArguments.push_back(user->getLogin());
 		}
-		it++;
+		(*j)++;
+		//it++;
 	}
-	*/
 	else if (modes.find(c) == std::string::npos)
 		executor.sendReply(ERR_UNKNOWNMODE(executor.getNickname(), c));
 		//send unknown mode character
@@ -355,3 +340,13 @@ std::string	Mode::composeModeResponse(std::vector<std::string> modeAndArguments)
 	return ("");
 }
 
+void	Mode::whatBanned(Channel *channel, Client& client)
+{
+	std::list<Client*>	bannedList;
+	std::list<Client*>::iterator 	it;
+
+	bannedList = channel->getBannedUsers();
+	for (it = bannedList.begin(); it != bannedList.end(); it++)
+		client.sendReply(RPL_BANLIST(client.getNickname(), channel->getName(), (*it)->getLogin()));
+	client.sendReply(RPL_ENDOFBANLIST(client.getNickname(), channel->getName()));
+}

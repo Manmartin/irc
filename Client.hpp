@@ -44,7 +44,6 @@ class Client{
 		bool		isChallengePassed(void);
 		void		registerClient(void);
 		void		leaveChannel(std::string nickName);
-		//void		processModeUser(char sign, char c, std::vector<std::string>& newModeUser);
 		void		sendReply(std::string msg);
 		void		terminator(void);
 		bool		sayonara(void);
