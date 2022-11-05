@@ -80,24 +80,7 @@ std::string	Client::getLogin(void) const
 {
 	return (_nickname + "!" + _user + "@" + _server);
 }
-/*
-void	Client::processModeUser(char sign, char c, std::vector<std::string>& newModeUser)
-{
-	if (sign == '+' && c == 'i' && !_invisible)
-	{
-		this->_invisible = true;	
-		newModeUser[0] += "i";
-	}
-	else if (sign == '-' && c == 'i' && _invisible)
-	{
-		this->_invisible = false;	
-		newModeUser[1] += "i";
-	}
-	else
-		client.sendReply(ERR_UMODEUNKNOWNFLAG(client.getNickname(), c));
 
-}
-*/
 std::string	Client::getRealName(void) const
 {
 	return (this->_realName);

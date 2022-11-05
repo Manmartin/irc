@@ -25,9 +25,9 @@ class Client{
 		std::string	getServer(void) const;
 		std::time_t &getLastTimeSeen(void);
 		std::list<std::string>& getInvited(void);
-		void			addInvited(std::string channel);
 		std::list<Channel*>& getChannels(void);
 
+		void		addInvited(std::string channel);
 		void		setNick(std::string nickname);
 		void		setUser(std::string user);
 		void		setServer(std::string nickname);

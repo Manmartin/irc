@@ -73,7 +73,6 @@ class Server {
 		void		reduceFds(int fd);
 		Client*		lookClientByFd(int fd);
 		void		pingAndClean(std::time_t currentTime);
-		void		cleanInactive(void);
 
 //USER REGISTRATION
 		bool	usedNick(std::string nickname);

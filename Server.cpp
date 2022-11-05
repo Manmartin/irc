@@ -315,11 +315,6 @@ void		Server::pingAndClean(std::time_t currentTime)
 	
 }
 
-void		Server::cleanInactive(void)
-{
-	return ;
-}
-
 void	Server::run(void)
 {
     int socketfd;
