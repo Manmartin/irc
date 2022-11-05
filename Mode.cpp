@@ -22,7 +22,7 @@ void Mode::exec(std::string params, Client& client)
 	size = modeParams.size();
 	if (size == 1 && channel)
 		whatModeChannel(channel, client);
-	else if (size == 1 && user && compareStrCaseInsensitive(modeParams[0], client.getNickname()))
+	else if (user && !compareStrCaseInsensitive(modeParams[0], client.getNickname()))
 		client.sendReply(ERR_USERSDONTMATCH(client.getNickname()));
 	else if (size == 1 && user)
 		whatModeUser(user, client);
@@ -35,7 +35,7 @@ void Mode::exec(std::string params, Client& client)
 	else if (channel)
 		changeModeChannel(channel, modeParams, client);
 	else if (user)
-		changeModeUser(modeParams[0], modeParams[1], client);
+		changeModeUser(modeParams[1], client);
 }
 
 void	Mode::whatModeChannel(Channel *channel, Client& client)
@@ -258,15 +258,13 @@ void	Mode::processMode(Channel *channel, char sign, char c, std::vector<std::str
 		executor.sendReply(ERR_UNKNOWNMODE(executor.getNickname(), c));
 }
 
-void	Mode::changeModeUser(std::string nickname, std::string modes, Client &client)
+void	Mode::changeModeUser(std::string modes, Client &client)
 {
 	char						sign;
 	std::vector<std::string>	newModeUser;
 	std::string					modeResponse;
 
 	sign = '+';
-	if (compareStrCaseInsensitive(nickname, client.getNickname()))
-		return (client.sendReply(ERR_USERSDONTMATCH(client.getNickname())));
 	newModeUser.push_back("+");
 	newModeUser.push_back("-");
 	for (size_t i = 0; i < modes.size(); i++)
