@@ -22,9 +22,7 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_commands["USER"] = new Registration(this);
 	*/
 	this->_commands["MODE"] = new Mode(this, "MODE");
-	/*
-	this->_commands["QUIT"] = new Leave(this,);
-	*/
+	this->_commands["QUIT"] = new Leave(this, "QUIT");
 	this->_commands["JOIN"] = new Join(this, "JOIN");
 	this->_commands["PART"] = new Leave(this, "PART");
 	this->_commands["TOPIC"] = new Topic(this, "TOPIC");

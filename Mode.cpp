@@ -240,10 +240,8 @@ void	Mode::processMode(Channel *channel, char sign, char c, std::vector<std::str
 			modeAndArguments[0] += 'b';
 			modeAndArguments.push_back(user->getLogin());
 			channel->addClient("ban", user);
-			//addClientToList(this->_ban, user);
 		}
 		(*j)++;
-		//it++;
 	}
 	else if (sign == '-' && c == 'b' && *j < params.size())
 	{
@@ -251,17 +249,13 @@ void	Mode::processMode(Channel *channel, char sign, char c, std::vector<std::str
 		if (user && channel->isBanned(user->getLogin()))
 		{
 			channel->removeClientType("ban", params[*j]);
-			//removeClientFromList(this->_ban, *it);
 			modeAndArguments[1] += 'b';
 			modeAndArguments.push_back(user->getLogin());
 		}
 		(*j)++;
-		//it++;
 	}
 	else if (modes.find(c) == std::string::npos)
 		executor.sendReply(ERR_UNKNOWNMODE(executor.getNickname(), c));
-		//send unknown mode character
-//	std::cout << getUsersAsString() << std::endl;
 }
 
 void	Mode::changeModeUser(std::string nickname, std::string modes, Client &client)
@@ -311,7 +305,6 @@ std::string	Mode::composeModeResponse(std::vector<std::string> modeAndArguments)
 	std::string	message;
 	bool	anyModeChange;
 
-	std::cout << "yeeees" << std::endl;
 	message = "";
 	anyModeChange = false;
 	it2 = modeAndArguments.begin();

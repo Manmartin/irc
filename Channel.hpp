@@ -64,6 +64,7 @@ class Channel {
 		bool	isModerated(void);
 		bool	isSecret(void);
 		bool	isKeyLocked(void);
+		bool	isFull(void);
 		bool	areExternalMessagesAllowed(void);
 
 		size_t	countUsers(void);

@@ -236,17 +236,19 @@ void	Channel::broadcast(std::string message)
 	message += "\r\n";
 	for (it = users.begin(); it != users.end(); it++)
 	{
-		send((*it)->getFd(), message.c_str(), message.size(), 0); 
+		if (*it)
+			send((*it)->getFd(), message.c_str(), message.size(), 0); 
 		//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 	}
 	for (it = _operators.begin(); it != _operators.end(); it++)
 	{
-		send((*it)->getFd(), message.c_str(), message.size(), 0); 
+		if (*it)
+			send((*it)->getFd(), message.c_str(), message.size(), 0); 
 		//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
 	}
 	for (it = _voiced.begin(); it != _voiced.end(); it++)
 	{
-		if (!isChannelOperator((*it)->getNickname()))
+		if (*it && !isChannelOperator((*it)->getNickname()))
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
 			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
@@ -261,7 +263,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 	message += "\r\n";
 	for (it = users.begin(); it != users.end(); it++)
 	{
-		if (c.getFd() != (*it)->getFd())
+		if (*it && c.getFd() != (*it)->getFd())
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
 			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
@@ -269,7 +271,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 	}
 	for (it = _operators.begin(); it != _operators.end(); it++)
 	{
-		if (c.getFd() != (*it)->getFd())
+		if (*it && c.getFd() != (*it)->getFd())
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
 			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
@@ -277,7 +279,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 	}
 	for (it = _voiced.begin(); it != _voiced.end(); it++)
 	{
-		if (c.getFd() != (*it)->getFd() && !isChannelOperator((*it)->getNickname()))
+		if (*it && c.getFd() != (*it)->getFd() && !isChannelOperator((*it)->getNickname()))
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
 			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
@@ -303,6 +305,15 @@ bool	Channel::isSecret(void)
 bool	Channel::isKeyLocked(void)
 {
 	return (this->_hasKey);
+}
+
+bool	Channel::isFull(void)
+{
+	if (this->_userLimit == -1)
+		return (false);
+	else if ((int)this->getAllUsers().size() < this->_userLimit)
+		return (false);
+	return (true);
 }
 
 bool	Channel::areExternalMessagesAllowed(void)
@@ -359,9 +370,10 @@ void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)
 
 	for (it = l.begin(); it != l.end(); it++)
 	{
-		std::cout << (*it)->getNickname() << " " << nickName << std::endl;;
+
 		if ((*it)->getNickname().compare(nickName) == 0)
 		{
+			std::cout << "removing : " << (*it)->getNickname() << " " << nickName << " from " << _name << std::endl;
 			l.erase(it);
 			break ;
 		}
@@ -401,6 +413,7 @@ void	Channel::removeClientFromChannel(std::string nickName)
 	removeClientFromList(this->users, nickName);
 	removeClientFromList(this->_operators, nickName);
 	removeClientFromList(this->_voiced, nickName);
+	removeClientFromList(this->_ban, nickName);
 }
 
 void	Channel::addClient(std::string type, Client* client)

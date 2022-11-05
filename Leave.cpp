@@ -16,7 +16,7 @@ void Leave::exec(std::string params, Client& c)
 	else if (this->_type.compare("PART") == 0)
 		this->part(params, c);
 	else
-		this->part(params, c);
+		this->quit(params, c);
 }
 
 void	Leave::partFromAllChannels(Client &client)

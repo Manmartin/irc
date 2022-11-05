@@ -19,8 +19,6 @@ class Join : public Command
 		~Join(void);
 		virtual void exec(std::string params, Client &c);
 	
-	protected:
-		std::string cmd;
 	private:
 		void joinChannel(Channel *channel, Client& client, std::string submittedKey);
 };

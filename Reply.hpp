@@ -54,6 +54,7 @@
 # define ERR_NEEDMOREPARAMS(client, command) "461 " + client + " " + command + " :Not enough parameters"
 # define ERR_ALREADYREGISTERED(client) "462 " + client + " :You may not reregister"
 # define ERR_PASSWDMISMATCH(client) "464 " + client + " :Password incorrect"
+# define ERR_CHANNELISFULL(client, channel) "471 " + client + " " + channel + " :Cannot join channel (+l)"
 # define ERR_UNKNOWNMODE(client, modechar) "472 " + client + " " + modechar + " :is unknown mode char to me"
 # define ERR_INVITEONLYCHAN(client, channel) "473 " + client + " " + channel + " :Cannot join channel (+i)"
 # define ERR_BANNEDFROMCHAN(client, channel) "474 " + client + " " + channel + " :Cannot join to channel " + channel + " (you are banned)"

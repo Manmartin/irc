@@ -50,6 +50,8 @@ void Join::joinChannel(Channel *channel, Client& client, std::string submittedKe
 {
 	if (channel->isUserInChannel(client.getNickname()))
 		return ;
+	else if (channel->isFull())
+		return (client.sendReply(ERR_CHANNELISFULL(client.getNickname(), channel->getName())));
 	else if (channel->isBanned(client.getLogin()))
 		return client.sendReply(ERR_BANNEDFROMCHAN(client.getNickname(), channel->getName()));
 	else if (channel->isInvitationRequired() && !client.isInvited(channel->getName()))	
@@ -58,6 +60,4 @@ void Join::joinChannel(Channel *channel, Client& client, std::string submittedKe
 		return (client.sendReply(ERR_BADCHANNELKEY(client.getNickname(), channel->getName())));
 	channel->join(client);
 }
-
-
 
