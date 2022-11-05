@@ -10,21 +10,20 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_activeChannels = 0;
 	this->_serverAddress = "localhost";
 	setTimestamp(&this->_timestamp);
-	this->_pass = this->encrypt(pass);
+	this->_pass = encrypt(pass);
 	this->_fds = new pollfd[maxClients + 1];
 	this->_nfds = 1;
 	this->_position = 0;
 	this->_port = port;
 
 	//Load commands and channel operations
-	/*this->_commands["PASS"] = new Registration(this);
-	this->_commands["NICK"] = new Registration(this);
-	this->_commands["USER"] = new Registration(this);
-	*/
+	this->_registrationCommands["PASS"] = new Pass(this, "PASS");
+	this->_registrationCommands["NICK"] = new Nick(this, "NICK");
+	this->_registrationCommands["USER"] = new User(this, "USER");
 	this->_commands["MODE"] = new Mode(this, "MODE");
-	this->_commands["QUIT"] = new Leave(this, "QUIT");
 	this->_commands["JOIN"] = new Join(this, "JOIN");
 	this->_commands["PART"] = new Leave(this, "PART");
+	this->_commands["QUIT"] = new Leave(this, "QUIT");
 	this->_commands["TOPIC"] = new Topic(this, "TOPIC");
 	//this->_commands["NAMES"] = new Names(this);
 	this->_commands["LIST"] = new List(this, "LIST");
@@ -70,13 +69,18 @@ std::string	Server::getServerAddress(void) const
 	return _serverAddress;
 }
 
+std::string	Server::getPass(void) const
+{
+	return _pass;
+}
+
 bool	Server::usedNick(std::string nickname)
 {
 	std::list<Client*>::iterator it;
 
 	for (it = this->clients.begin(); it != this->clients.end(); it++)
 	{
-		if ((*it)->getNickname().compare(nickname) == 0)
+		if (compareStrCaseInsensitive((*it)->getNickname(), nickname))
 			return (true);
 	}
 	return (false);
@@ -142,16 +146,6 @@ Channel*	Server::findChannel(std::string channelName)
 	return (NULL);
 }
 
-std::string Server::encrypt(std::string toEncrypt) 
-{
-	std::string output = toEncrypt;
-	std::string key = std::to_string(this->_timestamp);
- 
-    for (size_t i = 0; i < toEncrypt.size(); i++)
-		output[i] = toEncrypt[i] ^ key[i % (sizeof(key) / sizeof(char))]; 
-    return output;
-}
-
 void	Server::handleMessage(std::string message, int fd)
 {
 	Client	*c;
@@ -195,25 +189,21 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 {
 	std::string	firstParam;
 	Command *command = NULL;
+	Command	*registrationCommand = NULL;
 
 	command = _commands[key];
+	registrationCommand = _registrationCommands[key];
 	firstParam = value.substr(0, value.find(" "));
-	if (compareCaseInsensitive(key, "CAP"))
-		return ;
-	else if (command)
+	if (c.isRegistered() && command)
 		command->exec(trimSpaces(value), c);
-	else if (compareCaseInsensitive(key, "PASS"))
-		pass(value, c);
+	else if (registrationCommand)
+		registrationCommand->exec(trimSpaces(value), c);
+	else if (compareCaseInsensitive(key, "CAP"))
+		return ;
 	else if (!c.isChallengePassed())
-		c.terminator();	
-	else if (compareCaseInsensitive(key, "PING"))
-		c.sendReply(PONG(value));
-	else if (compareCaseInsensitive(key, "NICK"))
-		nick(value, c);
-	else if (compareCaseInsensitive(key, "USER"))
-		user(value, c);
-	else
-		;
+		c.terminator();
+	else if (c.isChallengePassed() && !c.isRegistered())
+		c.sendReply(ERR_NOTREGISTERED(c.getNickname()));
 }
 
 void	Server::callCommand(std::string cmd, std::string params, Client &c)
@@ -257,70 +247,6 @@ struct pollfd* Server::getFds(void)
 	return (this->_fds);
 }
 
-void	Server::nick(std::string instruction, Client &c)
-{
-	if (this->usedNick(instruction) == true)
-		c.sendReply(ERR_NICKNAMEINUSE(instruction));
-	else if (c.getNickname().compare("") == 0 && c.getUser().compare("") == 0)
-		c.setNick(instruction);
-	else if (c.getUser().length() > 0)
-	{
-		c.setNick(instruction);
-		if (c.isPassOk())
-		{
-			welcomeSequence(c);	
-			c.registerClient();
-		}
-	}
-	else
-	{
-		c.sendReply(RPL_NICK(instruction));
-		c.setNick(instruction);
-	}
-}
-
-void	Server::user(std::string instruction, Client &c)
-{
-	std::list<std::string>				values;
-	std::list<std::string>::iterator	it;
-	std::string							params;
-	std::string							realName;
-
-	if (c.isRegistered())
-		return (c.sendReply(ERR_ALREADYREGISTERED(c.getNickname())));
-	params = instruction.substr(0, instruction.find(":"));
-	realName = instruction.substr(instruction.find(":") + 1, instruction.size() - 1);
-	values = split_cpp(params, ' ');
-	it = values.begin();
-	if (values.size() < 3 || realName.size() < 1 || (*it).size() < 1)
-		return (c.sendReply(ERR_NEEDMOREPARAMS(c.getNickname(), "USER")));
-	c.setUser(*it);
-	it++; 
-	it++;
-	//not sure about this setter,it'd be better to get it from the connection info
-//	c.setServer(*it);
-	c.setRealName(realName);
-	if (c.getNickname().size() > 0 && c.isPassOk())
-	{
-		welcomeSequence(c);
-		c.registerClient();
-	}
-	//std::cout << "user: " << c.getUser() << " " << c.getRealName() << " " << c.getServer();
-}
-
-void	Server::pass(std::string pass, Client &c)
-{
-	if (c.isRegistered())
-		c.sendReply(ERR_ALREADYREGISTERED(c.getNickname()));
-	else if (this->encrypt(pass).compare(this->_pass) == 0)
-		c.challengePassed();
-	else
-	{
-		c.sendReply(ERR_PASSWDMISMATCH(c.getNickname()));
-		c.terminator();	
-	}
-}
-
 void	Server::removeChannel(Channel *c)
 {
 	std::list<Channel*>::iterator	it;
@@ -329,19 +255,20 @@ void	Server::removeChannel(Channel *c)
 	{
 		if ((*it)->getName().compare(c->getName()) == 0)
 		{
-			this->channels.erase(it);	
+			this->channels.erase(it);
 			break ;
 		}
 	}
 	delete c;
 }
 
-void	Server::welcomeSequence(Client& c)
+void	Server::registerAndWelcome(Client& c)
 {
 	c.sendReply(RPL_WELCOME(c.getNickname(), c.getLogin()));
 	c.sendReply(RPL_YOURHOST(c.getNickname(), c.getServer()));
 	c.sendReply(RPL_CREATED(c.getNickname(), "today"));
 	c.sendReply(RPL_MYINFO(c.getNickname(), c.getServer()));
+	c.registerClient();
 }
 
 Client*	Server::lookClientByFd(int fd)

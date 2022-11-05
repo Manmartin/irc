@@ -20,6 +20,9 @@
 # include "Message.hpp"
 # include "Who.hpp"
 # include "Mode.hpp"
+# include "Nick.hpp"
+# include "Pass.hpp"
+# include "User.hpp"
 # include <map>
 # include <list>
 # include <set>
@@ -47,6 +50,7 @@ class Server {
 		int			getMaxChannels(void) const;
 		int			getActiveChannels(void) const;
 		std::string	getServerAddress(void) const;
+		std::string	getPass(void) const;
 		struct pollfd* getFds(void);
 
 		void	addClient(Client* c);
@@ -67,16 +71,12 @@ class Server {
 //SERVER UTILS
 		void		reduceFds(int fd);
 		Client*		lookClientByFd(int fd);
-		std::string encrypt(std::string toEncrypt);
 		void		pingAndClean(std::time_t currentTime);
 		void		cleanInactive(void);
 
 //USER REGISTRATION
-		void	nick(std::string instruction, Client &c);
 		bool	usedNick(std::string nickname);
-		void	user(std::string instruction, Client &c);
-		void	pass(std::string pass, Client &c);
-		void	welcomeSequence(Client& c);
+		void	registerAndWelcome(Client& c);
 
 	private:
 		Server(void);
@@ -96,6 +96,7 @@ class Server {
 		size_t			_position;
 		std::time_t		_lastPing;
 		std::map<std::string, Command*> _commands;
+		std::map<std::string, Command*> _registrationCommands;
 };
 
 #endif

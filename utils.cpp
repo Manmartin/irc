@@ -87,42 +87,35 @@ bool	compareCaseInsensitive(std::string& s1, const char *s2)
 	}
 	return (true);
 }
-/*
-std::string	composeModeResponse(std::vector<std::string> modeAndArguments)
-{
-	std::vector<std::string>::iterator	it2;
-	std::string	message;
-	bool	anyModeChange;
 
-	std::cout << "yeeees" << std::endl;
-	message = "";
-	anyModeChange = false;
-	it2 = modeAndArguments.begin();
-	if ((*it2).size() > 1)
+bool	compareStrCaseInsensitive(std::string s1, std::string s2)
+{
+	size_t	i;
+
+	i = 0;
+	if (s1.size() != s2.size())
+		return (false);
+	while (i < s1.size())
 	{
-		message += *it2;
-		anyModeChange = true;
+		if (tolower(s1[i]) != tolower(s2[i]))
+			return (false);
+		i++;
 	}
-	it2++;
-	if ((*it2).size() > 1)
-	{
-		message += *it2 + " ";
-		anyModeChange = true;
-	}
-	else 
-		message += " ";
-	it2++;
-	while (it2 < modeAndArguments.end())
-	{
-		message += *it2 + " ";
-		it2++;
-	}
-	message += "\r\n";
-	if (anyModeChange)
-		return (message);
-	return ("");
+	return (true);
 }
-*/
+
+std::string encrypt(std::string toEncrypt) 
+{
+	std::string output = toEncrypt;
+	std::time_t timestamp = 0;
+	setTimestamp(&timestamp);
+	std::string key = std::to_string(timestamp);
+ 
+    for (size_t i = 0; i < toEncrypt.size(); i++)
+		output[i] = toEncrypt[i] ^ key[i % (sizeof(key) / sizeof(char))]; 
+    return output;
+}
+
 std::string	trimSpaces(std::string str)
 {
 	size_t	i;
