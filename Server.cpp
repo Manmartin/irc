@@ -92,7 +92,7 @@ Client*		Server::getClient(std::string nickname)
 
 	for (it = this->clients.begin(); it != this->clients.end(); it++)
 	{
-		if ((*it)->getNickname().compare(nickname) == 0)
+		if (compareStrCaseInsensitive((*it)->getNickname(), nickname))
 			return (*it);
 	}
 	return (NULL);
@@ -139,7 +139,7 @@ Channel*	Server::findChannel(std::string channelName)
 	it = this->channels.begin();
 	while (it != this->channels.end())
 	{
-		if (channelName == (*it)->getName())
+		if (compareStrCaseInsensitive(channelName, (*it)->getName()))
 			return (*it);
 		it++;
 	}
@@ -191,8 +191,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	Command *command = NULL;
 	Command	*registrationCommand = NULL;
 
-	command = _commands[key];
-	registrationCommand = _registrationCommands[key];
+	command = _commands[strToUpper(key)];
+	registrationCommand = _registrationCommands[strToUpper(key)];
 	firstParam = value.substr(0, value.find(" "));
 	if (c.isRegistered() && command)
 		command->exec(trimSpaces(value), c);
@@ -253,7 +253,7 @@ void	Server::removeChannel(Channel *c)
 
 	for (it = this->channels.begin(); it != this->channels.end(); it++)
 	{
-		if ((*it)->getName().compare(c->getName()) == 0)
+		if (compareStrCaseInsensitive((*it)->getName(), c->getName()))
 		{
 			this->channels.erase(it);
 			break ;

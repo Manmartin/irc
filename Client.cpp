@@ -50,7 +50,7 @@ bool	Client::isInvited(std::string channel)
 		return (false);
 	for (it = this->_invited.begin(); it != this->_invited.end(); it++)
 	{
-		if ((*it).compare(channel) == 0)
+		if (compareStrCaseInsensitive((*it), channel))
 			return (true);
 	}
 	return (false);
@@ -134,7 +134,7 @@ bool	Client::isInChannel(std::string channel)
 
 	for (it = this->_channels.begin(); it != this->_channels.end(); it++)
 	{
-		if ((*it)->getName().compare(channel) == 0)
+		if (compareStrCaseInsensitive((*it)->getName(), channel))
 			return (true);
 	}
 	return (false);
@@ -162,7 +162,7 @@ void	Client::leaveChannel(std::string nickName)
 
 	for (it = this->_channels.begin(); it != this->_channels.end(); it++)
 	{
-		if ((*it)->getName().compare(nickName) == 0)
+		if (compareStrCaseInsensitive((*it)->getName(), nickName))
 		{
 			this->_channels.erase(it);
 			return ;

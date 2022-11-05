@@ -22,7 +22,7 @@ void Mode::exec(std::string params, Client& client)
 	size = modeParams.size();
 	if (size == 1 && channel)
 		whatModeChannel(channel, client);
-	else if (size == 1 && user && modeParams[0].compare(client.getNickname()) != 0)
+	else if (size == 1 && user && compareStrCaseInsensitive(modeParams[0], client.getNickname()))
 		client.sendReply(ERR_USERSDONTMATCH(client.getNickname()));
 	else if (size == 1 && user)
 		whatModeUser(user, client);
@@ -265,7 +265,7 @@ void	Mode::changeModeUser(std::string nickname, std::string modes, Client &clien
 	std::string					modeResponse;
 
 	sign = '+';
-	if (nickname.compare(client.getNickname()) != 0)
+	if (compareStrCaseInsensitive(nickname, client.getNickname()))
 		return (client.sendReply(ERR_USERSDONTMATCH(client.getNickname())));
 	newModeUser.push_back("+");
 	newModeUser.push_back("-");

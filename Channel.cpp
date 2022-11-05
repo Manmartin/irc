@@ -142,7 +142,7 @@ Client*	Channel::findUserInList(std::string nick, std::list<Client*> &l)
 		if (it == l.end())
 			return NULL;
 		nickFromClient = (*it)->getNickname();
-		if (nickFromClient.compare(nick) == 0)
+		if (compareStrCaseInsensitive(nickFromClient, nick))
 			return (*it);
 	}
 	return (NULL);
@@ -193,7 +193,7 @@ bool	Channel::isBanned(std::string mask)
 
 	for (it = this->_ban.begin(); it != this->_ban.end(); it++)
 	{
-		if (mask.compare((*it)->getLogin()) == 0)
+		if (compareStrCaseInsensitive(mask, (*it)->getLogin()))
 			return (true);
 	}
 	return (false);
@@ -371,9 +371,9 @@ void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)
 	for (it = l.begin(); it != l.end(); it++)
 	{
 
-		if ((*it)->getNickname().compare(nickName) == 0)
+		if (compareStrCaseInsensitive((*it)->getNickname(), nickName))
 		{
-			std::cout << "removing : " << (*it)->getNickname() << " " << nickName << " from " << _name << std::endl;
+			//std::cout << "removing : " << (*it)->getNickname() << " " << nickName << " from " << _name << std::endl;
 			l.erase(it);
 			break ;
 		}
@@ -400,7 +400,7 @@ void	Channel::removeClientType(std::string type, std::string nickName)
 	for (it = (*list).begin(); it != (*list).end(); it++)
 	{
 		//std::cout << (*it)->getNickname() << " " << nickName << std::endl;;
-		if ((*it)->getNickname().compare(nickName) == 0)
+		if (compareStrCaseInsensitive((*it)->getNickname(), nickName))
 		{
 			(*list).erase(it);
 			break ;
@@ -429,13 +429,3 @@ void	Channel::addClient(std::string type, Client* client)
 	else if (type.compare("ban") == 0)
 		this->_ban.push_front(client);
 }
-/*
-void	Channel::banList(Client& c)
-{
-	std::list<Client*>::iterator 	it;
-
-	for (it = this->_ban.begin(); it != this->_ban.end(); it++)
-		c.sendReply(RPL_BANLIST(c.getNickname(), this->_name, (*it)->getLogin()));
-	c.sendReply(RPL_ENDOFBANLIST(c.getNickname(), this->_name));
-}
-*/

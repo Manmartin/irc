@@ -84,7 +84,7 @@ void	Leave::quit(std::string reason, Client& client)
 		clients = (*it)->getAllUsers();
 		for (clientIterator = clients.begin(); clientIterator != clients.end(); clientIterator++)
 		{
-			if (client.getNickname().compare((*clientIterator)->getNickname()) != 0)
+			if (compareStrCaseInsensitive(client.getNickname(), (*clientIterator)->getNickname()))
 				clientsToInform.insert((*clientIterator)->getNickname());
 		}
 		client.leaveChannel((*it)->getName());

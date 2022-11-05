@@ -150,3 +150,13 @@ std::string	trimSpaces(std::string str)
 	}
 	return (str);
 }
+
+std::string	strToUpper(std::string str)
+{
+	std::string	strU;	
+
+	strU = "";
+	for (size_t i = 0; i < str.size(); i++)
+		strU += toupper(str[i]);
+	return (strU);
+}

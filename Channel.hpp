@@ -44,7 +44,7 @@ class Channel {
 		void	joinWelcomeSequence(Client& c);
 
 //MODE
-		void	banList(Client& c);
+	//	void	banList(Client& c);
 
 		std::string	getUsersAsString(void);
 		Client*	findUserInList(std::string nick, std::list<Client*> &l);
