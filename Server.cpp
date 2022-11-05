@@ -25,7 +25,7 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_commands["PART"] = new Leave(this, "PART");
 	this->_commands["QUIT"] = new Leave(this, "QUIT");
 	this->_commands["TOPIC"] = new Topic(this, "TOPIC");
-	//this->_commands["NAMES"] = new Names(this);
+	this->_commands["NAMES"] = new Names(this, "NAMES");
 	this->_commands["LIST"] = new List(this, "LIST");
 	this->_commands["INVITE"] = new Invite(this, "INVITE");
 	this->_commands["KICK"] = new Kick(this, "KICK");
@@ -208,7 +208,11 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 
 void	Server::callCommand(std::string cmd, std::string params, Client &c)
 {
-	this->_commands[cmd]->exec(params, c);
+	Command *command;
+
+	command = this->_commands[cmd];
+	if (command)
+		command->exec(params, c);
 }
 
 std::list<Channel*>& Server::getChannels(void)
@@ -292,7 +296,7 @@ void		Server::pingAndClean(std::time_t currentTime)
 	payload = "";
 	for(it = clients.begin(); it != clients.end(); it++)
 	{
-		if (currentTime - (*it)->getLastTimeSeen() > 12)
+		if (currentTime - (*it)->getLastTimeSeen() > 150)
 		{
 			std::cout << "inactivity" << std::endl;
 			this->callCommand("QUIT", "User was inactive for a long time", **it);
@@ -300,7 +304,7 @@ void		Server::pingAndClean(std::time_t currentTime)
 			this->removeClient(*it);
 			break ;
 		}
-		else if (currentTime - (*it)->getLastTimeSeen() > 3)
+		else if (currentTime - (*it)->getLastTimeSeen() > 45)
 		{
 			payload = PING((*it)->getNickname()) + "\r\n";
 			send((*it)->getFd(), payload.c_str(), payload.size(), 0);
@@ -389,9 +393,9 @@ void	Server::run(void)
 	setTimestamp(&this->_lastPing);
 	//int i = 0;
     while (true) {
-		rc = poll(_fds, _nfds, 1000);
+		rc = poll(_fds, _nfds, 10);
 		setTimestamp(&currentTime);
-		if (currentTime - this->_lastPing > 3)
+		if (currentTime - this->_lastPing > 40)
 			pingAndClean(currentTime);
 		if (rc < 0)
 		{
@@ -413,7 +417,10 @@ void	Server::run(void)
 				std::cout << "Active clients" << _activeClients << std::endl;
 				Client *cc = lookClientByFd(_fds[_position].fd);
 				if (cc)
+				{
+					callCommand("QUIT", "Client lost connexion", *cc);
 					removeClient(cc);
+				}
 				else
 				{
 					close (_fds[_position].fd);

@@ -10,6 +10,7 @@ Channel::Channel(std::string name, Server *s) : _name(name), _topic("No topic"),
 	memset(_message, 0, 2048);
 	_server = s;
 	setTimestamp(&_topicSetAt);
+	setTimestamp(&_createdAt);
 	this->_topicSetBy = "";
 }
 
@@ -34,19 +35,12 @@ Channel::Channel(Channel const &c)
 
 void	Channel::joinWelcomeSequence(Client& c)
 {
-	std::string	usersString;
-	std::string	symbol;
-
-	symbol = "=";
-	if (_secret)
-		symbol = "@";
-	usersString = "353 " + c.getNickname() + " " + symbol + " " + _name + " :" + getUsersAsString();
 	this->broadcast(":" + c.getLogin() + " JOIN " + _name + "\r\n");
 	c.sendReply(RPL_TOPIC(c.getNickname(), this->_name, getTopic()));
-	c.sendReply(usersString);
+	this->_server->callCommand("NAMES", this->_name, c);
 	c.sendReply(RPL_ENDOFNAMES(c.getNickname(), this->_name));
 	this->_server->callCommand("MODE", this->_name, c);
-	c.sendReply(RPL_CREATIONTIME(c.getNickname(), this->_name, "0"));
+	c.sendReply(RPL_CREATIONTIME(c.getNickname(), this->_name, toString(this->_createdAt)));
 }
 
 void	Channel::join(Client& client)

@@ -23,6 +23,7 @@
 # include "Nick.hpp"
 # include "Pass.hpp"
 # include "User.hpp"
+# include "Names.hpp"
 # include <map>
 # include <list>
 # include <set>

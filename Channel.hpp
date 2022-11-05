@@ -81,6 +81,7 @@ class Channel {
 		char				_message[2048];
 		std::string			_topic;
 		std::time_t			_topicSetAt;
+		std::time_t			_createdAt;
 		std::string			_topicSetBy;
 		bool				_noExternalMsg;
 		bool				_topicLock;
