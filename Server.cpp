@@ -33,10 +33,6 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_commands["NOTICE"] = new Message(this, "NOTICE");
 	this->_commands["WHOIS"] = new Whois(this, "WHOIS");
 	this->_commands["WHO"] = new Who(this, "WHO");
-/*	
-	this->_commands["PING"] = new PingPong(this);
-	this->_commands["PONG"] = new PingPong(this);
-	*/
 }
 
 Server::Server(void)
@@ -204,6 +200,8 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		c.terminator();
 	else if (c.isChallengePassed() && !c.isRegistered())
 		c.sendReply(ERR_NOTREGISTERED(c.getNickname()));
+	else if (compareCaseInsensitive(key, "PING"))
+		c.sendReply(PONG(value));
 }
 
 void	Server::callCommand(std::string cmd, std::string params, Client &c)
