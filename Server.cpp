@@ -146,6 +146,7 @@ void	Server::handleMessage(std::string message, int fd)
 {
 	Client	*c;
 	size_t	pos;
+	std::string instruction;
 
 	if (!fd)
 		return ;
@@ -157,8 +158,16 @@ void	Server::handleMessage(std::string message, int fd)
 	std::cout << "\033[1;34m" << c->getLastTimeSeen() << ": Message from " << fd << "(" << 
 		lookClientByFd(fd)->getNickname() << ")"
 		<< ":\n" << message << "\033[0m"<< std::endl;
-	std::string instruction;
-	while ((pos = message.find("\r\n")) != std::string::npos)
+	if ((pos = message.find("\r\n")) == std::string::npos && (pos = message.find("\n")) == std::string::npos)
+	{
+		if (c->fillMsgBuffer(message))
+		{
+			parseMessage(c->getMsgBuffer(), *c);
+			c->cleanMsgBuffer();
+		}
+	}
+	while ((pos = message.find("\r\n")) != std::string::npos
+		|| (pos = message.find("\n")) != std::string::npos)
 	{
 		instruction = message.substr(0, pos);
 		parseMessage(instruction, *c);

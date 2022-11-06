@@ -26,7 +26,10 @@ class Client{
 		std::time_t &getLastTimeSeen(void);
 		std::list<std::string>& getInvited(void);
 		std::list<Channel*>& getChannels(void);
+		char		*getMsgBuffer(void);
 
+		int			fillMsgBuffer(std::string str);
+		void		cleanMsgBuffer(void);
 		void		addInvited(std::string channel);
 		void		setNick(std::string nickname);
 		void		setUser(std::string user);
@@ -48,6 +51,8 @@ class Client{
 		void		terminator(void);
 		bool		sayonara(void);
 
+
+
 	private:
 		Client(void);
 		std::string				_nickname;
@@ -62,6 +67,7 @@ class Client{
 		bool					_challengePassed;
 		bool					_sayonara;
 		std::time_t				_lastTimeSeenAt;
+		char					_msgBuffer[513];
 };
 
 #endif

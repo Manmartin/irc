@@ -96,6 +96,30 @@ std::list<Channel*>& Client::getChannels(void)
 	return (this->_channels);	
 }
 
+char*	Client::getMsgBuffer(void)
+{
+	return (this->_msgBuffer);
+}
+
+int	Client::fillMsgBuffer(std::string str)
+{
+	std::string	newBuffer;
+
+	newBuffer += str;
+	if (newBuffer.size() >= 510)
+	{
+		newBuffer = newBuffer.substr(0, 510);
+		newBuffer += "\r\n";
+		return (1);
+	}
+	return (0);
+}
+
+void	Client::cleanMsgBuffer(void)
+{
+	memset(_msgBuffer, 0, 513);		
+}
+
 std::time_t& Client::getLastTimeSeen(void)
 {
 	return (this->_lastTimeSeenAt);
