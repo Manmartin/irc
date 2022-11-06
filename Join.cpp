@@ -37,12 +37,15 @@ void Join::exec(std::string params, Client& c){
 		if (channels[i][0] != '#')
 			return (c.sendReply(ERR_BADCHANMASK(channels[i])));
 		channel = this->server->findChannel(channels[i]);
-		if (!channel)
+		if (!channel && params.find_first_of(" ,*?!@$:&.") != std::string::npos)
+			return (c.sendReply(ERR_BADCHANMASK(channels[i])));
+		else if (!channel)
 		{
 			this->server->getChannels().push_back(new Channel(channels[i], server));
 			channel = this->server->findChannel(channels[i]);
 		}
-		this->joinChannel(channel, c, channelsAndItsKeys[channels[i]]);
+		if (channel)
+			this->joinChannel(channel, c, channelsAndItsKeys[channels[i]]);
 	}
 }
 

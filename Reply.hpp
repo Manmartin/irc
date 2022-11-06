@@ -45,6 +45,8 @@
 # define ERR_CANNOTSENDTOCHAN(client, channel, explain) "404 " + client + " " + channel + " :Cannot send to channel" + explain + "\r\n"
 
 # define ERR_NOTEXTTOSEND() "412 :No text to send\r\n"
+# define ERR_NONICKNAMEGIVEN "431: No nickname given"
+# define ERR_ERRONEUSNICKNAME(nick, reason) "432 " + nick + " :Erroneous nickname, " + reason
 # define ERR_NICKNAMEINUSE(nick) "433 * " + nick + " :Nickname already in use"
 
 # define ERR_USERNOTINCHANNEL(client, nick, channel) "441 " + client + " " + nick + " " + channel + " :User " + nick + " isn't on channel " + channel + ""
