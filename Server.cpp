@@ -185,12 +185,15 @@ void	Server::parseMessage(std::string instruction, Client &c)
 {
 	std::string key;
 	std::string value;
-	int position;
+	size_t position;
 
 	instruction = trimSpaces(instruction);
 	position = instruction.find(' ');
 	key = instruction.substr(0, position);
-	value = instruction.substr(position + 1, 100);
+	if (position != std::string::npos)
+		value = instruction.substr(position + 1, 511 - key.size());
+	else
+		value = "";
 	execInstruction(key, value, c);
 
 }

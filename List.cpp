@@ -11,20 +11,20 @@ List::~List(void)
 
 void List::exec(std::string params, Client& client)
 {
-	std::list<std::string>				channelNames;
+	std::vector<std::string>				channelNames;
 	std::list<std::string>::iterator	it;
 	std::list<Channel*> 				channelsTarget;
 	std::list<Channel*>::iterator		it2;
 	Channel*							channelAux;
 
-	channelNames = split_cpp(params, ',');
+	channelNames = splitToVector(params, ',');
 	if (channelNames.size() == 0)
 		channelsTarget = this->server->getChannels();
 	else
 	{
-		for (it = channelNames.begin(); it != channelNames.end(); it++)
+		for (size_t i = 0; i < channelNames.size(); i++)
 		{
-			channelAux = this->server->findChannel(*it);
+			channelAux = this->server->findChannel(channelNames[i]);
 			if (channelAux)
 				channelsTarget.push_back(channelAux);
 		}
