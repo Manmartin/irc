@@ -367,7 +367,7 @@ void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)
 
 		if (compareStrCaseInsensitive((*it)->getNickname(), nickName))
 		{
-			//std::cout << "removing : " << (*it)->getNickname() << " " << nickName << " from " << _name << std::endl;
+			std::cout << "removing : " << (*it)->getNickname() << " " << nickName << " from " << _name << std::endl;
 			l.erase(it);
 			break ;
 		}

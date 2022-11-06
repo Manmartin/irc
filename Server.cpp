@@ -158,7 +158,7 @@ void	Server::handleMessage(std::string message, int fd)
 	std::cout << "\033[1;34m" << c->getLastTimeSeen() << ": Message from " << fd << "(" << 
 		lookClientByFd(fd)->getNickname() << ")"
 		<< ":\n" << message << "\033[0m"<< std::endl;
-	if ((pos = message.find("\r\n")) == std::string::npos && (pos = message.find("\n")) == std::string::npos)
+	if (message.find("\n") == std::string::npos)
 	{
 		if (c->fillMsgBuffer(message))
 		{
@@ -166,12 +166,16 @@ void	Server::handleMessage(std::string message, int fd)
 			c->cleanMsgBuffer();
 		}
 	}
-	while ((pos = message.find("\r\n")) != std::string::npos
-		|| (pos = message.find("\n")) != std::string::npos)
+	else
 	{
-		instruction = message.substr(0, pos);
-		parseMessage(instruction, *c);
-		message.erase(0, pos + 2);
+		while ((pos = message.find("\n")) != std::string::npos)
+		{
+			instruction = message.substr(0, pos);
+			trimEndOfLine(instruction);
+			parseMessage(c->getMsgBuffer() + instruction, *c);
+			c->cleanMsgBuffer();
+			message.erase(0, pos + 1);
+		}
 	}
 	if (c->sayonara() && c->getFd() > 0)
 		return (removeClient(c));
@@ -183,6 +187,7 @@ void	Server::parseMessage(std::string instruction, Client &c)
 	std::string value;
 	int position;
 
+	instruction = trimSpaces(instruction);
 	position = instruction.find(' ');
 	key = instruction.substr(0, position);
 	value = instruction.substr(position + 1, 100);
@@ -307,7 +312,6 @@ void		Server::pingAndClean(std::time_t currentTime)
 		{
 			std::cout << "inactivity" << std::endl;
 			this->callCommand("QUIT", "User was inactive for a long time", **it);
-			//this->quit("User was inactive for a long time", (**it));
 			this->removeClient(*it);
 			break ;
 		}
@@ -315,11 +319,9 @@ void		Server::pingAndClean(std::time_t currentTime)
 		{
 			payload = PING((*it)->getNickname()) + "\r\n";
 			send((*it)->getFd(), payload.c_str(), payload.size(), 0);
-			//std::cout << "\033[1;31mServer reply to " << (*it)->getFd() << " ->" << payload << "\033[0m" << std::endl;
 		}
 	}
 	setTimestamp(&this->_lastPing);
-	
 }
 
 void	Server::run(void)
@@ -328,13 +330,11 @@ void	Server::run(void)
 	int rc;
 	int	on;
     char buff[252];
-	//size_t	current_size;
     struct	sockaddr_in6	serv_addr;
 	struct sockaddr_storage	client;
 	char	clientAddress[INET6_ADDRSTRLEN];
 
 	srand (time(NULL));
-	//current_size = 0;
 	socketfd = -1;
 	on = 1;
 	rc = 1;
@@ -393,7 +393,6 @@ void	Server::run(void)
 
 	connectfd = -1;
 	setTimestamp(&this->_lastPing);
-	//int i = 0;
     while (true) {
 		rc = poll(_fds, _nfds, 10);
 		setTimestamp(&currentTime);
@@ -405,8 +404,6 @@ void	Server::run(void)
 			exit(1);
 		}
 		//find readable fds
-		//std::cout << "Connected users: " << current_size - 1  << std::endl;
-		//std::cout << "_nfds: " << _nfds << std::endl;
 		for (_position = 0; _position < _nfds; _position++)
 		{
 			if (_fds[_position].fd == -1)

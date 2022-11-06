@@ -171,3 +171,14 @@ std::string timestampToHumanTime(time_t timestamp)
 	humanTime = humanTime.substr(0, humanTime.length() - 1);
 	return (humanTime);
 }
+
+//https://cplusplus.com/reference/string/string/find_last_not_of/
+void	trimEndOfLine(std::string& str)
+{
+	size_t	found = str.find_last_not_of("\r\n");
+
+	if (found)
+		str.erase(found + 1);
+	else
+		str.clear();
+}

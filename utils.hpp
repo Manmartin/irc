@@ -17,6 +17,7 @@ std::string encrypt(std::string toEncrypt);
 std::string	trimSpaces(std::string str);
 std::string	strToUpper(std::string str);
 std::string	timestampToHumanTime(time_t timestamp);
+void	trimEndOfLine(std::string& str);
 
 template <typename T>
 std::string toString ( T Number )

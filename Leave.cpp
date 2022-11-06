@@ -79,12 +79,14 @@ void	Leave::quit(std::string reason, Client& client)
 	std::string						payload;
 
 	channels = client.getChannels();
+	std::cout << "size: " << channels.size() << std::endl;
 	for (it = channels.begin(); it != channels.end(); it++)
 	{
+		std::cout << "Quit " << (*it)->getName() << std::endl;
 		clients = (*it)->getAllUsers();
 		for (clientIterator = clients.begin(); clientIterator != clients.end(); clientIterator++)
 		{
-			if (compareStrCaseInsensitive(client.getNickname(), (*clientIterator)->getNickname()))
+			if (!compareStrCaseInsensitive(client.getNickname(), (*clientIterator)->getNickname()))
 				clientsToInform.insert((*clientIterator)->getNickname());
 		}
 		client.leaveChannel((*it)->getName());
