@@ -16,6 +16,7 @@ bool	compareStrCaseInsensitive(std::string s1, std::string s2);
 std::string encrypt(std::string toEncrypt);
 std::string	trimSpaces(std::string str);
 std::string	strToUpper(std::string str);
+std::string	timestampToHumanTime(time_t timestamp);
 
 template <typename T>
 std::string toString ( T Number )

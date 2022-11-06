@@ -268,7 +268,7 @@ void	Server::registerAndWelcome(Client& c)
 {
 	c.sendReply(RPL_WELCOME(c.getNickname(), c.getLogin()));
 	c.sendReply(RPL_YOURHOST(c.getNickname(), c.getServer()));
-	c.sendReply(RPL_CREATED(c.getNickname(), "today"));
+	c.sendReply(RPL_CREATED(c.getNickname(), timestampToHumanTime(this->_timestamp) + ", Madrid/Spain timezone"));
 	c.sendReply(RPL_MYINFO(c.getNickname(), c.getServer()));
 	c.registerClient();
 }

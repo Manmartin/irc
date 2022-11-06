@@ -153,10 +153,21 @@ std::string	trimSpaces(std::string str)
 
 std::string	strToUpper(std::string str)
 {
-	std::string	strU;	
+	std::string	strU;
 
 	strU = "";
 	for (size_t i = 0; i < str.size(); i++)
 		strU += toupper(str[i]);
 	return (strU);
+}
+
+std::string timestampToHumanTime(time_t timestamp)
+{
+	char *dt;
+	std::string humanTime;
+
+	dt = ctime(&timestamp);	
+	humanTime = dt;
+	humanTime = humanTime.substr(0, humanTime.length() - 1);
+	return (humanTime);
 }
