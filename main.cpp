@@ -1,17 +1,14 @@
-#include <sys/socket.h>
 #include <iostream>
-#include <netinet/in.h>
-#include <sys/poll.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include "Client.hpp"
 #include "Server.hpp"
-#include <ctime>
+#include <csignal>
+
+bool g_running;
+
+void	signalHandler(int num)
+{
+	(void) num;
+	g_running = false;
+}
 
 int main(int argc, char **argv)
 {
@@ -29,15 +26,13 @@ int main(int argc, char **argv)
 		std::cerr << "Usage: ./ircserv PORT PASS [-log]" << std::endl;	
 		return (1);
 	}
+	g_running = true;
 	if (argc == 4 && strncmp(argv[3], "-log", 4) == 0)
 		server = new Server(200, 200, port, pass, true);
 	else
 		server = new Server(200, 200, port, pass, false);
-//	struct pollfd *fds;
-//	fds = server.getFds();
-
-	server->run();
+	signal(SIGINT, signalHandler);
+	server->run(g_running);
 	delete server;
-//	delete [] fds;
     return 0;
 }

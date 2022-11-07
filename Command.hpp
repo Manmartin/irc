@@ -12,7 +12,7 @@ class Client;
 class Command{
 	public:
 		Command(void);
-		~Command(void);
+		virtual ~Command(void);
  		Command(Server *s, std::string type) : server(s), _type(type) {};
 		virtual void exec(std::string params, Client &c) = 0;
 		virtual std::array<std::string, 2>	separateParamsAndMessage(std::string params);

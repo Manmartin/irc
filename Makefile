@@ -10,12 +10,12 @@ SRCS = main.cpp Client.cpp Server.cpp Channel.cpp Command.cpp Join.cpp Leave.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) $(INC) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) $(INC) $(OBJS) -o $@
+	$(CXX) $(CXXFLAGS) $(INC) $(OBJS) -o $@
 
 debug: $(OBJS) 
 	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) $(INC) $(OBJS) -o $(NAME) 

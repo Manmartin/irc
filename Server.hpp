@@ -38,6 +38,7 @@ class Channel;
 class Client;
 class Command;
 //class Join;
+
 class Server {
 
 	public:
@@ -45,7 +46,8 @@ class Server {
 		Server(void);
 		Server(int maxClients, int maxChannels, int port, std::string pass, bool log);
 
-		void		run(void);
+	//	void		run(void);
+		void		run(bool &running);
 		int			getMaxClients(void) const;
 		int			getActiveClients(void) const;
 		int			getMaxChannels(void) const;
@@ -75,6 +77,7 @@ class Server {
 		void	saveIpFromClient(struct sockaddr_storage &client, char (*clientAddress)[INET6_ADDRSTRLEN]);
 		void	incomingMessage(int position);
 		void	log(int fd, std::string message, int type);
+		void	freeAndDestroy(void);
 
 //SERVER MESSAGE PARSER AND CONTROLLER
 		void	handleMessage(std::string message, int fd);

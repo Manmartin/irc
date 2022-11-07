@@ -2,6 +2,7 @@
 Server::~Server(void)
 {
 	std::cout << "Destroyed server" << std::endl;
+	freeAndDestroy();
 }
 
 Server::Server(int maxClients, int maxChannels, int port, std::string pass, bool log) : _maxClients(maxClients), _maxChannels(maxChannels), _log(log), _name("localhost")
@@ -484,18 +485,32 @@ void	Server::log(int fd, std::string message, int type)
 		std::cout << "New server event: \n" << message << "\n" << std::endl;
 }
 
-void	Server::run(void)
+void	Server::freeAndDestroy(void)
+{
+	std::list<Client*>::iterator	it;
+	std::list<Channel*>::iterator	it2;
+	std::map<std::string, Command*>::iterator it3;
+
+	for (it = clients.begin(); it != clients.end(); it++)
+		removeClient(*it);
+	for (it2 = channels.begin(); it2 != channels.end(); it2++)
+		removeChannel(*it2);
+	for (it3 = _commands.begin(); it3 != _commands.end(); it3++)
+		delete it3->second;
+	for (it3 = _registrationCommands.begin(); it3 != _registrationCommands.end(); it3++)
+		delete it3->second;
+	delete [] _fds;
+}
+
+void	Server::run(bool &g_running)
 {
 	std::time_t	currentTime;
 	setTimestamp(&this->_lastPing);
 	this->setup();
-    while (true) 
+    while (g_running) 
 	{
 		if (poll(_fds, _nfds, 10) < 0)
-		{
-			perror("poll() failed");
-			exit(1);
-		}
+			return ;
 		setTimestamp(&currentTime);
 		if (currentTime - this->_lastPing > 40)
 			pingAndClean(currentTime);
