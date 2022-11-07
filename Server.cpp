@@ -481,7 +481,7 @@ void	Server::log(int fd, std::string message, int type)
 	else if (type == 2)
 		std::cout << "\033[1;31m" << "Server reply to " << fd << "(" << lookClientByFd(fd)->getNickname() << "):\n" << message << "\033[0m"<< std::endl;
 	else
-		std::cout << "New server event: \n" << message << std::endl;
+		std::cout << "New server event: \n" << message << "\n" << std::endl;
 }
 
 void	Server::run(void)

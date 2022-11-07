@@ -16,7 +16,12 @@ void User::exec(std::string instruction, Client& client)
 	std::string							params;
 	std::string							realName;
 
-	if (client.isRegistered())
+	if (!client.isChallengePassed())
+	{
+		client.terminator();
+		return ;
+	}
+	else if (client.isRegistered())
 		return (client.sendReply(ERR_ALREADYREGISTERED(client.getNickname())));
 	params = instruction.substr(0, instruction.find(":"));
 	realName = instruction.substr(instruction.find(":") + 1, instruction.size() - 1);
@@ -27,8 +32,6 @@ void User::exec(std::string instruction, Client& client)
 	client.setUser(*it);
 	it++; 
 	it++;
-	//not sure about this setter,it'd be better to get it from the connection info
-//	c.setServer(*it);
 	client.setRealName(realName);
 	if (client.getNickname().size() > 0 && client.isPassOk())
 		this->server->registerAndWelcome(client);

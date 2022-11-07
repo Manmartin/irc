@@ -11,6 +11,11 @@ Nick::~Nick(void)
 
 void Nick::exec(std::string params, Client& client)
 {
+	if (!client.isChallengePassed())
+	{
+		client.terminator();
+		return ;
+	}
 	params = trimSpaces(params);
 	if (this->server->usedNick(params) == true)
 		return client.sendReply(ERR_NICKNAMEINUSE(params));

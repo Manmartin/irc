@@ -25,7 +25,10 @@ int main(int argc, char **argv)
 		pass = argv[2];
 	}
 	else
+	{
+		std::cerr << "Usage: ./ircserv PORT PASS [-log]" << std::endl;	
 		return (1);
+	}
 	if (argc == 4 && strncmp(argv[3], "-log", 4) == 0)
 		server = new Server(200, 200, port, pass, true);
 	else
