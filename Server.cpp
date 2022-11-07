@@ -190,7 +190,6 @@ void	Server::parseMessage(std::string instruction, Client &c)
 	else
 		value = "";
 	execInstruction(key, value, c);
-
 }
 
 void	Server::execInstruction(std::string key, std::string value, Client &c)
@@ -388,19 +387,43 @@ void	Server::newConnection(int socketfd)
 	//std::cout << "Connected users: " << _nfds - 1  << std::endl;
 }
 
-void	Server::run(void)
+void	Server::incomingMessage(int position)
+{
+	char		buff[513];
+	int			readlen;
+	std::string	msg;
+
+	msg = "";
+	while (true) 
+	{
+		memset(buff, 0, sizeof(buff));
+		readlen = recv(_fds[position].fd, buff, sizeof(buff), 0);
+		msg = msg + buff;
+        if (readlen == -1)
+		{
+			if (errno != EWOULDBLOCK)
+			perror(" recv() failed");
+			break;
+        }
+        else if (readlen == 0)
+		{
+			std::cout << "read 0" << std::endl;
+			close(_fds[position].fd);
+			this->reduceFds(_fds[position].fd);
+	        break;
+		}
+	}
+	if (_fds[position].fd > 0)
+		this->handleMessage(msg, _fds[position].fd);
+}
+
+void	Server::setup(void)
 {
     int socketfd;
 	int rc;
 	int	on;
-    char buff[252];
     struct	sockaddr_in6	serv_addr;
-	//struct sockaddr_storage	client;
-	//char	clientAddress[INET6_ADDRSTRLEN];
-	size_t	position;
 
-	position = 0;
-	srand (time(NULL));
 	socketfd = -1;
 	on = 1;
 	rc = 1;
@@ -410,7 +433,6 @@ void	Server::run(void)
         return ;
     }
     std::cout << "[Socket created]\n";
-	//allow socket descriptor to be reuseable
 	rc = setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
 	if (rc < 0)
 	{
@@ -429,9 +451,7 @@ void	Server::run(void)
     serv_addr.sin6_family = AF_INET6;
     serv_addr.sin6_port = htons(this->_port);
     serv_addr.sin6_addr = in6addr_any;
-
     if (bind(socketfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
-    //if (bind(socketfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) != 0){
         std::cerr << "Cant bind socket\n";
         close(socketfd);
         return ;
@@ -442,117 +462,38 @@ void	Server::run(void)
         close(socketfd);
         return ;
     }
-    std::cout << "[Socket listened Port " << ntohs(serv_addr.sin6_port) << "]\n";
-
-	//std::cout << inet_ntop(AF_INET6, &serv_addr.sin6_addr, clientAddress, sizeof(clientAddress)) << std::endl;
-	//poll fds initialization
-   	//memset(_fds, 0 , sizeof(_fds) * 200); 
-
+    std::cout << "[Socket listening at port " << ntohs(serv_addr.sin6_port) << "]\n";
 	_fds[0].fd = socketfd;
 	_fds[0].events = POLLIN;
+}
 
-    //struct sockaddr client;
-    //socklen_t len = sizeof(client);
-    //int connectfd, readlen;
-	int	readlen;
-    std::string msg;
+
+void	Server::run(void)
+{
 	std::time_t	currentTime;
-
-	//connectfd = -1;
 	setTimestamp(&this->_lastPing);
+	this->setup();
     while (true) {
-		rc = poll(_fds, _nfds, 10);
-		setTimestamp(&currentTime);
-		if (currentTime - this->_lastPing > 40)
-			pingAndClean(currentTime);
-		if (rc < 0)
+		if (poll(_fds, _nfds, 10) < 0)
 		{
 			perror("poll() failed");
 			exit(1);
 		}
-		//find readable fds
-		for (position = 0; position < _nfds; position++)
+		setTimestamp(&currentTime);
+		if (currentTime - this->_lastPing > 40)
+			pingAndClean(currentTime);
+		for (size_t position = 0; position < _nfds; position++)
 		{
 			if (_fds[position].fd == -1)
 				continue ;
-			if (_fds[position].revents == 0)
-				continue;
-			if (_fds[position].revents & (POLLERR|POLLHUP|POLLNVAL))
-			{
-				this->connectionError(position);
+			else if (_fds[position].revents == 0)
 				continue ;
-			}
-			if (_fds[position].fd == socketfd)
-			{
-				this->newConnection(socketfd);
-				/*
-				connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
-				fcntl(connectfd, F_SETFL, O_NONBLOCK);
-				if (client.ss_family == AF_INET6)
-				{
-					struct sockaddr_in6 *cAddr = (struct sockaddr_in6 *)&client;
-					inet_ntop(AF_INET6, &cAddr->sin6_addr, clientAddress, sizeof(clientAddress));
-				}
-				else
-				{
-					struct sockaddr_in *cAddr = (struct sockaddr_in *)&client;
-					inet_ntop(AF_INET, &cAddr->sin_addr, clientAddress, sizeof(clientAddress));
-				}
-
-				std::cout << "ip: " << clientAddress << std::endl;
-				if (_nfds == _maxClients + 1)
-				{
-					close(connectfd);
-					continue ;
-				}
-			 	if (connectfd < 0) 
-				{
-					if (errno != EWOULDBLOCK)
-					{
-		         		std::cerr << "Connection not accepted, accept() failed" << std::endl; 
-					}
-					break ;
-		       	}
-				//std::cout << "connecting new in " << _nfds << " with fd " << connectfd << std::endl;
-				_fds[_nfds].fd = connectfd;
-				_fds[_nfds].events = POLLIN;
-				_fds[_nfds].revents = 0;
-				_nfds++;
-				this->addClient(new Client(connectfd, "localhost"));
-				//std::cout << "Connected users: " << _nfds - 1  << std::endl;
-				connectfd = -1;
-				*/
-			}
+			else if (_fds[position].revents & (POLLERR|POLLHUP|POLLNVAL))
+				this->connectionError(position);
+			else if (_fds[position].fd == _fds[0].fd)
+				this->newConnection(_fds[0].fd);
 			else if (_fds[position].revents == POLLIN)
-			{
-	    	    std::string msg = "";
-	    	    memset(buff, 0, sizeof(buff));
-	    	    while (true) 
-				{
-	    	    	readlen = recv(_fds[position].fd, buff, sizeof(buff), 0);
-	    	        msg = msg + buff;
-	    	        if (readlen == -1) 
-					{
-						if (errno != EWOULDBLOCK)
-							perror(" recv() failed");
-						break;
-	    	        }
-	    	        else if (readlen == 0) {
-						std::cout << "read 0" << std::endl;
-						close(_fds[position].fd);
-						this->reduceFds(_fds[position].fd);
-	    	            break;
-	    	        }
-	    	        memset(buff, 0, sizeof(buff));
-					if (rc < 0)
-					{
-						perror(" send failed");
-						break;
-					}
-				}
-				if (_fds[position].fd > 0)
-					this->handleMessage(msg, _fds[position].fd);
-			}
+				this->incomingMessage(position);
 		}
 	}
 }
