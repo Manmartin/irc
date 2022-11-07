@@ -63,6 +63,10 @@ class Server {
 		Client*		getClient(std::string nickname);
 		std::list<Channel*>& getChannels(void);
 
+//SERVER ENGINE MANAGEMENT
+
+		void	connectionError(size_t position);
+
 		void	handleMessage(std::string message, int fd);
 		void	parseMessage(std::string message, Client &c);
 		void	execInstruction(std::string key, std::string value, Client &c);
@@ -93,7 +97,6 @@ class Server {
 		std::string		_pass;
 		int				_port;
 		size_t			_nfds;
-		size_t			_position;
 		std::time_t		_lastPing;
 		std::map<std::string, Command*> _commands;
 		std::map<std::string, Command*> _registrationCommands;

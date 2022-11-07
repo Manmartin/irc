@@ -13,7 +13,6 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _m
 	this->_pass = encrypt(pass);
 	this->_fds = new pollfd[maxClients + 1];
 	this->_nfds = 1;
-	this->_position = 0;
 	this->_port = port;
 
 	//Load commands and channel operations
@@ -100,11 +99,7 @@ void	Server::addClient(Client* c)
 	{
 		this->_activeClients++;
 		this->clients.push_back(c);
-		std::cout << "client added" << std::endl;
 	}
-	else
-		//TBI: throw error
-		std::cerr << "No more clients allowed" << std::endl;
 }
 
 void	Server::removeClient(Client *c)
@@ -118,7 +113,7 @@ void	Server::removeClient(Client *c)
 		if ((*it)->getFd() == c->getFd())
 		{
 			close(c->getFd());
-			fd = c->getFd();	
+			fd = c->getFd();
 			delete *it;
 			clients.erase(it);
 			this->_activeClients--;
@@ -327,6 +322,24 @@ void		Server::pingAndClean(std::time_t currentTime)
 	setTimestamp(&this->_lastPing);
 }
 
+void	Server::connectionError(size_t position)
+{
+	//std::cout << "Error revents " << _fds[position].revents << ", fd: " << position << ", fd" << _fds[position].fd << std::endl;
+	//std::cout << "Active clients" << _activeClients << std::endl;
+	Client *cc = lookClientByFd(_fds[position].fd);
+	if (cc)
+	{
+		callCommand("QUIT", "Client lost connexion", *cc);
+		removeClient(cc);
+	}
+	else
+	{
+		close (_fds[position].fd);
+		reduceFds(_fds[position].fd); //not sure if necessary
+		//_fds[position].fd = -1;
+	}
+}
+
 void	Server::run(void)
 {
     int socketfd;
@@ -336,7 +349,9 @@ void	Server::run(void)
     struct	sockaddr_in6	serv_addr;
 	struct sockaddr_storage	client;
 	char	clientAddress[INET6_ADDRSTRLEN];
+	size_t	position;
 
+	position = 0;
 	srand (time(NULL));
 	socketfd = -1;
 	on = 1;
@@ -407,31 +422,18 @@ void	Server::run(void)
 			exit(1);
 		}
 		//find readable fds
-		for (_position = 0; _position < _nfds; _position++)
+		for (position = 0; position < _nfds; position++)
 		{
-			if (_fds[_position].fd == -1)
+			if (_fds[position].fd == -1)
 				continue ;
-			if (_fds[_position].revents == 0)
+			if (_fds[position].revents == 0)
 				continue;
-			if (_fds[_position].revents & (POLLERR|POLLHUP|POLLNVAL))
+			if (_fds[position].revents & (POLLERR|POLLHUP|POLLNVAL))
 			{
-				std::cout << "Error revents " << _fds[_position].revents << ", fd: " << _position << ", fd" << _fds[_position].fd << std::endl;
-				std::cout << "Active clients" << _activeClients << std::endl;
-				Client *cc = lookClientByFd(_fds[_position].fd);
-				if (cc)
-				{
-					callCommand("QUIT", "Client lost connexion", *cc);
-					removeClient(cc);
-				}
-				else
-				{
-					close (_fds[_position].fd);
-					reduceFds(_fds[_position].fd); //not sure if necessary
-					//_fds[_position].fd = -1;
-				}
+				this->connectionError(position);
 				continue ;
 			}
-			if (_fds[_position].fd == socketfd)
+			if (_fds[position].fd == socketfd)
 			{
 				connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
 				fcntl(connectfd, F_SETFL, O_NONBLOCK);
@@ -449,7 +451,6 @@ void	Server::run(void)
 				std::cout << "ip: " << clientAddress << std::endl;
 				if (_nfds == _maxClients + 1)
 				{
-					std::cout << "max clients" << std::endl;
 					close(connectfd);
 					continue ;
 				}
@@ -470,13 +471,13 @@ void	Server::run(void)
 				std::cout << "Connected users: " << _nfds - 1  << std::endl;
 				connectfd = -1;
 			}
-			else if (_fds[_position].revents == POLLIN)
+			else if (_fds[position].revents == POLLIN)
 			{
 	    	    std::string msg = "";
 	    	    memset(buff, 0, sizeof(buff));
 	    	    while (true) 
 				{
-	    	    	readlen = recv(_fds[_position].fd, buff, sizeof(buff), 0);
+	    	    	readlen = recv(_fds[position].fd, buff, sizeof(buff), 0);
 	    	        msg = msg + buff;
 	    	        if (readlen == -1) 
 					{
@@ -486,8 +487,8 @@ void	Server::run(void)
 	    	        }
 	    	        else if (readlen == 0) {
 						std::cout << "read 0" << std::endl;
-						close(_fds[_position].fd);
-						this->reduceFds(_fds[_position].fd);
+						close(_fds[position].fd);
+						this->reduceFds(_fds[position].fd);
 	    	            break;
 	    	        }
 	    	        memset(buff, 0, sizeof(buff));
@@ -497,8 +498,8 @@ void	Server::run(void)
 						break;
 					}
 				}
-				if (_fds[_position].fd > 0)
-					this->handleMessage(msg, _fds[_position].fd);
+				if (_fds[position].fd > 0)
+					this->handleMessage(msg, _fds[position].fd);
 			}
 		}
 	}
