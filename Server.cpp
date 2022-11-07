@@ -340,6 +340,54 @@ void	Server::connectionError(size_t position)
 	}
 }
 
+void	Server::saveIpFromClient(struct sockaddr_storage &client, char (*clientAddress)[INET6_ADDRSTRLEN])
+{
+	if (client.ss_family == AF_INET6)
+	{
+		struct sockaddr_in6 *cAddr = (struct sockaddr_in6 *)&client;
+		inet_ntop(AF_INET6, &cAddr->sin6_addr, *clientAddress, sizeof(*clientAddress));
+	}
+	else
+	{
+		struct sockaddr_in *cAddr = (struct sockaddr_in *)&client;
+		inet_ntop(AF_INET, &cAddr->sin_addr, *clientAddress, sizeof(*clientAddress));
+	}
+}
+
+void	Server::newConnection(int socketfd)
+{
+	int	connectfd;
+	struct sockaddr_storage	client;
+	char	clientAddress[INET6_ADDRSTRLEN];
+    socklen_t len = sizeof(client);
+
+	connectfd = -1;
+	connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
+	fcntl(connectfd, F_SETFL, O_NONBLOCK);
+	this->saveIpFromClient(client, &clientAddress);
+	std::cout << "ip: " << clientAddress << std::endl;
+	if (_nfds == _maxClients + 1)
+	{
+		close(connectfd);
+		return ;
+	}
+ 	if (connectfd < 0) 
+	{
+		if (errno != EWOULDBLOCK)
+		{
+       		std::cerr << "Connection not accepted, accept() failed" << std::endl; 
+		}
+		return ;
+   	}
+	//std::cout << "connecting new in " << _nfds << " with fd " << connectfd << std::endl;
+	_fds[_nfds].fd = connectfd;
+	_fds[_nfds].events = POLLIN;
+	_fds[_nfds].revents = 0;
+	_nfds++;
+	this->addClient(new Client(connectfd, "localhost"));
+	//std::cout << "Connected users: " << _nfds - 1  << std::endl;
+}
+
 void	Server::run(void)
 {
     int socketfd;
@@ -347,8 +395,8 @@ void	Server::run(void)
 	int	on;
     char buff[252];
     struct	sockaddr_in6	serv_addr;
-	struct sockaddr_storage	client;
-	char	clientAddress[INET6_ADDRSTRLEN];
+	//struct sockaddr_storage	client;
+	//char	clientAddress[INET6_ADDRSTRLEN];
 	size_t	position;
 
 	position = 0;
@@ -404,12 +452,13 @@ void	Server::run(void)
 	_fds[0].events = POLLIN;
 
     //struct sockaddr client;
-    socklen_t len = sizeof(client);
-    int connectfd, readlen;
+    //socklen_t len = sizeof(client);
+    //int connectfd, readlen;
+	int	readlen;
     std::string msg;
 	std::time_t	currentTime;
 
-	connectfd = -1;
+	//connectfd = -1;
 	setTimestamp(&this->_lastPing);
     while (true) {
 		rc = poll(_fds, _nfds, 10);
@@ -435,6 +484,8 @@ void	Server::run(void)
 			}
 			if (_fds[position].fd == socketfd)
 			{
+				this->newConnection(socketfd);
+				/*
 				connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
 				fcntl(connectfd, F_SETFL, O_NONBLOCK);
 				if (client.ss_family == AF_INET6)
@@ -462,14 +513,15 @@ void	Server::run(void)
 					}
 					break ;
 		       	}
-				std::cout << "connecting new in " << _nfds << " with fd " << connectfd << std::endl;
+				//std::cout << "connecting new in " << _nfds << " with fd " << connectfd << std::endl;
 				_fds[_nfds].fd = connectfd;
 				_fds[_nfds].events = POLLIN;
 				_fds[_nfds].revents = 0;
 				_nfds++;
 				this->addClient(new Client(connectfd, "localhost"));
-				std::cout << "Connected users: " << _nfds - 1  << std::endl;
+				//std::cout << "Connected users: " << _nfds - 1  << std::endl;
 				connectfd = -1;
+				*/
 			}
 			else if (_fds[position].revents == POLLIN)
 			{

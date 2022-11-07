@@ -66,6 +66,8 @@ class Server {
 //SERVER ENGINE MANAGEMENT
 
 		void	connectionError(size_t position);
+		void	newConnection(int socketfd);
+		void	saveIpFromClient(struct sockaddr_storage &client, char (*clientAddress)[INET6_ADDRSTRLEN]);
 
 		void	handleMessage(std::string message, int fd);
 		void	parseMessage(std::string message, Client &c);
