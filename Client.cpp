@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int fd, std::string server) : _nickname(""), _user(""), _realName(""), _fd(fd), _server(server), _invisible(false), _registered(false), _channels(0), _challengePassed(false), _sayonara(false)
+Client::Client(int fd, Server* server) : _nickname(""), _user(""), _realName(""), _fd(fd),  _invisible(false), _registered(false), _channels(0), _challengePassed(false), _sayonara(false), _server(server)
 {
 	setTimestamp(&_lastTimeSeenAt);
 	//reply = new Reply(this->server);	
@@ -78,7 +78,7 @@ void	Client::setUser(std::string user)
 
 std::string	Client::getLogin(void) const
 {
-	return (_nickname + "!" + _user + "@" + _server);
+	return (_nickname + "!" + _user + "@" + this->_server->getServerName());
 }
 
 std::string	Client::getRealName(void) const
@@ -88,8 +88,9 @@ std::string	Client::getRealName(void) const
 
 std::string	Client::getServer(void) const
 {
-	return (this->_server);
+	return (this->_server->getServerName());
 }
+
 
 std::list<Channel*>& Client::getChannels(void)
 {
@@ -181,11 +182,6 @@ void	Client::registerClient(void)
 	this->_registered = true;
 }
 
-void	Client::setServer(std::string nickname)
-{
-	this->_server = nickname;
-}
-
 void	Client::setRealName(std::string nickname)
 {
 	this->_realName = nickname;
@@ -202,12 +198,11 @@ void	Client::sendReply(std::string msg)
 
 	payload = ":" + this->getLogin() + " " + msg + "\r\n";
 	send(this->_fd, payload.c_str(), payload.size(), 0);
-	std::cout << "\033[1;31mServer reply->" << payload << "\033[0m" << std::endl;
+	this->_server->log(this->_fd, payload, 2);
 }
 
 void	Client::terminator(void)
 {
-	std::cout << "sayonara " << this->getFd() << std::endl;
 	this->_sayonara = true;
 }
 

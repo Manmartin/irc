@@ -4,7 +4,7 @@ Server::~Server(void)
 	std::cout << "Destroyed server" << std::endl;
 }
 
-Server::Server(int maxClients, int maxChannels, int port, std::string pass) : _maxClients(maxClients), _maxChannels(maxChannels)
+Server::Server(int maxClients, int maxChannels, int port, std::string pass, bool log) : _maxClients(maxClients), _maxChannels(maxChannels), _log(log), _name("localhost")
 {
 	this->_activeClients = 0;
 	this->_activeChannels = 0;
@@ -62,6 +62,11 @@ int	Server::getActiveChannels(void) const
 std::string	Server::getServerAddress(void) const
 {
 	return _serverAddress;
+}
+
+std::string	Server::getServerName(void) const
+{
+	return (this->_name);
 }
 
 std::string	Server::getPass(void) const
@@ -150,9 +155,7 @@ void	Server::handleMessage(std::string message, int fd)
 		return ;
 	pos = 0;
 	setTimestamp(&c->getLastTimeSeen());
-	std::cout << "\033[1;34m" << c->getLastTimeSeen() << ": Message from " << fd << "(" << 
-		lookClientByFd(fd)->getNickname() << ")"
-		<< ":\n" << message << "\033[0m"<< std::endl;
+	log(fd, message, 1);
 	if (message.find("\n") == std::string::npos)
 	{
 		if (c->fillMsgBuffer(message))
@@ -278,9 +281,9 @@ void	Server::removeChannel(Channel *c)
 void	Server::registerAndWelcome(Client& c)
 {
 	c.sendReply(RPL_WELCOME(c.getNickname(), c.getLogin()));
-	c.sendReply(RPL_YOURHOST(c.getNickname(), c.getServer()));
+	c.sendReply(RPL_YOURHOST(c.getNickname(), this->_name));
 	c.sendReply(RPL_CREATED(c.getNickname(), timestampToHumanTime(this->_timestamp) + ", Madrid/Spain timezone"));
-	c.sendReply(RPL_MYINFO(c.getNickname(), c.getServer()));
+	c.sendReply(RPL_MYINFO(c.getNickname(), this->_name));
 	c.registerClient();
 }
 
@@ -307,7 +310,7 @@ void		Server::pingAndClean(std::time_t currentTime)
 	{
 		if (currentTime - (*it)->getLastTimeSeen() > 150)
 		{
-			std::cout << "inactivity" << std::endl;
+			log(0, "Disconnecting user " + (*it)->getNickname() + " due to innactivity", 0);
 			this->callCommand("QUIT", "User was inactive for a long time", **it);
 			this->removeClient(*it);
 			break ;
@@ -323,8 +326,7 @@ void		Server::pingAndClean(std::time_t currentTime)
 
 void	Server::connectionError(size_t position)
 {
-	//std::cout << "Error revents " << _fds[position].revents << ", fd: " << position << ", fd" << _fds[position].fd << std::endl;
-	//std::cout << "Active clients" << _activeClients << std::endl;
+	log(0, "Connection error with fd " + std::to_string(_fds[position].fd) + ", disconnecting", 0);
 	Client *cc = lookClientByFd(_fds[position].fd);
 	if (cc)
 	{
@@ -337,6 +339,7 @@ void	Server::connectionError(size_t position)
 		reduceFds(_fds[position].fd); //not sure if necessary
 		//_fds[position].fd = -1;
 	}
+	log(0, "Active clients: " + std::to_string(_activeClients), 0);
 }
 
 void	Server::saveIpFromClient(struct sockaddr_storage &client, char (*clientAddress)[INET6_ADDRSTRLEN])
@@ -364,7 +367,6 @@ void	Server::newConnection(int socketfd)
 	connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
 	fcntl(connectfd, F_SETFL, O_NONBLOCK);
 	this->saveIpFromClient(client, &clientAddress);
-	std::cout << "ip: " << clientAddress << std::endl;
 	if (_nfds == _maxClients + 1)
 	{
 		close(connectfd);
@@ -378,12 +380,13 @@ void	Server::newConnection(int socketfd)
 		}
 		return ;
    	}
-	//std::cout << "connecting new in " << _nfds << " with fd " << connectfd << std::endl;
+	log(0, "Connecting new user, fd: " + std::to_string(connectfd), 0);
 	_fds[_nfds].fd = connectfd;
 	_fds[_nfds].events = POLLIN;
 	_fds[_nfds].revents = 0;
 	_nfds++;
-	this->addClient(new Client(connectfd, "localhost"));
+	this->addClient(new Client(connectfd, this));
+	log(0, "Connected users: " + std::to_string(_nfds - 1), 0);
 	//std::cout << "Connected users: " << _nfds - 1  << std::endl;
 }
 
@@ -407,7 +410,6 @@ void	Server::incomingMessage(int position)
         }
         else if (readlen == 0)
 		{
-			std::cout << "read 0" << std::endl;
 			close(_fds[position].fd);
 			this->reduceFds(_fds[position].fd);
 	        break;
@@ -430,9 +432,8 @@ void	Server::setup(void)
 	socketfd = -1;
     if ((socketfd = socket(AF_INET6, SOCK_STREAM, 0)) == -1) {
         std::cerr << "Cant create socket\n";
-        return ;
+		exit(1);
     }
-    std::cout << "[Socket created]\n";
 	rc = setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
 	if (rc < 0)
 	{
@@ -454,26 +455,42 @@ void	Server::setup(void)
     if (bind(socketfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
         std::cerr << "Cant bind socket\n";
         close(socketfd);
-        return ;
+		exit(1);
     }
-    std::cout << "[Socket binded]\n";
     if (listen(socketfd, 10) < 0) {
         std::cerr << "Socket listen failed\n";
         close(socketfd);
-        return ;
+		exit(1);
     }
     std::cout << "[Socket listening at port " << ntohs(serv_addr.sin6_port) << "]\n";
 	_fds[0].fd = socketfd;
 	_fds[0].events = POLLIN;
 }
 
+void	Server::log(int fd, std::string message, int type)
+{
+	std::time_t	timestamp;
+
+	setTimestamp(&timestamp);
+
+	if (!this->_log)
+		return ;
+	std::cout << timestampToHumanTime(timestamp) << std::endl;
+	if (type == 1)
+		std::cout << "\033[1;34m" << "Message from " << fd << "(" << lookClientByFd(fd)->getNickname() << "):\n" << message << "\033[0m"<< std::endl;
+	else if (type == 2)
+		std::cout << "\033[1;31m" << "Server reply to " << fd << "(" << lookClientByFd(fd)->getNickname() << "):\n" << message << "\033[0m"<< std::endl;
+	else
+		std::cout << "New server event: \n" << message << std::endl;
+}
 
 void	Server::run(void)
 {
 	std::time_t	currentTime;
 	setTimestamp(&this->_lastPing);
 	this->setup();
-    while (true) {
+    while (true) 
+	{
 		if (poll(_fds, _nfds, 10) < 0)
 		{
 			perror("poll() failed");

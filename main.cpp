@@ -17,19 +17,24 @@ int main(int argc, char **argv)
 {
 	int			port;
 	std::string	pass;
+	Server		*server;
 
-	if (argc == 3)
+	if (argc == 3 || argc == 4)
 	{
 		port = atoi(argv[1]);
 		pass = argv[2];
 	}
 	else
 		return (1);
-	Server server(200, 200, port, pass);
-	struct pollfd *fds;
-	fds = server.getFds();
+	if (argc == 4 && strncmp(argv[3], "-log", 4) == 0)
+		server = new Server(200, 200, port, pass, true);
+	else
+		server = new Server(200, 200, port, pass, false);
+//	struct pollfd *fds;
+//	fds = server.getFds();
 
-	server.run();
-	delete [] fds;
+	server->run();
+	delete server;
+//	delete [] fds;
     return 0;
 }

@@ -9,13 +9,14 @@
 #include <sys/socket.h>
 
 class Channel;
+class Server;
 class Client{
 	public:
 
 		~Client(void);
 		Client(Client const &c);
 		Client& operator=(Client const &c);
-		Client(int fd, std::string server);
+		Client(int fd, Server *server);
 
 		std::string	getNickname(void) const;
 		std::string getUser(void) const;
@@ -33,7 +34,6 @@ class Client{
 		void		addInvited(std::string channel);
 		void		setNick(std::string nickname);
 		void		setUser(std::string user);
-		void		setServer(std::string nickname);
 		void		setRealName(std::string nickname);
 		void		setInvisible(bool value);
 
@@ -59,7 +59,6 @@ class Client{
 		std::string				_user;
 		std::string				_realName;
 		int						_fd;	
-		std::string				_server;
 		bool					_invisible;
 		bool					_registered;
 		std::list<Channel*>		_channels;
@@ -68,7 +67,7 @@ class Client{
 		bool					_sayonara;
 		std::time_t				_lastTimeSeenAt;
 		std::string				_msgBuffer;
-		//char					_msgBuffer[511];
+		Server					*_server;
 };
 
 #endif

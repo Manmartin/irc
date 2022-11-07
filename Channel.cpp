@@ -7,7 +7,7 @@ Channel::Channel(void)
 
 Channel::Channel(std::string name, Server *s) : _name(name), _topic("No topic"), _noExternalMsg(true), _topicLock(true), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false), _userLimit(-1)
 {
-	memset(_message, 0, 2048);
+//	memset(_message, 0, 2048);
 	_server = s;
 	setTimestamp(&_topicSetAt);
 	setTimestamp(&_createdAt);
@@ -231,21 +231,25 @@ void	Channel::broadcast(std::string message)
 	for (it = users.begin(); it != users.end(); it++)
 	{
 		if (*it)
+		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-		//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			this->_server->log((*it)->getFd(), message, 2);
+		}
 	}
 	for (it = _operators.begin(); it != _operators.end(); it++)
 	{
 		if (*it)
+		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-		//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			this->_server->log((*it)->getFd(), message, 2);
+		}
 	}
 	for (it = _voiced.begin(); it != _voiced.end(); it++)
 	{
 		if (*it && !isChannelOperator((*it)->getNickname()))
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			this->_server->log((*it)->getFd(), message, 2);
 		}
 	}
 }
@@ -260,7 +264,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 		if (*it && c.getFd() != (*it)->getFd())
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			this->_server->log((*it)->getFd(), message, 2);
 		}
 	}
 	for (it = _operators.begin(); it != _operators.end(); it++)
@@ -268,7 +272,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 		if (*it && c.getFd() != (*it)->getFd())
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			this->_server->log((*it)->getFd(), message, 2);
 		}
 	}
 	for (it = _voiced.begin(); it != _voiced.end(); it++)
@@ -276,7 +280,7 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 		if (*it && c.getFd() != (*it)->getFd() && !isChannelOperator((*it)->getNickname()))
 		{
 			send((*it)->getFd(), message.c_str(), message.size(), 0); 
-			//std::cout << "\033[1;31mServer reply->" << message << "\033[0m" << std::endl;
+			this->_server->log((*it)->getFd(), message, 2);
 		}
 	}
 }
@@ -367,7 +371,6 @@ void	Channel::removeClientFromList(std::list<Client*> &l, std::string nickName)
 
 		if (compareStrCaseInsensitive((*it)->getNickname(), nickName))
 		{
-			std::cout << "removing : " << (*it)->getNickname() << " " << nickName << " from " << _name << std::endl;
 			l.erase(it);
 			break ;
 		}
@@ -393,7 +396,6 @@ void	Channel::removeClientType(std::string type, std::string nickName)
 		return ;
 	for (it = (*list).begin(); it != (*list).end(); it++)
 	{
-		//std::cout << (*it)->getNickname() << " " << nickName << std::endl;;
 		if (compareStrCaseInsensitive((*it)->getNickname(), nickName))
 		{
 			(*list).erase(it);

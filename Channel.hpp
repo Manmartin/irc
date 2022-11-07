@@ -43,9 +43,6 @@ class Channel {
 		void	join(Client& client);
 		void	joinWelcomeSequence(Client& c);
 
-//MODE
-	//	void	banList(Client& c);
-
 		std::string	getUsersAsString(void);
 		Client*	findUserInList(std::string nick, std::list<Client*> &l);
 		void	removeClientFromList(std::list<Client*> &l, std::string nickName);
@@ -78,7 +75,6 @@ class Channel {
 		std::list<Client*>	_ban;
 		std::list<Client*>	_exception;
 
-		char				_message[2048];
 		std::string			_topic;
 		std::time_t			_topicSetAt;
 		std::time_t			_createdAt;
@@ -91,8 +87,6 @@ class Channel {
 		bool				_hasKey;
 		int					_userLimit;
 		std::string			_keypass;
-
-
 		Server				*_server;
 };
 

@@ -9,7 +9,6 @@
 # include "Client.hpp"
 # include "Channel.hpp"
 # include "Reply.hpp"
-//# include "Command.hpp"
 # include "Join.hpp"
 # include "Leave.hpp"
 # include "Invite.hpp"
@@ -43,25 +42,31 @@ class Server {
 
 	public:
 		~Server();
-		Server(int maxClients, int maxChannels, int port, std::string pass);
+		Server(void);
+		Server(int maxClients, int maxChannels, int port, std::string pass, bool log);
 
 		void		run(void);
 		int			getMaxClients(void) const;
 		int			getActiveClients(void) const;
 		int			getMaxChannels(void) const;
 		int			getActiveChannels(void) const;
+		std::string	getServerName(void) const;
 		std::string	getServerAddress(void) const;
 		std::string	getPass(void) const;
 		struct pollfd* getFds(void);
-
-		void	addClient(Client* c);
-		void	removeClient(Client *c);
-		void	removeChannel(Channel *c);
-
-
 		Channel*	findChannel(std::string channelName);
 		Client*		getClient(std::string nickname);
 		std::list<Channel*>& getChannels(void);
+		bool		usedNick(std::string nickname);
+
+//SERVER MANAGEMENT
+		void		addClient(Client* c);
+		void		removeClient(Client *c);
+		void		removeChannel(Channel *c);
+		void		reduceFds(int fd);
+		Client*		lookClientByFd(int fd);
+		void		pingAndClean(std::time_t currentTime);
+		void		registerAndWelcome(Client& c);
 
 //SERVER ENGINE MANAGEMENT
 		void	setup(void);
@@ -69,6 +74,7 @@ class Server {
 		void	newConnection(int socketfd);
 		void	saveIpFromClient(struct sockaddr_storage &client, char (*clientAddress)[INET6_ADDRSTRLEN]);
 		void	incomingMessage(int position);
+		void	log(int fd, std::string message, int type);
 
 //SERVER MESSAGE PARSER AND CONTROLLER
 		void	handleMessage(std::string message, int fd);
@@ -77,17 +83,8 @@ class Server {
 		void	sendReply(Client &c, std::string);
 		void	callCommand(std::string cmd, std::string params, Client &c);
 
-//SERVER UTILS
-		void		reduceFds(int fd);
-		Client*		lookClientByFd(int fd);
-		void		pingAndClean(std::time_t currentTime);
-
-//USER REGISTRATION
-		bool	usedNick(std::string nickname);
-		void	registerAndWelcome(Client& c);
-
 	private:
-		Server(void);
+
 		struct pollfd *_fds;
 
 		std::list<Client*> clients;
@@ -102,6 +99,8 @@ class Server {
 		int				_port;
 		size_t			_nfds;
 		std::time_t		_lastPing;
+		bool			_log;
+		std::string		_name;
 		std::map<std::string, Command*> _commands;
 		std::map<std::string, Command*> _registrationCommands;
 };
