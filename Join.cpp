@@ -37,7 +37,7 @@ void Join::exec(std::string params, Client& c){
 		if (channels[i][0] != '#')
 			return (c.sendReply(ERR_BADCHANMASK(channels[i])));
 		channel = this->server->findChannel(channels[i]);
-		if (!channel && params.find_first_of(" ,*?!@$:&.") != std::string::npos)
+		if (!channel && channels[i].find_first_of(" ,*?!@$:&.") != std::string::npos)
 			return (c.sendReply(ERR_BADCHANMASK(channels[i])));
 		else if (!channel)
 		{

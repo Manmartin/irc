@@ -211,7 +211,7 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 		c.sendReply(PONG(value));
 	else if (registrationCommand)
 		registrationCommand->exec(trimSpaces(value), c);
-	else if (compareCaseInsensitive(key, "CAP") && !compareCaseInsensitive(key, "END"))
+	else if (compareCaseInsensitive(key, "CAP") && !compareCaseInsensitive(value, "END"))
 		c.sendReply("CAP * LS :");
 	else if (!c.isChallengePassed())
 		c.terminator();
