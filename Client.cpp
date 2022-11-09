@@ -78,7 +78,9 @@ void	Client::setUser(std::string user)
 
 std::string	Client::getLogin(void) const
 {
-	return (_nickname + "!" + _user + "@" + this->_server->getServerName());
+	if (this->_registered)
+		return (_nickname + "!" + _user + "@" + this->_server->getServerName());
+	return (this->_server->getServerName());
 }
 
 std::string	Client::getRealName(void) const

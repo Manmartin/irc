@@ -207,16 +207,16 @@ void	Server::execInstruction(std::string key, std::string value, Client &c)
 	firstParam = value.substr(0, value.find(" "));
 	if (c.isRegistered() && command)
 		command->exec(trimSpaces(value), c);
+	else if (compareCaseInsensitive(key, "PING"))
+		c.sendReply(PONG(value));
 	else if (registrationCommand)
 		registrationCommand->exec(trimSpaces(value), c);
-	else if (compareCaseInsensitive(key, "CAP"))
-		return ;
+	else if (compareCaseInsensitive(key, "CAP") && !compareCaseInsensitive(key, "END"))
+		c.sendReply("CAP * LS :");
 	else if (!c.isChallengePassed())
 		c.terminator();
 	else if (c.isChallengePassed() && !c.isRegistered())
 		c.sendReply(ERR_NOTREGISTERED(c.getNickname()));
-	else if (compareCaseInsensitive(key, "PING"))
-		c.sendReply(PONG(value));
 }
 
 void	Server::callCommand(std::string cmd, std::string params, Client &c)
