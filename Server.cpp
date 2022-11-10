@@ -1,7 +1,6 @@
 #include "Server.hpp"
 Server::~Server(void)
 {
-	std::cout << "Destroyed server" << std::endl;
 	freeAndDestroy();
 }
 
@@ -39,6 +38,13 @@ Server::Server(void)
 {
 
 }
+
+/*
+Server& Server::operator=(Server const &c)
+{
+
+}
+*/
 
 int	Server::getMaxClients(void) const
 {

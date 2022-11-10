@@ -37,7 +37,6 @@
 class Channel;
 class Client;
 class Command;
-//class Join;
 
 class Server {
 
@@ -45,8 +44,9 @@ class Server {
 		~Server();
 		Server(void);
 		Server(int maxClients, int maxChannels, int port, std::string pass, bool log);
+		//Server& operator=(Server const &c);
+		Server(Server const &c);
 
-	//	void		run(void);
 		void		run(bool &running);
 		int			getMaxClients(void) const;
 		int			getActiveClients(void) const;
