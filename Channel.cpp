@@ -7,7 +7,6 @@ Channel::Channel(void)
 
 Channel::Channel(std::string name, Server *s) : _name(name), _topic("No topic"), _noExternalMsg(true), _topicLock(true), _invitationRequired(false), _secret(false), _moderated(false), _hasKey(false), _userLimit(-1)
 {
-//	memset(_message, 0, 2048);
 	_server = s;
 	setTimestamp(&_topicSetAt);
 	setTimestamp(&_createdAt);
@@ -16,14 +15,30 @@ Channel::Channel(std::string name, Server *s) : _name(name), _topic("No topic"),
 
 Channel::~Channel(void)
 {
-
 }
 
 Channel& Channel::operator=(Channel const &c)
 {
 	if (this != &c)
 	{
-
+		this->users = c.getUsers();
+		this->_name = c.getName();
+		this->_operators = c.getOperators();
+		this->_voiced = c.getVoicedUsers();
+		this->_ban = c.getBannedUsers();
+		this->_topic = c.getTopic();
+		this->_topicSetAt = c.getTopicSetAt();
+		this->_createdAt = c.getChannelCreatedAt();
+		this->_topicSetBy = c.getTopicCreator();
+		this->_noExternalMsg = !c.areExternalMessagesAllowed();
+		this->_topicLock = c.isTopicLocked();
+		this->_invitationRequired = c.isInvitationRequired();
+		this->_secret = c.isSecret();
+		this->_moderated = c.isModerated();
+		this->_hasKey = c.isKeyLocked();
+		this->_userLimit = c.getUserLimit();
+		this->_keypass = c.getKeypass();//
+		//this->_server = new Server(c.getServer());//
 	}
 	return (*this);
 }
@@ -118,9 +133,34 @@ Client* Channel::getUser(std::string nick)
 	return (found);
 }
 
+std::list<Client*> Channel::getUsers(void) const
+{
+	return (this->users);
+}
+
+std::list<Client*> Channel::getOperators(void) const
+{
+	return (this->_operators);
+}
+
+std::list<Client*> Channel::getVoicedUsers(void) const
+{
+	return (this->_voiced);
+}
+
 std::list<Client*> Channel::getBannedUsers(void) const
 {
 	return (this->_ban);
+}
+
+time_t	Channel::getChannelCreatedAt(void) const
+{
+	return (this->_createdAt);
+}
+
+std::string	Channel::getKeypass(void) const
+{
+	return (this->_keypass);
 }
 
 Client*	Channel::findUserInList(std::string nick, std::list<Client*> &l)
@@ -193,7 +233,7 @@ bool	Channel::isBanned(std::string mask)
 	return (false);
 }
 
-bool	Channel::isInvitationRequired(void)
+bool	Channel::isInvitationRequired(void) const
 {
 	return (this->_invitationRequired);
 }
@@ -285,22 +325,22 @@ void	Channel::broadcast_except_myself(std::string message, Client &c)
 	}
 }
 
-bool	Channel::isTopicLocked(void)
+bool	Channel::isTopicLocked(void) const
 {
 	return (this->_topicLock);
 }
 
-bool	Channel::isModerated(void)
+bool	Channel::isModerated(void) const
 {
 	return (this->_moderated);
 }
 
-bool	Channel::isSecret(void)
+bool	Channel::isSecret(void) const
 {
 	return (this->_secret);
 }
 
-bool	Channel::isKeyLocked(void)
+bool	Channel::isKeyLocked(void) const
 {
 	return (this->_hasKey);
 }
@@ -314,7 +354,7 @@ bool	Channel::isFull(void)
 	return (true);
 }
 
-bool	Channel::areExternalMessagesAllowed(void)
+bool	Channel::areExternalMessagesAllowed(void) const
 {
 	return (!_noExternalMsg);
 }

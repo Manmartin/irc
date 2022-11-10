@@ -25,7 +25,13 @@ class Channel {
 		int			getUserLimit(void) const;
 		std::list<Client*> getAllUsers(void);
 		Client*	getUser(std::string nick);
-		std::list<Client*> getBannedUsers(void) const;	
+
+		std::list<Client*>	getUsers(void) const;
+		std::list<Client*>	getOperators(void) const;
+		std::list<Client*>	getVoicedUsers(void) const;
+		std::list<Client*>	getBannedUsers(void) const;
+		time_t				getChannelCreatedAt(void) const;
+		std::string			getKeypass(void) const;
 
 		void	setTopic(std::string newTopic, std::string nick);
 		void	setKey(std::string& key, bool active);
@@ -54,15 +60,15 @@ class Channel {
 		bool	isChannelOperator(std::string nickName);
 		bool	isVoiced(std::string nickName);
 		bool	isUserInChannel(std::string nickName);
-		bool	isInvitationRequired(void);
+		bool	isInvitationRequired(void) const;
 		bool	isBanned(std::string mask);
 		bool	keyChallengePassed(std::string submittedKey);
-		bool	isTopicLocked(void);
-		bool	isModerated(void);
-		bool	isSecret(void);
-		bool	isKeyLocked(void);
+		bool	isTopicLocked(void) const;
+		bool	isModerated(void) const;
+		bool	isSecret(void) const;
+		bool	isKeyLocked(void) const;
 		bool	isFull(void);
-		bool	areExternalMessagesAllowed(void);
+		bool	areExternalMessagesAllowed(void) const;
 
 		size_t	countUsers(void);
 
@@ -73,7 +79,6 @@ class Channel {
 		std::list<Client*>	_operators;
 		std::list<Client*>	_voiced;
 		std::list<Client*>	_ban;
-		std::list<Client*>	_exception;
 
 		std::string			_topic;
 		std::time_t			_topicSetAt;
