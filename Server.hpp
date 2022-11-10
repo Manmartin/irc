@@ -44,7 +44,7 @@ class Server {
 		~Server();
 		Server(void);
 		Server(int maxClients, int maxChannels, int port, std::string pass, bool log);
-		//Server& operator=(Server const &c);
+		Server& operator=(Server const &c);
 		Server(Server const &c);
 
 		void		run(bool &running);
@@ -55,11 +55,21 @@ class Server {
 		std::string	getServerName(void) const;
 		std::string	getServerAddress(void) const;
 		std::string	getPass(void) const;
-		struct pollfd* getFds(void);
+		struct pollfd* getFds(void) const;
 		Channel*	findChannel(std::string channelName);
 		Client*		getClient(std::string nickname);
 		std::list<Channel*>& getChannels(void);
 		bool		usedNick(std::string nickname);
+		std::list<Client*>	getClients(void) const;
+		std::list<Channel*>	getChannelsCopy(void) const;
+		time_t				getTimestamp(void) const;
+		int					getPort(void) const;
+		int					getNfds(void) const;
+		time_t				getLastPing(void) const;
+		bool				getLog(void) const;
+		std::map<std::string, Command*> getCommands(void) const;
+		std::map<std::string, Command*> getRegistrationCommands(void) const;
+
 
 //SERVER MANAGEMENT
 		void		addClient(Client* c);

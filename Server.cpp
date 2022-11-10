@@ -39,12 +39,36 @@ Server::Server(void)
 
 }
 
-/*
+
 Server& Server::operator=(Server const &c)
 {
-
+	if (this != &c)
+	{
+		this->_fds = c.getFds();
+		this->clients = c.getClients();
+		this->channels = c.getChannelsCopy();
+		this->_maxClients = c.getMaxClients();
+		this->_activeClients = c.getActiveClients();
+		this->_maxChannels = c.getMaxChannels();
+		this->_activeChannels = c.getActiveChannels();
+		this->_serverAddress = c.getServerAddress();
+		this->_timestamp = c.getTimestamp();
+		this->_pass = c.getPass();
+		this->_port = c.getPort();
+		this->_nfds = c.getNfds();
+		this->_lastPing = c.getLastPing();
+		this->_log = c.getLog();
+		this->_name = c.getServerName();
+		this->_commands = c.getCommands();
+		this->_registrationCommands = c.getRegistrationCommands();
+	}
+	return (*this);
 }
-*/
+
+Server::Server(Server const &c)
+{
+	*this = c;
+}
 
 int	Server::getMaxClients(void) const
 {
@@ -91,6 +115,51 @@ bool	Server::usedNick(std::string nickname)
 			return (true);
 	}
 	return (false);
+}
+
+std::list<Client*>	Server::getClients(void) const
+{
+	return (this->clients);
+}
+
+std::list<Channel*>	Server::getChannelsCopy(void) const
+{
+	return (this->channels);
+}
+
+time_t				Server::getTimestamp(void) const
+{
+	return (this->_timestamp);
+}
+
+int					Server::getPort(void) const
+{
+	return (this->_port);
+}
+
+int					Server::getNfds(void) const
+{
+	return (this->_nfds);
+}
+
+time_t				Server::getLastPing(void) const
+{
+	return (this->_lastPing);
+}
+
+bool				Server::getLog(void) const
+{
+	return (this->_log);
+}
+
+std::map<std::string, Command*> Server::getCommands(void) const
+{
+	return (this->_commands);
+}
+
+std::map<std::string, Command*> Server::getRegistrationCommands(void) const
+{
+	return (this->_registrationCommands);
 }
 
 Client*		Server::getClient(std::string nickname)
@@ -265,7 +334,7 @@ void	Server::reduceFds(int fd)
 	_nfds--;
 }
 
-struct pollfd* Server::getFds(void)
+struct pollfd* Server::getFds(void) const
 {
 	return (this->_fds);
 }

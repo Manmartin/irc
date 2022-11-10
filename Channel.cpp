@@ -37,8 +37,8 @@ Channel& Channel::operator=(Channel const &c)
 		this->_moderated = c.isModerated();
 		this->_hasKey = c.isKeyLocked();
 		this->_userLimit = c.getUserLimit();
-		this->_keypass = c.getKeypass();//
-		//this->_server = new Server(c.getServer());//
+		this->_keypass = c.getKeypass();
+		this->_server = new Server(*c.getServer());
 	}
 	return (*this);
 }
@@ -161,6 +161,11 @@ time_t	Channel::getChannelCreatedAt(void) const
 std::string	Channel::getKeypass(void) const
 {
 	return (this->_keypass);
+}
+
+Server*	Channel::getServer(void) const
+{
+	return (this->_server);
 }
 
 Client*	Channel::findUserInList(std::string nick, std::list<Client*> &l)

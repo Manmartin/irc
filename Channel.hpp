@@ -32,6 +32,7 @@ class Channel {
 		std::list<Client*>	getBannedUsers(void) const;
 		time_t				getChannelCreatedAt(void) const;
 		std::string			getKeypass(void) const;
+		Server*				getServer(void) const;
 
 		void	setTopic(std::string newTopic, std::string nick);
 		void	setKey(std::string& key, bool active);
