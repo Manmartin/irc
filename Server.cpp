@@ -274,13 +274,11 @@ void	Server::parseMessage(std::string instruction, Client &c)
 
 void	Server::execInstruction(std::string key, std::string value, Client &c)
 {
-	std::string	firstParam;
 	Command *command = NULL;
 	Command	*registrationCommand = NULL;
 
 	command = _commands[strToUpper(key)];
 	registrationCommand = _registrationCommands[strToUpper(key)];
-	firstParam = value.substr(0, value.find(" "));
 	if (c.isRegistered() && command)
 		command->exec(trimSpaces(value), c);
 	else if (compareCaseInsensitive(key, "PING"))

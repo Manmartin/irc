@@ -33,10 +33,12 @@
 # include <ctime>
 # include <iostream>
 # include <unistd.h>
+//#include "RegistrationCommand.hpp"
 
 class Channel;
 class Client;
 class Command;
+//class RegistrationCommand;
 
 extern bool _runningServer;
 

@@ -5,7 +5,7 @@ CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 DEBUGFLAGS = -g -fsanitize=address
 INC = -I .
 
-SRCS = main.cpp Client.cpp Server.cpp Channel.cpp Command.cpp Join.cpp Leave.cpp utils.cpp Invite.cpp Topic.cpp List.cpp Kick.cpp Message.cpp Whois.cpp Who.cpp Mode.cpp Nick.cpp Pass.cpp User.cpp Names.cpp
+SRCS = main.cpp Client.cpp Server.cpp Channel.cpp Command.cpp RegistrationCommand.cpp Join.cpp Leave.cpp utils.cpp Invite.cpp Topic.cpp List.cpp Kick.cpp Message.cpp Whois.cpp Who.cpp Mode.cpp Nick.cpp Pass.cpp User.cpp Names.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

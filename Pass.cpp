@@ -1,9 +1,10 @@
 #include "Pass.hpp"
+#include "RegistrationCommand.hpp"
 
 Pass::Pass(void) {
 }
 
-Pass::Pass(Server *s, std::string type) : Command(s, type) {}
+Pass::Pass(Server *s, std::string type) : RegistrationCommand(s, type) {}
 
 Pass::~Pass(void)
 {
