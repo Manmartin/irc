@@ -38,6 +38,8 @@ class Channel;
 class Client;
 class Command;
 
+extern bool _runningServer;
+
 class Server {
 
 	public:
@@ -47,7 +49,8 @@ class Server {
 		Server& operator=(Server const &c);
 		Server(Server const &c);
 
-		void		run(bool &running);
+		void		run(void);
+		void static	stop(int);
 		int			getMaxClients(void) const;
 		int			getActiveClients(void) const;
 		int			getMaxChannels(void) const;
@@ -114,6 +117,7 @@ class Server {
 		std::time_t		_lastPing;
 		bool			_log;
 		std::string		_name;
+//		bool			_runningServer;
 		std::map<std::string, Command*> _commands;
 		std::map<std::string, Command*> _registrationCommands;
 };

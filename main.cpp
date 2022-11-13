@@ -2,12 +2,18 @@
 #include "Server.hpp"
 #include <csignal>
 
-bool g_running;
-
-void	signalHandler(int num)
+int	shouldStartServerWithLog(int argc, char **argv)
 {
-	(void) num;
-	g_running = false;
+	if (argc == 4 && strncmp(argv[3], "-log", 4) == 0)
+		return (1);
+	return (0);
+}
+
+int	areArgumentsValid(int argc)
+{
+	if (argc < 3 || argc > 4)
+		return (0);
+	return (1);
 }
 
 int main(int argc, char **argv)
@@ -15,24 +21,24 @@ int main(int argc, char **argv)
 	int			port;
 	std::string	pass;
 	Server		*server;
+	int			maxClients;
+	int			maxChannels;
 
-	if (argc == 3 || argc == 4)
+	if (!areArgumentsValid(argc))
 	{
-		port = atoi(argv[1]);
-		pass = argv[2];
-	}
-	else
-	{
-		std::cerr << "Usage: ./ircserv PORT PASS [-log]" << std::endl;	
+		std::cerr << "Usage: ./ircserv PORT PASS [-log]" << std::endl;
 		return (1);
 	}
-	g_running = true;
-	if (argc == 4 && strncmp(argv[3], "-log", 4) == 0)
-		server = new Server(200, 200, port, pass, true);
+	port = atoi(argv[1]);
+	pass = argv[2];
+	maxClients = 200;
+	maxChannels = 200;
+	if (shouldStartServerWithLog(argc, argv))
+		server = new Server(maxClients, maxChannels, port, pass, true);
 	else
-		server = new Server(200, 200, port, pass, false);
-	signal(SIGINT, signalHandler);
-	server->run(g_running);
+		server = new Server(maxClients, maxChannels, port, pass, false);
+	signal(SIGINT, server->stop);
+	server->run();
 	delete server;
     return 0;
 }

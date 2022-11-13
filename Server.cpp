@@ -1,4 +1,5 @@
 #include "Server.hpp"
+bool _runningServer = true;
 Server::~Server(void)
 {
 	freeAndDestroy();
@@ -14,7 +15,7 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass, bool
 	this->_fds = new pollfd[maxClients + 1];
 	this->_nfds = 1;
 	this->_port = port;
-
+	//_runningServer = true;
 	//Load commands and channel operations
 	this->_registrationCommands["PASS"] = new Pass(this, "PASS");
 	this->_registrationCommands["NICK"] = new Nick(this, "NICK");
@@ -473,6 +474,7 @@ void	Server::incomingMessage(int position)
 	std::string	msg;
 
 	msg = "";
+	//otra función: devuélveme todo el mensaje que has recibido
 	while (true) 
 	{
 		memset(buff, 0, sizeof(buff));
@@ -577,12 +579,12 @@ void	Server::freeAndDestroy(void)
 	delete [] _fds;
 }
 
-void	Server::run(bool &g_running)
+void	Server::run(void)
 {
-	std::time_t	currentTime;
+	time_t	currentTime;
 	setTimestamp(&this->_lastPing);
 	this->setup();
-    while (g_running) 
+    while (_runningServer) 
 	{
 		if (poll(_fds, _nfds, 10) < 0)
 			return ;
@@ -600,7 +602,13 @@ void	Server::run(bool &g_running)
 			else if (_fds[position].fd == _fds[0].fd)
 				this->newConnection(_fds[0].fd);
 			else if (_fds[position].revents == POLLIN)
-				this->incomingMessage(position);
+				this->incomingMessage(position); // no hace falta enviar position, basta enviar fd
 		}
 	}
+}
+
+void	Server::stop(int)
+{
+	_runningServer = false;
+	std::cout << "Stoping server" << std::endl;
 }
