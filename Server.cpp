@@ -610,5 +610,5 @@ void	Server::run(void)
 void	Server::stop(int)
 {
 	_runningServer = false;
-	std::cout << "Stoping server" << std::endl;
+	std::cout << std::endl << "Stoping server" << std::endl;
 }
