@@ -112,7 +112,7 @@ std::string encrypt(std::string toEncrypt)
 	std::string key = std::to_string(timestamp);
  
     for (size_t i = 0; i < toEncrypt.size(); i++)
-		output[i] = toEncrypt[i] ^ key[i % (sizeof(key) / sizeof(char))]; 
+		output[i] = toEncrypt[i] ^ key[i % (sizeof(key) / sizeof(char))]; // [DUDA] output[i] ^= key[i % (sizeof(key)]
     return output;
 }
 

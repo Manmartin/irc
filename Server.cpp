@@ -467,7 +467,7 @@ void	Server::newConnection(int socketfd)
 	//std::cout << "Connected users: " << _nfds - 1  << std::endl;
 }
 
-void	Server::incomingMessage(int position)
+void	Server::incomingMessage(int fd)
 {
 	char		buff[513];
 	int			readlen;
@@ -478,23 +478,23 @@ void	Server::incomingMessage(int position)
 	while (true) 
 	{
 		memset(buff, 0, sizeof(buff));
-		readlen = recv(_fds[position].fd, buff, sizeof(buff), 0);
+		readlen = recv(fd, buff, sizeof(buff), 0);
 		msg = msg + buff;
         if (readlen == -1)
 		{
 			if (errno != EWOULDBLOCK)
 			perror(" recv() failed");
-			break;
+			break; // [DUDA] Si falla la lectura a mitad de mensaje, va a llegar a handleMessage igualmente (Se puede sustituir por un return o un exit)
         }
         else if (readlen == 0)
 		{
-			close(_fds[position].fd);
-			this->reduceFds(_fds[position].fd);
+			close(fd);
+			this->reduceFds(fd);
 	        break;
 		}
 	}
-	if (_fds[position].fd > 0)
-		this->handleMessage(msg, _fds[position].fd);
+	if (fd > 0)
+		this->handleMessage(msg, fd);
 }
 
 void	Server::setup(void)
@@ -599,10 +599,10 @@ void	Server::run(void)
 				continue ;
 			else if (_fds[position].revents & (POLLERR|POLLHUP|POLLNVAL))
 				this->connectionError(position);
-			else if (_fds[position].fd == _fds[0].fd)
+			else if (_fds[position].fd == _fds[0].fd) // [DUDA] Se podria comprobar que la posicion sea 0 directamentes
 				this->newConnection(_fds[0].fd);
 			else if (_fds[position].revents == POLLIN)
-				this->incomingMessage(position); // no hace falta enviar position, basta enviar fd
+				this->incomingMessage(_fds[position].fd); // no hace falta enviar position, basta enviar fd
 		}
 	}
 }
