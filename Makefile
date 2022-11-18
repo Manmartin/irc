@@ -12,7 +12,7 @@ COMMANDS_F	= 	Command.cpp
 SERVER_F 	=	Server.cpp
 
 
-SRCS += $(addprefix commands/, $(SERVER_F))
+SRCS += $(addprefix commands/, $(COMMANDS_F))
 SRCS += $(addprefix server/, $(SERVER_F))
 
 OBJS = $(SRCS:.cpp=.o)

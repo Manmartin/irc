@@ -2,7 +2,7 @@
 # define MESSAGE_HPP
 
 #include "Command.hpp"
-#include "Client.hpp"
+#include <Client.hpp>
 #include <array>
 #include <iostream>
 #include <list>

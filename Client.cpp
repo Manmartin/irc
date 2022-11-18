@@ -1,4 +1,4 @@
-#include "Client.hpp"
+#include <Client.hpp>
 
 Client::Client(int fd, Server* server) : _nickname(""), _user(""), _realName(""), _fd(fd),  _invisible(false), _registered(false), _channels(0), _challengePassed(false), _sayonara(false), _server(server)
 {
