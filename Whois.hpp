@@ -17,7 +17,6 @@ class Whois : public Command
 		Whois(Server *s, std::string type);
 		~Whois(void);
 		virtual void exec(std::string params, Client &client);
-
 };
 
 #endif

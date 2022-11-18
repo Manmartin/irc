@@ -3,9 +3,17 @@ NAME = ircserv
 CXX = clang++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -O2
 DEBUGFLAGS = -g -fsanitize=address
-INC = -I .
+INC = -I ./ -I server/ -I commands/
 
-SRCS = main.cpp Client.cpp Server.cpp Channel.cpp Command.cpp Join.cpp Leave.cpp utils.cpp Invite.cpp Topic.cpp List.cpp Kick.cpp Message.cpp Whois.cpp Who.cpp Mode.cpp Nick.cpp Pass.cpp User.cpp Names.cpp
+SRCS = main.cpp Client.cpp Channel.cpp Join.cpp Leave.cpp utils.cpp Invite.cpp Topic.cpp List.cpp Kick.cpp Message.cpp Whois.cpp Who.cpp Mode.cpp Nick.cpp Pass.cpp User.cpp Names.cpp
+
+COMMANDS_F	= 	Command.cpp
+
+SERVER_F 	=	Server.cpp
+
+
+SRCS += $(addprefix commands/, $(SERVER_F))
+SRCS += $(addprefix server/, $(SERVER_F))
 
 OBJS = $(SRCS:.cpp=.o)
 

@@ -1,20 +1,18 @@
 #include "Server.hpp"
-bool _runningServer = true;
-Server::~Server(void)
-{
-	freeAndDestroy();
-}
 
-Server::Server(int maxClients, int maxChannels, int port, std::string pass, bool log) : _maxClients(maxClients), _maxChannels(maxChannels), _log(log), _name("localhost")
+bool _runningServer = true;
+
+// CONSTRUCTORS AND DESTRUCTOR
+
+Server::Server(void): _maxClients(0), _maxChannels(0), _port(0), _log(false) {}
+Server::Server(int maxClients, int maxChannels, int port, std::string pass, bool log):
+_maxClients(maxClients), _maxChannels(maxChannels), _activeClients(0), _activeChannels(0),
+_serverAddress("localhost"), _name("localhost"), _pass(encrypt(pass)),
+_port(port), _log(log)
 {
-	this->_activeClients = 0;
-	this->_activeChannels = 0;
-	this->_serverAddress = "localhost";
 	setTimestamp(&this->_timestamp);
-	this->_pass = encrypt(pass);
 	this->_fds = new pollfd[maxClients + 1];
 	this->_nfds = 1;
-	this->_port = port;
 	//_runningServer = true;
 	//Load commands and channel operations
 	this->_registrationCommands["PASS"] = new Pass(this, "PASS");
@@ -34,12 +32,14 @@ Server::Server(int maxClients, int maxChannels, int port, std::string pass, bool
 	this->_commands["WHOIS"] = new Whois(this, "WHOIS");
 	this->_commands["WHO"] = new Who(this, "WHO");
 }
+Server::Server(Server const &c):
+_maxClients(c._maxClients), _maxChannels(c._maxChannels),
+_serverAddress(c._serverAddress), _name(c._name), _pass(c._pass),
+_port(c._port), _log(c._log)
+{ *this = c; }
+Server::~Server(void) { freeAndDestroy(); }
 
-Server::Server(void)
-{
-
-}
-
+// OPERATORS' OVERLOAD
 
 Server& Server::operator=(Server const &c)
 {
@@ -48,63 +48,102 @@ Server& Server::operator=(Server const &c)
 		this->_fds = c.getFds();
 		this->clients = c.getClients();
 		this->channels = c.getChannelsCopy();
-		this->_maxClients = c.getMaxClients();
 		this->_activeClients = c.getActiveClients();
-		this->_maxChannels = c.getMaxChannels();
 		this->_activeChannels = c.getActiveChannels();
-		this->_serverAddress = c.getServerAddress();
 		this->_timestamp = c.getTimestamp();
-		this->_pass = c.getPass();
-		this->_port = c.getPort();
 		this->_nfds = c.getNfds();
 		this->_lastPing = c.getLastPing();
-		this->_log = c.getLog();
-		this->_name = c.getServerName();
 		this->_commands = c.getCommands();
 		this->_registrationCommands = c.getRegistrationCommands();
 	}
 	return (*this);
 }
 
-Server::Server(Server const &c)
+// SERVER INSTANCE MANAGEMENT
+
+void	Server::run(void)
 {
-	*this = c;
+	time_t	currentTime;
+	setTimestamp(&this->_lastPing);
+	this->setup();
+    while (_runningServer) 
+	{
+		if (poll(_fds, _nfds, 10) < 0)
+			return ;
+		setTimestamp(&currentTime);
+		if (currentTime - this->_lastPing > 40)
+			pingAndClean(currentTime);
+		for (size_t position = 0; position < _nfds; position++)
+		{
+			if (_fds[position].fd == -1)
+				continue ;
+			else if (_fds[position].revents == 0)
+				continue ;
+			else if (_fds[position].revents & (POLLERR|POLLHUP|POLLNVAL))
+				this->connectionError(position);
+			else if (position == 0)
+				this->newConnection(_fds[0].fd);
+			else if (_fds[position].revents == POLLIN)
+				this->incomingMessage(_fds[position].fd);
+		}
+	}
 }
 
-int	Server::getMaxClients(void) const
+void	Server::stop(int)
 {
-	return _maxClients;
+	_runningServer = false;
+	std::cout << "\nStoping server\n";
 }
 
-int	Server::getActiveClients(void) const
+void	Server::freeAndDestroy(void)
 {
-	return _activeClients;
+	std::list<Client*>::iterator	it;
+	std::list<Channel*>::iterator	it2;
+	std::map<std::string, Command*>::iterator it3;
+
+	for (it = clients.begin(); it != clients.end(); it++)
+		removeClient(*it);
+	for (it2 = channels.begin(); it2 != channels.end(); it2++)
+		removeChannel(*it2);
+	for (it3 = _commands.begin(); it3 != _commands.end(); it3++)
+		delete it3->second;
+	for (it3 = _registrationCommands.begin(); it3 != _registrationCommands.end(); it3++)
+		delete it3->second;
+	delete [] _fds;
 }
 
-int	Server::getMaxChannels(void) const
+void	Server::log(int fd, std::string message, int type)
 {
-	return _maxChannels;
+	std::time_t	timestamp;
+
+	setTimestamp(&timestamp);
+
+	if (!this->_log)
+		return ;
+	std::cout << timestampToHumanTime(timestamp) << std::endl;
+	if (type == 1)
+		std::cout << "\033[1;34m" << "Message from " << fd << "(" << lookClientByFd(fd)->getNickname() << "):\n" << message << "\033[0m"<< std::endl;
+	else if (type == 2)
+		std::cout << "\033[1;31m" << "Server reply to " << fd << "(" << lookClientByFd(fd)->getNickname() << "):\n" << message << "\033[0m"<< std::endl;
+	else
+		std::cout << "New server event: \n" << message << "\n" << std::endl;
 }
 
-int	Server::getActiveChannels(void) const
-{
-	return _activeChannels;
-}
+// BASIC GETTERS
 
-std::string	Server::getServerAddress(void) const
-{
-	return _serverAddress;
-}
+size_t	Server::getMaxClients(void) const { return _maxClients; }
+size_t	Server::getMaxChannels(void) const { return _maxChannels; }
+size_t	Server::getActiveClients(void) const { return _activeClients; }
+size_t	Server::getActiveChannels(void) const { return _activeChannels; }
 
-std::string	Server::getServerName(void) const
-{
-	return (this->_name);
-}
+std::string	const	&Server::getServerAddress(void) const { return _serverAddress; }
+std::string	const 	&Server::getServerName(void) const { return _name; }
+std::string	const 	&Server::getPass(void) const { return _pass; }
 
-std::string	Server::getPass(void) const
-{
-	return _pass;
-}
+int					Server::getPort(void) const { return _port; }
+bool				Server::getLog(void) const { return _log; }
+
+//
 
 bool	Server::usedNick(std::string nickname)
 {
@@ -133,10 +172,6 @@ time_t				Server::getTimestamp(void) const
 	return (this->_timestamp);
 }
 
-int					Server::getPort(void) const
-{
-	return (this->_port);
-}
 
 int					Server::getNfds(void) const
 {
@@ -148,10 +183,7 @@ time_t				Server::getLastPing(void) const
 	return (this->_lastPing);
 }
 
-bool				Server::getLog(void) const
-{
-	return (this->_log);
-}
+
 
 std::map<std::string, Command*> Server::getCommands(void) const
 {
@@ -440,7 +472,6 @@ void	Server::newConnection(int socketfd)
 	char	clientAddress[INET6_ADDRSTRLEN];
     socklen_t len = sizeof(client);
 
-	connectfd = -1;
 	connectfd = accept(socketfd, (struct sockaddr*) &client, &len); 
 	fcntl(connectfd, F_SETFL, O_NONBLOCK);
 	this->saveIpFromClient(client, &clientAddress);
@@ -484,7 +515,7 @@ void	Server::incomingMessage(int fd)
 		{
 			if (errno != EWOULDBLOCK)
 			perror(" recv() failed");
-			break; // [DUDA] Si falla la lectura a mitad de mensaje, va a llegar a handleMessage igualmente (Se puede sustituir por un return o un exit)
+			break;
         }
         else if (readlen == 0)
 		{
@@ -543,72 +574,4 @@ void	Server::setup(void)
     std::cout << "[Socket listening at port " << ntohs(serv_addr.sin6_port) << "]\n";
 	_fds[0].fd = socketfd;
 	_fds[0].events = POLLIN;
-}
-
-void	Server::log(int fd, std::string message, int type)
-{
-	std::time_t	timestamp;
-
-	setTimestamp(&timestamp);
-
-	if (!this->_log)
-		return ;
-	std::cout << timestampToHumanTime(timestamp) << std::endl;
-	if (type == 1)
-		std::cout << "\033[1;34m" << "Message from " << fd << "(" << lookClientByFd(fd)->getNickname() << "):\n" << message << "\033[0m"<< std::endl;
-	else if (type == 2)
-		std::cout << "\033[1;31m" << "Server reply to " << fd << "(" << lookClientByFd(fd)->getNickname() << "):\n" << message << "\033[0m"<< std::endl;
-	else
-		std::cout << "New server event: \n" << message << "\n" << std::endl;
-}
-
-void	Server::freeAndDestroy(void)
-{
-	std::list<Client*>::iterator	it;
-	std::list<Channel*>::iterator	it2;
-	std::map<std::string, Command*>::iterator it3;
-
-	for (it = clients.begin(); it != clients.end(); it++)
-		removeClient(*it);
-	for (it2 = channels.begin(); it2 != channels.end(); it2++)
-		removeChannel(*it2);
-	for (it3 = _commands.begin(); it3 != _commands.end(); it3++)
-		delete it3->second;
-	for (it3 = _registrationCommands.begin(); it3 != _registrationCommands.end(); it3++)
-		delete it3->second;
-	delete [] _fds;
-}
-
-void	Server::run(void)
-{
-	time_t	currentTime;
-	setTimestamp(&this->_lastPing);
-	this->setup();
-    while (_runningServer) 
-	{
-		if (poll(_fds, _nfds, 10) < 0)
-			return ;
-		setTimestamp(&currentTime);
-		if (currentTime - this->_lastPing > 40)
-			pingAndClean(currentTime);
-		for (size_t position = 0; position < _nfds; position++)
-		{
-			if (_fds[position].fd == -1)
-				continue ;
-			else if (_fds[position].revents == 0)
-				continue ;
-			else if (_fds[position].revents & (POLLERR|POLLHUP|POLLNVAL))
-				this->connectionError(position);
-			else if (_fds[position].fd == _fds[0].fd) // [DUDA] Se podria comprobar que la posicion sea 0 directamentes
-				this->newConnection(_fds[0].fd);
-			else if (_fds[position].revents == POLLIN)
-				this->incomingMessage(_fds[position].fd); // no hace falta enviar position, basta enviar fd
-		}
-	}
-}
-
-void	Server::stop(int)
-{
-	_runningServer = false;
-	std::cout << "\nStoping server\n";
 }
