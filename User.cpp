@@ -1,4 +1,6 @@
 #include "User.hpp"
+#include <Client.hpp>
+#include <Server.hpp>
 
 User::User(void) {
 }

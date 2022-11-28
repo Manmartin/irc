@@ -1,4 +1,7 @@
 #include "Invite.hpp"
+#include <Channel.hpp>
+#include <Client.hpp>
+#include <Server.hpp>
 
 Invite::Invite(void) {
 }

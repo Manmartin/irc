@@ -1,4 +1,6 @@
 #include "Nick.hpp"
+#include <Client.hpp>
+#include <Server.hpp>
 
 Nick::Nick(void) {
 }

@@ -3,7 +3,7 @@
 
 //#include "Server.hpp"
 //#include "Client.hpp"
-#include <array>
+#include <vector>
 #include <iostream>
 
 class Server;
@@ -15,7 +15,7 @@ class Command{
 		virtual ~Command(void);
  		Command(Server *s, std::string type) : server(s), _type(type) {};
 		virtual void exec(std::string params, Client &c) = 0;
-		virtual std::array<std::string, 2>	separateParamsAndMessage(std::string params);
+		virtual std::vector<std::string>	separateParamsAndMessage(std::string params);
 
 	protected:
 		Server			*server;

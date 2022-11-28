@@ -4,7 +4,7 @@
 
 void	setTimestamp(std::time_t	*var)
 {
-	*var = std::time(nullptr);
+	*var = std::time(NULL);
 	std::localtime(var);
 }
 
@@ -111,7 +111,7 @@ std::string encrypt(std::string toEncrypt)
 	std::string output = toEncrypt;
 	std::time_t timestamp = 0;
 	setTimestamp(&timestamp);
-	std::string key = std::to_string(timestamp);
+	std::string key = toString(timestamp);
  
     for (size_t i = 0; i < toEncrypt.size(); i++)
 		output[i] = toEncrypt[i] ^ key[i % (sizeof(key) / sizeof(char))]; // [DUDA] output[i] ^= key[i % (sizeof(key)]

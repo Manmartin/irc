@@ -1,4 +1,9 @@
 #include "Server.hpp"
+#include <Client.hpp>
+#include <stdlib.h>
+#include <errno.h>
+#include <stdio.h>
+
 
 bool _runningServer = true;
 
@@ -436,7 +441,7 @@ void		Server::pingAndClean(std::time_t currentTime)
 
 void	Server::connectionError(size_t position)
 {
-	log(0, "Connection error with fd " + std::to_string(_fds[position].fd) + ", disconnecting", 0);
+	log(0, "Connection error with fd " + toString(_fds[position].fd) + ", disconnecting", 0);
 	Client *cc = lookClientByFd(_fds[position].fd);
 	if (cc)
 	{
@@ -449,7 +454,7 @@ void	Server::connectionError(size_t position)
 		reduceFds(_fds[position].fd); //not sure if necessary
 		//_fds[position].fd = -1;
 	}
-	log(0, "Active clients: " + std::to_string(_activeClients), 0);
+	log(0, "Active clients: " + toString(_activeClients), 0);
 }
 
 void	Server::saveIpFromClient(struct sockaddr_storage &client, char (*clientAddress)[INET6_ADDRSTRLEN])
@@ -489,13 +494,13 @@ void	Server::newConnection(int socketfd)
 		}
 		return ;
    	}
-	log(0, "Connecting new user, fd: " + std::to_string(connectfd), 0);
+	log(0, "Connecting new user, fd: " + toString(connectfd), 0);
 	_fds[_nfds].fd = connectfd;
 	_fds[_nfds].events = POLLIN;
 	_fds[_nfds].revents = 0;
 	_nfds++;
 	this->addClient(new Client(connectfd, this));
-	log(0, "Connected users: " + std::to_string(_nfds - 1), 0);
+	log(0, "Connected users: " + toString(_nfds - 1), 0);
 	//std::cout << "Connected users: " << _nfds - 1  << std::endl;
 }
 

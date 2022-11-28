@@ -1,7 +1,8 @@
 #include <iostream>
-#include "Server.hpp"
+#include <Server.hpp>
 #include <csignal>
 #include <stdlib.h>
+#include <errno.h>
 
 int	shouldStartServerWithLog(int argc, char **argv)
 {
@@ -20,15 +21,16 @@ void	areArgumentsValid(int argc)
 }
 
 int	parsePort(std::string portStr) {
-	int 	port;
-	size_t 	idx;
+	long 	port;
+	char	*endptr;
 	try
 	{
-		port = std::stoi(portStr, &idx); //[TODO] REACER STOI
-		if (idx != portStr.length())
+		port  = strtol(portStr.c_str(), &endptr, 10);
+		if (*endptr != '\0')
 			throw std::invalid_argument("");
-		else if (port < 0 || port > 65535)
+		else if (port < 1 || port > 65535 || errno == ERANGE)
 			throw std::out_of_range("");
+
 	}
 	catch(const std::invalid_argument& e)
 	{

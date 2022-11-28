@@ -1,4 +1,6 @@
 #include "Pass.hpp"
+#include <Client.hpp>
+#include <Server.hpp>
 
 Pass::Pass(void) {
 }

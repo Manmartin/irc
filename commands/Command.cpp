@@ -5,14 +5,14 @@ Command::Command(void) : server(NULL) {}
 
 Command::~Command(void){}
 
-std::array<std::string, 2>	Command::separateParamsAndMessage(std::string params)
+std::vector<std::string>	Command::separateParamsAndMessage(std::string params)
 {
-	std::array<std::string, 2> s;
+	std::vector<std::string> s;
 	size_t	pos;
 
 	pos = params.find(":");
-	s[0] = trimSpaces(params.substr(0, pos));
-	s[1] = trimSpaces(params.substr(pos + 1, params.size() - pos - 1));
+	s.push_back(trimSpaces(params.substr(0, pos)));
+	s.push_back(trimSpaces(params.substr(pos + 1, params.size() - pos - 1)));
 	return (s);
 }
 

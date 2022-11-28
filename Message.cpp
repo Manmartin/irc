@@ -1,4 +1,7 @@
 #include "Message.hpp"
+#include <Channel.hpp>
+#include <Client.hpp>
+#include <Server.hpp>
 
 Message::Message(void) {
 }
@@ -12,7 +15,7 @@ Message::~Message(void)
 void Message::exec(std::string params, Client& client)
 {
 	std::vector<std::string>	targetList;
-	std::array<std::string,2>	paramsAndMessage;
+	std::vector<std::string>	paramsAndMessage;
 	Channel						*channel;
 	Client						*destinationUser;
 

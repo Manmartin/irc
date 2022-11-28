@@ -1,4 +1,7 @@
 #include "Names.hpp"
+#include <Channel.hpp>
+#include <Client.hpp>
+#include <Server.hpp>
 
 Names::Names(void) {
 }

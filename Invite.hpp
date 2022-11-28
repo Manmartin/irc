@@ -1,12 +1,10 @@
 #ifndef INVITE_HPP
 # define INVITE_HPP
 
+# include "Command.hpp"
+# include <iostream>
+# include <list>
 
-#include "Command.hpp"
-#include <Client.hpp>
-#include <array>
-#include <iostream>
-#include <list>
 class Client;
 class Server;
 class Channel;

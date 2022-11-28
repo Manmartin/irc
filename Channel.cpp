@@ -1,5 +1,7 @@
 #include "Channel.hpp"
 #include "utils.hpp"
+#include <Client.hpp>
+#include <Server.hpp>
 
 Channel::Channel(void)
 {
@@ -172,10 +174,8 @@ Client*	Channel::findUserInList(std::string nick, std::list<Client*> &l)
 {
 	std::list<Client*>::iterator	it;
 	std::string						nickFromClient;
-	size_t							size;
 
 	it = l.begin();
-	size = l.size();
 	for (it = l.begin(); it != l.end(); it++)
 	{
 		if (it == l.end())

@@ -1,4 +1,8 @@
 #include "Mode.hpp"
+#include <Channel.hpp>
+#include <Client.hpp>
+#include <Server.hpp>
+#include <stdlib.h>
 
 Mode::Mode(void) {
 }
@@ -150,9 +154,9 @@ void	Mode::processMode(Channel *channel, char sign, char c, std::vector<std::str
 		channel->setTopicLocked(false);
 		modeAndArguments[1] += "t";
 	}
-	else if (sign == '+' && c == 'l' && *j < params.size() && stoi(params[*j]) > 0)
+	else if (sign == '+' && c == 'l' && *j < params.size() && atoi(params[*j].c_str()) > 0)
 	{
-		channel->setUserLimit(stoi(params[*j]));
+		channel->setUserLimit(atoi(params[*j].c_str()));
 		modeAndArguments.push_back(params[*j]);
 		modeAndArguments[0] += "l";
 		(*j)++;

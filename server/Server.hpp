@@ -6,8 +6,6 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <fcntl.h>
-# include "Client.hpp"
-# include "Channel.hpp"
 # include "Reply.hpp"
 # include "Join.hpp"
 # include "Leave.hpp"

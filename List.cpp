@@ -1,4 +1,7 @@
 #include "List.hpp"
+#include <Channel.hpp>
+#include <Client.hpp>
+#include <Server.hpp>
 
 List::List(void) {
 }

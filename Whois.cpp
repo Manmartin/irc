@@ -1,4 +1,7 @@
 #include "Whois.hpp"
+#include <Channel.hpp>
+#include <Client.hpp>
+#include <Server.hpp>
 
 Whois::Whois(void) {
 }

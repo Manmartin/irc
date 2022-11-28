@@ -1,4 +1,7 @@
 #include "Topic.hpp"
+#include <Channel.hpp>
+#include <Client.hpp>
+#include <Server.hpp>
 
 Topic::Topic(void) {
 }
@@ -11,7 +14,7 @@ Topic::~Topic(void)
 
 void Topic::exec(std::string params, Client& client)
 {
-	std::array<std::string, 2>	parameters;
+	std::vector<std::string>	parameters;
 	Channel						*channel;
 
 	parameters = separateParamsAndMessage(params);

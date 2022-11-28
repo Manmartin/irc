@@ -1,4 +1,7 @@
 #include "Who.hpp"
+#include <Channel.hpp>
+#include <Client.hpp>
+#include <Server.hpp>
 
 Who::Who(void) {
 }
@@ -36,7 +39,6 @@ void	Who::channelInfo(Channel *target, Client& client)
 		client.sendReply(RPL_WHOREPLY(client.getNickname(), "*", (*it)->getUser(), (*it)->getServer(), (*it)->getServer(), (*it)->getNickname(), "H", "1", (*it)->getRealName()));
 	client.sendReply(RPL_ENDOFWHO(client.getNickname(), target->getName()));
 }
-
 
 void	Who::userInfo(Client *target, Client& client)
 {

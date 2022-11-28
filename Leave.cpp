@@ -1,4 +1,7 @@
 #include "Leave.hpp"
+#include <Client.hpp>
+#include <Server.hpp>
+#include <set>
 
 Leave::Leave(void) {
 }

@@ -1,4 +1,7 @@
 #include "Kick.hpp"
+#include <Channel.hpp>
+#include <Client.hpp>
+#include <Server.hpp>
 
 Kick::Kick(void) {
 }
@@ -11,17 +14,15 @@ Kick::~Kick(void)
 
 void Kick::exec(std::string params, Client& client)
 {
-	std::array<std::string, 2> 	paramsAndMessage;
+	std::vector<std::string> 	paramsAndMessage;
 	std::vector<std::string>	channelsAndUsersRaw;
 	std::vector<std::string>	channelsRaw;
 	std::vector<std::string>	usersRaw;
 	Channel						*channel;
-	Client						*clientToKick;
 
 	paramsAndMessage[0] = "";
 	paramsAndMessage[1] = "";
 	channel = NULL;
-	clientToKick = NULL;
 	paramsAndMessage = separateParamsAndMessage(params);
 	channelsAndUsersRaw = splitToVector(trimSpaces(paramsAndMessage[0]), ' ');
 	channelsRaw = splitToVector(channelsAndUsersRaw[0], ',');
@@ -58,6 +59,3 @@ void	Kick::kickUsersFromChannel(std::vector<std::string> &usersRaw, Channel *cha
 		
 	}
 }
-
-
-
