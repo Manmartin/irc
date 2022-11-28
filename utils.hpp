@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <ctime>
 
 void	setTimestamp(std::time_t *var);
 std::list<std::string>	split_cpp(std::string str, char c);

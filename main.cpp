@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Server.hpp"
 #include <csignal>
+#include <stdlib.h>
 
 int	shouldStartServerWithLog(int argc, char **argv)
 {
@@ -23,7 +24,7 @@ int	parsePort(std::string portStr) {
 	size_t 	idx;
 	try
 	{
-		port = std::stoi(portStr, &idx);
+		port = std::stoi(portStr, &idx); //[TODO] REACER STOI
 		if (idx != portStr.length())
 			throw std::invalid_argument("");
 		else if (port < 0 || port > 65535)

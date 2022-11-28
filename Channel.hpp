@@ -7,6 +7,7 @@
 # include <sys/socket.h>
 # include "Reply.hpp"
 # include "Server.hpp"
+# include <ctime>
 
 class Server;
 class Client;

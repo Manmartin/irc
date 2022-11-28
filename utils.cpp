@@ -1,4 +1,6 @@
 #include "utils.hpp"
+#include <algorithm>
+#include <cstring>
 
 void	setTimestamp(std::time_t	*var)
 {

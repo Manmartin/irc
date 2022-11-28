@@ -7,6 +7,7 @@
 #include <list>
 #include "Channel.hpp"
 #include <sys/socket.h>
+#include <ctime>
 
 class Channel;
 class Server;

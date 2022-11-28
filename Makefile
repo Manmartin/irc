@@ -1,7 +1,7 @@
 NAME = ircserv
 
 CXX = clang++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -O2
+CXXFLAGS = -Wall -Wextra -Werror -O2 -std=c++98
 DEBUGFLAGS = -g -fsanitize=address
 INC = -I ./ -I server/ -I commands/
 
