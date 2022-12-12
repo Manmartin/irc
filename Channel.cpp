@@ -55,7 +55,6 @@ void	Channel::joinWelcomeSequence(Client& c)
 	this->broadcast(":" + c.getLogin() + " JOIN " + _name + "\r\n");
 	c.sendReply(RPL_TOPIC(c.getNickname(), this->_name, getTopic()));
 	this->_server->callCommand("NAMES", this->_name, c);
-	c.sendReply(RPL_ENDOFNAMES(c.getNickname(), this->_name));
 	this->_server->callCommand("MODE", this->_name, c);
 	c.sendReply(RPL_CREATIONTIME(c.getNickname(), this->_name, toString(this->_createdAt)));
 }
