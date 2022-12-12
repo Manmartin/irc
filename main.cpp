@@ -65,14 +65,12 @@ int main(int argc, char **argv)
 	areArgumentsValid(argc);
 	port = parsePort(argv[1]);
 	pass = parsePassword(argv[2]);
-
 	maxClients = 200;
 	maxChannels = 200;
 	if (shouldStartServerWithLog(argc, argv))
 		server = new Server(maxClients, maxChannels, port, pass, true);
 	else
 		server = new Server(maxClients, maxChannels, port, pass, false);
-	signal(SIGINT, server->stop);
 	server->run();
 	delete server;
     return 0;

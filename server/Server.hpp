@@ -36,8 +36,6 @@ class Channel;
 class Client;
 class Command;
 
-extern bool _runningServer;
-
 class Server {
 private:
 
@@ -80,7 +78,6 @@ private:
 		// SERVER INSTANCE MANAGEMENT
 
 		void		run(void);
-		void static	stop(int);
 		void		log(int fd, std::string message, int type);
 		void		freeAndDestroy(void);
 

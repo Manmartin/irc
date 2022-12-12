@@ -5,8 +5,6 @@
 #include <stdio.h>
 
 
-bool _runningServer = true;
-
 // CONSTRUCTORS AND DESTRUCTOR
 
 Server::Server(void): _maxClients(0), _maxChannels(0), _port(0), _log(false) {}
@@ -18,7 +16,6 @@ _port(port), _log(log)
 	setTimestamp(&this->_timestamp);
 	this->_fds = new pollfd[maxClients + 1];
 	this->_nfds = 1;
-	//_runningServer = true;
 	//Load commands and channel operations
 	this->_registrationCommands["PASS"] = new Pass(this, "PASS");
 	this->_registrationCommands["NICK"] = new Nick(this, "NICK");
@@ -71,7 +68,7 @@ void	Server::run(void)
 	time_t	currentTime;
 	setTimestamp(&this->_lastPing);
 	this->setup();
-    while (_runningServer) 
+    while (true) 
 	{
 		if (poll(_fds, _nfds, 10) < 0)
 			return ;
@@ -92,12 +89,6 @@ void	Server::run(void)
 				this->incomingMessage(_fds[position].fd);
 		}
 	}
-}
-
-void	Server::stop(int)
-{
-	_runningServer = false;
-	std::cout << "\nStoping server\n";
 }
 
 void	Server::log(int fd, std::string message, int type)

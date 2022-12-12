@@ -20,13 +20,15 @@ void Kick::exec(std::string params, Client& client)
 	std::vector<std::string>	usersRaw;
 	Channel						*channel;
 
-	paramsAndMessage[0] = "";
-	paramsAndMessage[1] = "";
+	paramsAndMessage.push_back("");
+	paramsAndMessage.push_back("");
 	channel = NULL;
 	paramsAndMessage = separateParamsAndMessage(params);
 	channelsAndUsersRaw = splitToVector(trimSpaces(paramsAndMessage[0]), ' ');
 	channelsRaw = splitToVector(channelsAndUsersRaw[0], ',');
 	usersRaw = splitToVector(channelsAndUsersRaw[1], ',');
+	//channelsRaw.push_back("#a");
+	//usersRaw.push_back("pepe");
 	for (size_t i = 0; i < channelsRaw.size(); i++)
 	{
 		channel = this->server->findChannel(channelsRaw[i]);
