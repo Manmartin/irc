@@ -27,9 +27,14 @@ void Nick::exec(std::string params, Client& client)
 		return (client.sendReply(ERR_ERRONEUSNICKNAME(params, "illegal character used")));
 	else if (params.size() > 9)
 		return (client.sendReply(ERR_ERRONEUSNICKNAME(params, "max 9 characters allowed")));
-	client.setNick(trimSpaces(params));
 	if (!client.isRegistered() && client.getUser().length() > 0 && client.isPassOk())
+	{
+		client.setNick(trimSpaces(params));
 		this->server->registerAndWelcome(client);
+	}
 	else
+	{
 		client.sendReply(RPL_NICK(params));
+		client.setNick(trimSpaces(params));
+	}
 }
