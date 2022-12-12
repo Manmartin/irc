@@ -1,6 +1,6 @@
 #include <Client.hpp>
 
-Client::Client(int fd, Server* server) : _nickname(""), _user(""), _realName(""), _fd(fd),  _invisible(false), _registered(false), _channels(0), _challengePassed(false), _sayonara(false), _server(server)
+Client::Client(int fd, Server* server, std::string ip) : _nickname(""), _user(""), _realName(""), _fd(fd),  _invisible(false), _registered(false), _channels(0), _challengePassed(false), _sayonara(false), _ip(ip), _server(server)
 {
 	setTimestamp(&_lastTimeSeenAt);
 	//reply = new Reply(this->server);	

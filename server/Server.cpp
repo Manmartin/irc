@@ -490,9 +490,8 @@ void	Server::newConnection(int socketfd)
 	_fds[_nfds].events = POLLIN;
 	_fds[_nfds].revents = 0;
 	_nfds++;
-	this->addClient(new Client(connectfd, this));
+	this->addClient(new Client(connectfd, this, toString(clientAddress)));
 	log(0, "Connected users: " + toString(_nfds - 1), 0);
-	//std::cout << "Connected users: " << _nfds - 1  << std::endl;
 }
 
 void	Server::incomingMessage(int fd)

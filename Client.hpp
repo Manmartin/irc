@@ -17,7 +17,7 @@ class Client{
 		~Client(void);
 		Client(Client const &c);
 		Client& operator=(Client const &c);
-		Client(int fd, Server *server);
+		Client(int fd, Server *server, std::string ip);
 
 		std::string	getNickname(void) const;
 		std::string getUser(void) const;
@@ -68,6 +68,7 @@ class Client{
 		bool					_sayonara;
 		std::time_t				_lastTimeSeenAt;
 		std::string				_msgBuffer;
+		std::string				_ip;
 		Server					*_server;
 };
 
